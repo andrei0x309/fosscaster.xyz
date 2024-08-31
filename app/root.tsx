@@ -6,6 +6,7 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 import "./tailwind.css";
+import '@radix-ui/themes/styles.css';
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,8 +17,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body suppressHydrationWarning={true}>
+      <div id="app">
         {children}
+        </div>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -26,7 +29,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return <Outlet  />;
 }
 
 export function HydrateFallback() {
