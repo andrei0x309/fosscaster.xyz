@@ -1,16 +1,25 @@
 import type { MetaFunction } from "@remix-run/node";
-import { WarpcastClone } from "~/components/warpcast-clone"
+import { Shell } from "~/components/template/shell"
+import { useParams } from '@remix-run/react';
+import { ProfilePage } from "~/components/pages/profile"
 
-export const meta: MetaFunction = () => {
+export const meta: MetaFunction = ({ params }) => {
+   
   return [
-    { title: "New Remix SPA" },
-    { name: "description", content: "Welcome to Remix (SPA Mode)!" },
+    { title: "Farcaster " + params.profile },
+    { name: "description", content: "Viewing profile " },
   ];
+ 
 };
 
-export default function Index() {
+export default function Profile() {
+    const params = useParams();
+    const profile = params.profile;
+
   return (
-    <WarpcastClone />
+    <Shell>
+      <ProfilePage profile={profile ?? ''} />
+    </Shell>
     // <div className="font-sans p-4">
     //   <h1 className="text-3xl">Welcome to Remix (SPA Mode)</h1>
     //   <ul className="list-disc mt-4 pl-6 space-y-2">

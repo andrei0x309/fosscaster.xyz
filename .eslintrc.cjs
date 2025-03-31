@@ -48,6 +48,7 @@ module.exports = {
           typescript: {},
         },
       },
+
     },
 
     // Typescript
@@ -65,6 +66,10 @@ module.exports = {
             alwaysTryTypes: true,
           },
         },
+      },
+      rules: {
+        "@typescript-eslint/no-explicit-any": "off",
+        "jsx-a11y/label-has-associated-control": "off",
       },
       extends: [
         "plugin:@typescript-eslint/recommended",

@@ -1,0 +1,104 @@
+[contenteditable]:empty:before {
+    content: attr(data-placeholder);
+    color: #6b7280;
+    pointer-events: none;
+}
+
+@keyframes matrix {
+    0% {
+      background-position: 0% 100%, 50% 100%, 100% 100%
+    }
+  
+    100% {
+      background-position: 0% 0%, 50% 0%, 100% 0%
+    }
+  }
+
+  .dark .container input:checked ~ .checkmark {
+    background-color: rgba(245, 24, 24, 0.5);
+  }
+  
+  :not(.dark) .container input:checked ~ .checkmark {
+    background-color: #d1340d;
+  }
+
+  @keyframes pulseWithBlur {
+    0% {
+      transform: scale(1);
+      filter: blur(0px);
+    }
+    70% {
+      transform: scale(1.1);
+      filter: blur(1px);
+    }
+    100% {
+      transform: scale(1);
+      filter: blur(0px);
+
+    }
+  }
+
+ .pulse-with-blur {
+    animation: pulseWithBlur 0.8s infinite;
+  }
+
+  .shake-animation {
+    animation: horizontal-shaking 6.35s infinite;
+  }
+  
+  @keyframes horizontal-shaking {
+    0% { transform: translateX(0) }
+    25% { transform: translateX(5px) }
+    50% { transform: translateX(-5px) }
+    75% { transform: translateX(5px) }
+    100% { transform: translateX(0) }
+  }
+
+.container {
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.post-video div {
+  margin: auto;
+}
+
+::-webkit-scrollbar {
+    @apply w-2.5 h-2.5;
+   
+}
+
+::-webkit-scrollbar-track {
+    @apply bg-transparent
+}
+ 
+::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-border border-[1px] border-transparent border-solid bg-clip-padding;
+}
+
+@media(min-width: 640px) {
+  .container {
+      max-width:640px
+  }
+}
+
+@media(min-width: 768px) {
+  .container {
+      max-width:768px
+  }
+}
+
+@media(min-width: 1002px) {
+  .container {
+      max-width:1002px
+  }
+}
+
+@media(min-width: 1024px) {
+  .container {
+      max-width:1024px
+  }
+}
