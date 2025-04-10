@@ -1,9 +1,13 @@
 import { Button } from '~/components/ui/button'
 import { GhButton } from '~/components/atomic/gh-button'
 import { ArrowRightIcon } from 'lucide-react'
+import { useMainStore } from '~/store/main'
 
 
 export default function AboutPage({className}: {className?: string}) {
+
+  const { navigate } = useMainStore()
+  
   return (
     <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] flex flex-col items-center ${className}`}>
     <div className="p-8" >
@@ -25,22 +29,26 @@ export default function AboutPage({className}: {className?: string}) {
                 limiting people to sign-in with mobile, limiting only people that made account 
                 with warpcast, no need for email or phone, no warps, no off-chain payments etc.</li>
             <li>It&apos;s open-source, and you can use the UI as you wish</li>
-            <li>May add some small UI features that are not present in Warpcast</li>
-            <li>Diffrent design</li>
+            <li>I May add some small UI features that are not present in Warpcast</li>
+            <li>Is mostly as POC, but you can use it as you wish</li>
         </ul>
 
-        <p className="text-lg font-semibold">Does Warpcast nerfs affect this UI?</p>
+        <p className="text-lg font-semibold">Does Warpcast nerfs/boosts affect this UI?</p>
         <ul className="list-disc list-inside">
             <li>Yes, it does. The nerfs are applied at API level, so this UI will be affected as well.</li>
-            <li>All manual and AI actions that derank, shadowban, or exclude content will be applied to this UI as well.</li>
+            <li>All manual and AI actions that derank, boost, shadowban, or exclude content will be applied to this UI as well.</li>
         </ul>
         { /* Subtitle for More Details */}
         <h2 className="text-2xl font-bold">More Details</h2>
         { /* More Details */}
-        <p>I&apos;ve been on farcaster since its inception(FID: 1791), if you want to read about my experience after two plus years and you&apos;re ready for a long read I invite you to check this article:</p>
-        <Button className='w-full mx-auto max-w-[26rem] bg-red-600 hover:bg-red-700 text-white text-[0.77rem] flex' onClick={ () => window.open('https://fcapp.pages.dev/blog/farcaster-experience')}>
+        <p>I&apos;ve been on farcaster since its beginning (
+          <span className="text-red-500 font-bold cursor-pointer hover:text-red-700" onClick={() => navigate('/andrei0x309')} role='button' aria-label='Go to Andrei0x309 profile' onKeyDown={() => {}} tabIndex={0}>
+          FID: 1791
+          </span>
+          ), if you want to read about my experience after two plus years and you&apos;re ready for a long read I invite you to check this article:</p>
+        <Button className='w-full mx-auto max-w-[26rem] bg-red-600 hover:bg-red-700 text-white text-[0.77rem] flex' onClick={ () => window.open('https://blog.flashsoft.eu/farcaster-good-bad-ugly-three-years')}>
             <ArrowRightIcon className="h-4 w-4 mr-2" />
-            <span>Farcaster & Warpcast The Good The Bad The Ugly after 2+ years</span>
+            <span>Farcaster & Warpcast The Good The Bad The Ugly after ~3 years</span>
         </Button>
     </div>
     </div>

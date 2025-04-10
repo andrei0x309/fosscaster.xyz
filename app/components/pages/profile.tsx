@@ -6,7 +6,6 @@ import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import { ScrollArea } from "~/components/ui/scroll-area"
 import { useMainStore } from "~/store/main"
 // import InfiniteScroll from "~/components/ui/extension/infinite-scroll"
-import { ComposeModal } from "~/components/functional/modals/compose-cast"
 import { Post } from "~/components/blocks/post"
 import { Button } from "~/components/ui/button"
 // import { Card } from "~/components/ui/card"
@@ -30,6 +29,7 @@ import {
   userByFid
 } from "~/lib/api"
 import { useLocation } from '@remix-run/react'
+import { CastHeader } from '~/components/blocks/header/cast-header'
 
 
 
@@ -37,12 +37,11 @@ const allowdFeedsLoggedIn = ['casts', 'likes', 'casts-and-replies', 'channels']
 const allowdFeedsLoggedOut = ['casts', 'casts-and-replies']
 
 export function ProfilePage({profile, startFeed, className = '' } : {profile: string, hash?: string, startFeed?: string, className?: string}) {
-  const { isUserLoggedIn, setConnectModalOpen, mainUserData, navigate  } = useMainStore()
+  const { isUserLoggedIn, setConnectModalOpen, mainUserData, navigate, setComposeModalOpen  } = useMainStore()
 
   const [feed, setFeed] = useState({} as TAllFidCasts)
   const [pageProfile, setPageProfile] = useState(profile)
   const [channels, setChannels] = useState({} as TUserChannelFollows)
-  const [isComposeModalOpen, setComposeModalOpen] = useState(false)
   const [feedLoading, setFeedLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const [isInitialLoad, setIsInitialLoad] = useState(false)
@@ -79,6 +78,10 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
     } else {
       user =  (await getUserByUsername(pageProfile))?.result as TWCUserByUsername
     }
+
+    getFollowersYouKnow({fid: user.user.fid}).then(res => {
+      setFollowersYouKnow(res)
+    })
 
     if(!user) {
       navigate('/~/error/err-usr-001')
@@ -207,14 +210,6 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
   }
 
  
-  const handleClickCast = () => {
-    if(!isUserLoggedIn) {
-      setConnectModalOpen(true)
-      return
-    }
-    setComposeModalOpen(true)
-  }
-  
   return (
 
     // <main className="h-full w-full shrink-0 justify-center sm:mr-4 sm:w-[540px] lg:w-[680px]">
@@ -223,21 +218,7 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
 
       <main className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
         <div className="h-full min-h-screen">
-        <div className="sticky dark:bg-neutral-950 bg-white top-0 z-10 flex w-full border-b-[1px] bg-app border-default h-14 p-2">
-             <div className="flex items-center justify-between">
-             <Button variant="ghost" size="icon">
-                    <ArrowLeft className="h-6 w-6" />
-                </Button>
-                <span className="opacity-55">Profile:</span> <span className="ml-2">{pageProfile}</span>
-                </div>
-              <div className="flex items-center justify-end flex-auto h-10">
-                <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={handleClickCast}>
-                  <PenSquare className="h-4 w-4 mr-2" />
-                  Cast
-                </Button>
-                <ComposeModal isOpen={isComposeModalOpen} setOpen={setComposeModalOpen} />
-              </div>
-       </div>
+        <CastHeader title={`@${user?.user?.username ?? ''}`} hasBackButton={true} />
        {/* Profile */}
     {!user?.user?.fid && <SimpleLoader />}
     {user?.user?.fid && (
@@ -285,7 +266,7 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
                           </div>
                              
 
-                          <p className="mb-2">
+                          <p className="mb-2 break-words dark:text-gray-300 text-gray-600">
                               {user?.user?.profile?.bio?.text}
                           </p>
 
@@ -296,26 +277,35 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
 
 
                           <div className="flex space-x-4 mb-4">
-                         {isOwnProfile && (
-                          <Button variant="secondary" className="mb-4">
-                              Get started with streaks →
-                          </Button>
-                         )}
                           {!isOwnProfile && (
                          <Button variant="outline">Unfollow</Button>
                           )}
                         </div>
                         
-         {isUserLoggedIn && !isOwnProfile && (
+         {isUserLoggedIn && !isOwnProfile && followersYouKnow?.result?.totalCount && (
           <>
          <div className="flex items-center space-x-2 mb-4">
           <div className="flex -space-x-2">
-            <Image src="/placeholder.svg" alt="User 1" width={24} height={24} className="rounded-full border-2 border-[#1c1c24]" />
-            <Image src="/placeholder.svg" alt="User 2" width={24} height={24} className="rounded-full border-2 border-[#1c1c24]" />
-            <Image src="/placeholder.svg" alt="User 3" width={24} height={24} className="rounded-full border-2 border-[#1c1c24]" />
+            { followersYouKnow.result?.users.map((user, index) => (
+              <Image
+                key={index}
+                src={user.pfp?.url ?? "/placeholder.svg"}
+                alt={`User ${index + 1}`}
+                className="rounded-full border-2 border-[#1c1c24] w-10 h-10 object-cover"
+              />
+            ))}
           </div>
           <p className="text-sm text-gray-400">
-            Followed by @horsefacts.eth, @blankspace, @downshift.eth and 213 others you know
+            Followed by&nbsp;
+            {followersYouKnow.result?.users.map((user, index) => (
+              <>
+              <span className='font-bold cursor-pointer hover:underline' key={index} aria-disabled="true" onClick={() => navigate(`/~${user.username}`)} role='button' onKeyDown={() => {}}>
+                {user.username}
+              </span>
+              <span>&nbsp;</span>
+              </>
+            ))}
+             and {followersYouKnow?.result?.totalCount} others you know
           </p>
         </div>
         </>

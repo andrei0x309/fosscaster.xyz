@@ -1,6 +1,6 @@
 import { Bell, Home, Search, MessageCircle,
   Users, Bookmark, Zap, User, Settings, ChevronDown, Sun,
-  Moon, Hash, Music, Tv, Zap as ZapIcon, LogOut,
+  Grid2x2 , Moon, Hash, Music, Tv, Zap as ZapIcon, LogOut,
   LogIn
 } from "lucide-react"
 import { Button } from "~/components/ui/button"
@@ -10,7 +10,7 @@ import { clearUserData, clearAllUsersData, persistUserData } from "~/lib/localst
 import { useState, useEffect, useRef } from "react"
 import { PopOverMenu, PopOverMenuItem } from "~/components/blocks/drop-menu"
 import { ChannelsList } from "~/components/blocks/sidebar-left/channels-list"
-import { useNavigation } from "@remix-run/react"
+import { useLocation  } from "@remix-run/react"
 import { useNotifBadgeStore } from "~/store/notif-badge-store"
 import { wc } from "~/lib/client"
 
@@ -28,19 +28,45 @@ export const LeftSidebarContent = (
 
     const [whatMenuActive, setWhatMenuActive] = useState('')
 
-    const navigation = useNavigation()
+    const location = useLocation()
  
 
     useEffect(() => {
-      if (navigation.location?.pathname === '/' || navigation.location?.pathname === '/~/trending' || navigation.location?.pathname === '/~/trending-frames' || navigation.location?.pathname === '/~/all-channels') {
+      if(!location?.pathname) return
+
+      if (location?.pathname === '/' || location?.pathname === '/~/trending' || location?.pathname === '/~/following') {
         setWhatMenuActive('home')
-      } else if (navigation.location?.pathname === '/~/bookmarks') {
+      } else if (location?.pathname === '/~/notifications') {
+        setWhatMenuActive('notifications')
+      } else if (location?.pathname?.startsWith('/~/inbox')) {
+        setWhatMenuActive('dc')
+      } else if (location?.pathname === '/~/explore') {
+        setWhatMenuActive('explore')
+      } else if (location?.pathname === '/~/bookmarks') {
         setWhatMenuActive('bookmarks')
-      } else if (navigation.location?.pathname === `/${mainUserData?.username}`) {
+      } else if (location?.pathname === `/${mainUserData?.username}` && mainUserData?.username) {
         setWhatMenuActive('profile')
+      } else{
+        setWhatMenuActive('')
       }
-    }, [mainUserData?.username, navigation.location?.pathname])
-    
+    }, [mainUserData?.username, location?.pathname])
+
+  const handleMenuNavigate = ({
+    isAuthNeeded = false,
+    path,
+    activeMenu
+  }: {
+    isAuthNeeded?: boolean,
+    path: string,
+    activeMenu: string
+  }) => {
+    if (isAuthNeeded && !isUserLoggedIn && !isConnectModalOpen) {
+      setConnectModalOpen(true)
+    } else {
+      setWhatMenuActive(activeMenu)
+      navigate(path)
+    }
+  }
 
   const handleBookmark = () => {
     if (!isUserLoggedIn && !isConnectModalOpen) {
@@ -65,47 +91,6 @@ export const LeftSidebarContent = (
       navigate(`/${mainUserData?.username}`)
   } 
 
-  const handleHome = () => {
-    if (whatMenuActive === 'home') return
-    setWhatMenuActive('home')
-    navigate('/')
-  }
-
-  const handleExplore = () => {
-    if(!isUserLoggedIn && !isConnectModalOpen) {
-      setConnectModalOpen(true)
-    } else {
-      setWhatMenuActive('explore')
-      navigate('/~/explore')
-    }
-  }
-
-  const handleDirectCast = () => {
-    if(!isUserLoggedIn && !isConnectModalOpen) {
-      setConnectModalOpen(true)
-    } else {
-      setWhatMenuActive('dc')
-      navigate('/~/inbox')
-    }
-  }
-
-  const handleSettings = () => {
-    if(!isUserLoggedIn && !isConnectModalOpen) {
-      setConnectModalOpen(true)
-    } else {
-      navigate('/~/settings')
-    }
-  }
-
-  const handleNotifications = () => {
-    if(!isUserLoggedIn && !isConnectModalOpen) {
-      setConnectModalOpen(true)
-    } else {
-      setWhatMenuActive('notifications')
-      navigate('/~/notifications')
-    }
-  }
-
   const handleAddAccount = () => {
     setAddAccountModalOpen(true)
   }
@@ -118,7 +103,11 @@ export const LeftSidebarContent = (
         aria-label="logo"
         tabIndex={0}
         onKeyDown={() => {}}
-        onClick={() => { navigate('/') }} className="w-8 h-8 ml-2 bg-red-600 rounded-lg flex items-center justify-center text-white font-bold mr-2
+        onClick={() => { () => handleMenuNavigate({
+          isAuthNeeded: false,
+          path: '/',
+          activeMenu: 'home'
+        })}} className="w-8 h-8 ml-2 bg-red-600 rounded-lg flex items-center justify-center text-white font-bold mr-2
         cursor-pointer
         ">
           FC</div>
@@ -126,43 +115,68 @@ export const LeftSidebarContent = (
           <Button variant="ghost" size="icon" onClick={toggleTheme}>
             {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
-          <Button variant="ghost" size="icon" onClick={handleSettings}>
+          <Button variant="ghost" size="icon" onClick={() => handleMenuNavigate({
+            isAuthNeeded: true,
+            path: '/~/settings',
+            activeMenu: 'settings'
+          })}>
             <Settings className="h-5 w-5" />
           </Button>
         </div>
       </div>
-      <Button variant="ghost" className={`justify-start mb-2 font-semibold w-full ${ whatMenuActive === 'home' ? 'dark:text-red-600 text-red-500 bg-zinc-200/30 dark:bg-zinc-600/30' : ''}`} onClick={handleHome}>
+      <Button variant="ghost" className={`justify-start mb-2 font-semibold w-full ${ whatMenuActive === 'home' ? 'dark:text-red-600 text-red-500 bg-zinc-200/30 dark:bg-zinc-600/30' : ''}`} onClick={() => handleMenuNavigate({
+        isAuthNeeded: false,
+        path: '/',
+        activeMenu: 'home'
+      })}>
         <Home className="h-5 w-5 mr-3" />
         Home
       </Button>
-      <Button variant="ghost" className={`justify-start mb-2 font-semibold w-full ${ whatMenuActive === 'notifications' ? 'dark:text-red-600 text-red-500 bg-zinc-200/30 dark:bg-zinc-600/30' : ''}`} onClick={handleNotifications}>
+      <Button variant="ghost" className={`justify-start mb-2 font-semibold w-full ${ whatMenuActive === 'notifications' ? 'dark:text-red-600 text-red-500 bg-zinc-200/30 dark:bg-zinc-600/30' : ''}`} onClick={() => handleMenuNavigate({
+        isAuthNeeded: true,
+        path: '/~/notifications',
+        activeMenu: 'notifications'
+      })}>
         <Bell className="h-5 w-5 mr-3" />
         Notifications
 
         {newNotificationsCount && newNotificationsCount > 0 && <div className=" bg-red-600 absolute flex items-center justify-center rounded-full shadow-sm xl:right-0 xl:top-auto xl:ml-0 xl:mr-2 xl:min-h-[14px] xl:w-auto xl:min-w-[14px] xl:px-[0.175rem] xl:py-[.025rem] top-1.5 h-2 w-2 bg-action-red ml-4"><span className="hidden text-[9px] font-normal xl:flex text-white">{newNotificationsCount}</span></div> || null}
       </Button>
-      <Button variant="ghost" className={`justify-start mb-2 font-semibold w-full ${ whatMenuActive === 'dc' ? 'dark:text-red-600 text-red-500 bg-zinc-200/30 dark:bg-zinc-600/30' : ''}`} onClick={handleDirectCast}>
+      <Button variant="ghost" className={`justify-start mb-2 font-semibold w-full ${ whatMenuActive === 'dc' ? 'dark:text-red-600 text-red-500 bg-zinc-200/30 dark:bg-zinc-600/30' : ''}`} onClick={() => handleMenuNavigate({
+        isAuthNeeded: true,
+        path: '/~/inbox',
+        activeMenu: 'dc'
+        })}>
         <MessageCircle className="h-5 w-5 mr-3" />
         Direct Casts
 
         {newDmsCount && newDmsCount > 0 && <div className=" bg-red-600 absolute flex items-center justify-center rounded-full shadow-sm xl:right-0 xl:top-auto xl:ml-0 xl:mr-2 xl:min-h-[14px] xl:w-auto xl:min-w-[14px] xl:px-[0.175rem] xl:py-[.025rem] top-1.5 h-2 w-2 bg-action-red ml-4"><span className="hidden text-[9px] font-normal xl:flex text-white">{newDmsCount}</span></div> || null}
       </Button>
-      <Button variant="ghost" className={`justify-start mb-2 font-semibold w-full ${ whatMenuActive === 'explore' ? 'dark:text-red-600 text-red-500 bg-zinc-200/30 dark:bg-zinc-600/30' : ''}`} onClick={handleExplore}>
+      <Button variant="ghost" className={`justify-start mb-2 font-semibold w-full ${ whatMenuActive === 'explore' ? 'dark:text-red-600 text-red-500 bg-zinc-200/30 dark:bg-zinc-600/30' : ''}`} onClick={() => handleMenuNavigate({
+        activeMenu: 'explore',
+        path: '/~/explore/users',
+        isAuthNeeded: false
+      })}>
         <Search className="h-5 w-5 mr-3" />
         Explore
       </Button>
-      {/* <Button variant="ghost" className="justify-start mb-2 w-full">
-        <Users className="h-5 w-5 mr-3" />
-        Invite
-      </Button> */}
-      <Button variant="ghost" className={`justify-start mb-2 font-semibold w-full ${ whatMenuActive === 'bookmarks' ? 'dark:text-red-600 text-red-500 bg-zinc-200/30 dark:bg-zinc-600/30' : ''}`} onClick={handleBookmark}>
+      <Button variant="ghost" className={`justify-start mb-2 font-semibold w-full ${ whatMenuActive === 'bookmarks' ? 'dark:text-red-600 text-red-500 bg-zinc-200/30 dark:bg-zinc-600/30' : ''}`} onClick={() => handleMenuNavigate({
+        activeMenu: 'bookmarks',
+        path: '/~/bookmarks',
+        isAuthNeeded: true
+      })}>
         <Bookmark className="h-5 w-5 mr-3" />
         Bookmarks
       </Button>
-      {/* <Button variant="ghost" className="justify-start mb-2 w-full">
-        <Zap className="h-5 w-5 mr-3" />
-        Warps
-      </Button> */}
+      <Button variant="ghost" className={`justify-start mb-2 font-semibold w-full ${ whatMenuActive === 'miniapps' ? 'dark:text-red-600 text-red-500 bg-zinc-200/30 dark:bg-zinc-600/30' : ''}`} onClick={() => handleMenuNavigate({
+        activeMenu: 'miniapps',
+        path: '/~/mini-apps',
+        isAuthNeeded: true
+      })}>
+        <Grid2x2 className="h-5 w-5 mr-3" />
+        Mini Apps
+      </Button>
+
       
          {isUserLoggedIn &&
          (<div className="flex items-center justify-start mb-2 w-full">

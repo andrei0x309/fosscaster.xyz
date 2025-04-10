@@ -44,16 +44,12 @@ export const getAllFidLikeCasts = async ({fid, limit = 15, cursor}: {fid: number
     return await wc.getAllFidLikeCasts({fid, limit, cursor})
 }
 
-export const getUserFollowingChannels = async ({fid, limit = 15, cursor}: {fid: number, limit?: number, cursor?: string}) => {
-    return await wc.getUserFollowingChannels({fid, limit, cursor})
+export const getUserFollowingChannels = async ({fid, limit = 50, cursor, forComposer}: {fid?: number, limit?: number, cursor?: string, forComposer?: boolean}) => {
+    return await wc.getUserFollowingChannels({fid, limit, cursor, forComposer})
 }
 
 export const getBookmarkedCasts = async ({limit = 15, cursor}: {limit?: number, cursor?: string} = {}) => {
     return await wc.getBookmarkedCasts({limit, cursor})
-}
-
-export const getDirectCastInbox = async ({limit = 15, cursor}: {limit?: number, cursor?: string} = {}) => {
-    return await wc.getDirectCastInbox({limit, cursor})
 }
 
 export const getNotifsUnseen = async () => {
@@ -108,6 +104,14 @@ export const deleteFollowChannel = async (channelKey: string) => {
     return await wc.deleteFollowChannel({channelKey})
 }
 
+export const follow = async (fid: string) => {
+    return await wc.follow(fid)
+}
+
+export const unfollow = async (fid: string) => {
+    return await wc.unfollow(fid)
+}
+
 export const onboarding = async (bearerHeader: string, timestamp: number) => {
     return await wc.onboarding(bearerHeader, timestamp)
 }
@@ -153,8 +157,24 @@ export const removeAvatar = async () => {
     return await wc.removeAvatar()
 }
 
-export const uploadAvatar = async (file: File) => {
-    return await wc.uploadAvatar(file)
+export const uploadImage = async ({file, doUploadAvatar = false}: {file: File, doUploadAvatar?: boolean}) => {
+    return await wc.uploadImage({ file, doUploadAvatar})
+}
+
+export const getDirectCastInbox = async ({limit = 15, cursor = '', category = 'default'}: {limit?: number, cursor?: string, category?: "default" | "request" } = {}) => {
+    return await wc.getDirectCastInbox({limit, cursor, category})
+}
+
+export const getDirectCastUsers = async ({q, limit = 15, cursor, excludeFids = []}: {q: string, limit?: number, cursor?: string, excludeFids?: number[]}) => {
+    return await wc.getDirectCastUsers({q, limit, cursor, excludeFids})
+}
+
+export const dcCreateGroup = async ({name, members}: {name: string, members: number[]}) => {
+    return await wc.dcCreateGroup({name, members})
+}
+
+export const dcGroupPhoto = async ({conversationId, photoUrl}: {conversationId: string, photoUrl: string}) => {
+    return await wc.dcGroupPhoto({conversationId, photoUrl})
 }
 
 export const getUserChannels = async ({fid, limit = 15, cursor}: {fid: number, limit?: number, cursor?: string}) => {
@@ -169,6 +189,30 @@ export const getNotifsByTab = async ({tab, limit = 15, cursor}: {tab: string, li
     return await wc.getNotifsByTab({tab, limit, cursor})
 }
 
-export const getCastThread = async ({castHash, limit = 15, cursor}: {castHash: string, limit?: number, cursor?: string}) => {
-    return await wc.getCastThread({castHash, limit, cursor})
+export const getCastThread = async ({castHash, limit = 15, username, cursor}: {castHash: string, limit?: number, username: string, cursor?: string}) => {
+    return await wc.getCastThread({castHash, limit, cursor, username})
+}
+
+export const searchSummary = async ({query}: {query: string}) => {
+    return await wc.searchSummary({query})
+}
+
+export const searcUsers = async ({query, limit = 15, cursor}: {query: string, limit?: number, cursor?: string}) => {
+    return await wc.searcUsers({query, limit, cursor})
+}
+
+export const searchCasts = async ({query, limit = 15, cursor}: {query: string, limit?: number, cursor?: string}) => {
+    return await wc.searchCasts({query, limit, cursor})
+}
+
+export const searchChannels = async ({query, limit = 15, cursor}: {query: string, limit?: number, cursor?: string}) => {
+    return await wc.searchChannels({query, limit, cursor})
+}
+
+export const getFavoriteFrames = async ({limit = 12, cursor}: {limit?: number, cursor?: string}) => {
+    return await wc.getFavoriteFrames({limit, cursor})
+}
+
+export const getTopFrames = async ({limit = 50, cursor}: {limit?: number, cursor?: string}) => {
+    return await wc.getTopFrames({limit, cursor})
 }

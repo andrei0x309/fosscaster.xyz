@@ -2,6 +2,8 @@
     content: attr(data-placeholder);
     color: #6b7280;
     pointer-events: none;
+    -webkit-user-modify: read-write-plaintext-only;
+    user-modify: read-write-plaintext-only;
 }
 
 @keyframes matrix {

@@ -20,8 +20,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body suppressHydrationWarning={true}>
-      <div id="app" className="mx-auto bg-white dark:bg-neutral-950">
+      <body suppressHydrationWarning={true} className="dark:bg-neutral-950 bg-white">
+      <div id="app" className="mx-auto">
         {children}
         </div>
         <ScrollRestoration />

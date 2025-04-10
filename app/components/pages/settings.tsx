@@ -42,7 +42,7 @@ import type { BrowserProvider } from 'ethers'
 import { 
   completeRegistration,
   removeAvatar,
-  uploadAvatar,
+  uploadImage,
   setProfile
 } from '~/lib/api'
 import { getFnameLastTransfer } from '~/lib/third-party'
@@ -125,7 +125,7 @@ export default function SettingsPage({className}: {className?: string}) {
           setLoading(false)
           return
         }
-        const uploadAvatarResult = await uploadAvatar(file)
+        const uploadAvatarResult = await uploadImage({file, doUploadAvatar: true})
         if (!uploadAvatarResult) {
           setError('Failed to upload avatar')
           setLoading(false)

@@ -8,7 +8,6 @@ import type { TWCUserByUsername } from '../types/wc-user-by-username';
 import type { TSendCastResult } from '../types/wc-send-cast-result';
 import type { TAllFidCasts } from '../types/wc-all-fid-casts';
 import type { TAllFidLikeCasts } from '../types/wc-all-fid-like-casts';
-import type { TUserChannelFollows } from '../types/wc-user-channel-follows'
 import type { TBookmarkedCasts } from '../types/wc-bookmarked-casts'
 import type { TWcProfileCasts } from '../types/wc-profile-casts'
 import type { TWCNotifsUnseen } from '../types/wc-notifs-unseen'
@@ -20,7 +19,15 @@ import type { TWCSignedKeyRequest } from '../types/wc-signed-key-request'
 import type { TWCNotifByType } from '../types/wc-notifications-by-tab'
 import type { TWCCNFollowersYouKnow } from '../types/wc-channel-followers-you-know'
 import type { WCUsernames } from '../types/wc-usernames'
-
+import type { TWCSearchSummary } from '../types/wc-search-summary'
+import type { TWCSearchUsers } from '../types/wc-search-users'
+import type { TWCSearchCasts } from '../types/wc-search-casts'
+import type { TWCSearchChannels } from '../types/wc-search-channels'
+import type { TWCDcUsers } from '../types/wc-dc-users'
+import type { TWCDcInbox } from '../types/wc-dc-inbox'
+import type { TWCFavoriteFrames } from '../types/wc-favorite-frames'
+import type { TWCTopFrames } from '../types/wc-top-frames'
+ 
 export class WarpCastWebAPI {
     private _version: string;
     private _apiEndpointBase: string;
@@ -42,7 +49,7 @@ export class WarpCastWebAPI {
 
     constructor(token?: string) {
         this._version = "0.0.2";
-        this._apiEndpointBase = "https://client.warpcast.com/v2";
+        this._apiEndpointBase = "https://api.warpcast.com/v2";
         if (token) {
             this._token = token;
             this.headers["authorization"] = `Bearer ${this._token}`;
@@ -331,19 +338,21 @@ export class WarpCastWebAPI {
     }
 
     public async getUserFollowingChannels ({
-        fid,
-        limit = 15,
-        cursor = ''
+        fid = 0,
+        limit = 50,
+        cursor = '',
+        forComposer = true
     }: {
-        fid: number,
-        limit: number,
-        cursor?: string
+        fid?: number,
+        limit?: number,
+        cursor?: string,
+        forComposer?: boolean
     }) {
-        const response = await fetch(`${this._apiEndpointBase}/user-following-channels?fid=${fid}&limit=${limit}${cursor ? `&cursor=${cursor}` : ''}`, {
+        const response = await fetch(`${this._apiEndpointBase}/user-following-channels?limit=${limit}&forComposer=${forComposer}${fid === 0 ? '': '&fid=' + fid }${cursor ? `&cursor=${cursor}` : ''}`, {
             method: 'GET',
             headers: this.headers
         });
-        return await response.json() as TUserChannelFollows
+        return await response.json() as TWCSearchChannels
     }
 
     public async getUserChannels ({
@@ -361,7 +370,120 @@ export class WarpCastWebAPI {
             method: 'GET',
             headers: this.headers
         });
-        return await response.json() as TUserChannelFollows
+        return await response.json() as TWCSearchChannels
+    }
+
+    public async dcGroupInvite ({
+        conversationId
+    }: {
+        conversationId: string,
+    }) {
+        /// https://client.warpcast.com/v2/direct-cast-group-invite
+        const response = await fetch(`${this._apiEndpointBase}/direct-cast-group-invite`, {
+            method: 'POST',
+            headers: this.headers,
+            body: JSON.stringify({
+                conversationId
+            })
+        });
+        return await response.json() as {
+            "result": {
+                "inviteCode": string,
+            }
+        }
+    }
+
+    public async dcDoCategorization ({category, conversationId}: {category: "deleted", conversationId: string}) {
+        // https://client.warpcast.com/v2/direct-cast-conversation-categorization
+        const response = await fetch(`${this._apiEndpointBase}/direct-cast-conversation-categorization`, {
+            method: 'POST',
+            headers: this.headers,
+            body: JSON.stringify({
+                category,
+                conversationId
+            })
+        });
+        return await response.json() as {
+            "result": {
+                "success": boolean,
+            }
+        }
+    }
+
+    public async dcCreateGroup({
+        name,
+        // description,
+        members
+    }: {
+        name: string,
+        // description: string,
+        members: number[]
+    }) {
+       
+        const response = await fetch(`${this._apiEndpointBase}/direct-cast-group`, {
+            method: 'PUT',
+            headers: this.headers,
+            body: JSON.stringify({
+                name,
+                participantFids: members
+            })
+        });
+        return await response.json() as  {
+            "result": {
+              "conversationId":  string,
+            }
+          }
+    }
+
+    public async dcGroupPhoto({
+        conversationId,
+        photoUrl
+    }: {
+        conversationId: string,
+        photoUrl: string
+    }) {
+        // https://client.warpcast.com/v2/direct-cast-group-photo
+        const response = await fetch(`${this._apiEndpointBase}/direct-cast-group-photo`, {
+            method: 'POST',
+            headers: this.headers,
+            body: JSON.stringify({
+                conversationId,
+                photoUrl
+            })
+        });
+        return await response.json() as {
+            "result": {
+                "success": boolean,
+            }
+        }
+    }
+
+    public async dcGroupAction({
+        action,
+        conversationId,
+        targetFid
+    }: {
+        action: "remove" | "add",
+        conversationId: string,
+        targetFid: number
+    }){
+        //https://client.warpcast.com/v2/direct-cast-group-membership
+        const response = await fetch(`${this._apiEndpointBase}/direct-cast-group-membership`, {
+            method: 'POST',
+            headers: this.headers,
+            body: JSON.stringify({
+                action,
+                conversationId,
+                targetFid
+            })
+        });
+
+        return await response.json() as {
+            "result": {
+                "success": boolean,
+            }
+        }
+
     }
 
     public async sendCast ({
@@ -585,15 +707,30 @@ export class WarpCastWebAPI {
         return await response.json();
     }
 
-    public async getDirectCastInbox ({ cursor = '', limit = 20 }: {
+    public async getDirectCastInbox ({ cursor = '', limit = 20, filter = '', category = 'default' }: {
         cursor?: string,
-        limit?: number
+        limit?: number,
+        filter?: ''
+        category?: 'default' | 'request'
     }) {
-        const response = await fetch(`${this._apiEndpointBase}/direct-cast-inbox?limit=${limit}&category=default${cursor ? `&cursor=${cursor}` : ''}`, {
+        const response = await fetch(`${this._apiEndpointBase}/direct-cast-inbox?limit=${limit}&category=${category}${filter ? `&filter=${filter}` : ''}${cursor ? `&cursor=${cursor}` : ''}`, {
             method: 'GET',
             headers: this.headers
         });
-        return await response.json() as TWcUserThreadItems
+        return await response.json() as TWCDcInbox
+    }
+
+    public async getDirectCastUsers ({ q, cursor = '', limit = 20, excludeFids=[] }: {
+        q: string,
+        cursor?: string,
+        limit?: number
+        excludeFids?: number[]
+    }) {
+        const response = await fetch(`${this._apiEndpointBase}/direct-cast-users?q=${q}&limit=${limit}&vNext=true&excludeFids=${excludeFids?.length ? excludeFids.join(','): '' }${cursor ? `&cursor=${cursor}` : ''}`, {
+            method: 'GET',
+            headers: this.headers
+        });
+        return await response.json() as TWCDcUsers
     }
 
     public async sendDirectCast ({ receiverFID, senderFID, type, message }: {
@@ -726,7 +863,7 @@ export class WarpCastWebAPI {
         return this._version;
     }
 
-    public async uploadAvatar (file: File) {
+    public async uploadImage ({file, doUploadAvatar = false}: { file: File, doUploadAvatar?: boolean }) {
         try {
         const getUploadData = await fetch(`${this._apiEndpointBase.replace('/v2', '/v1')}/generate-image-upload-url`, {
             method: 'POST',
@@ -740,7 +877,7 @@ export class WarpCastWebAPI {
 
         const data = await getUploadData.json()
         const { url, optimisticImageId } = data.result
-        const avatarUrl = `https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/${optimisticImageId}/original`
+        const imageUrl = `https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/${optimisticImageId}/original`
 
         const formData = new FormData();
         formData.append('file', file);
@@ -756,19 +893,21 @@ export class WarpCastWebAPI {
             return null
         }
 
+        if (doUploadAvatar) {
         const updateAvatar = await fetch(`${this._apiEndpointBase}/me`, {
             method: 'PATCH',
             headers: this.headers,
             body: JSON.stringify({
-                pfp: avatarUrl
+                pfp: imageUrl
             })
         });
 
         if(!updateAvatar.ok) {
             return null
         }
+    }
 
-        return avatarUrl
+        return imageUrl
     } catch (error) {
             console.error('Failed to upload avatar', error)
             return null
@@ -811,20 +950,112 @@ export class WarpCastWebAPI {
 
     // https://client.warpcast.com/v2/user-thread-casts?castHashPrefix=0xa2226213&username=dwr.eth&limit=15
 
-    getCastThread = async ({
+    public getCastThread = async ({
         castHash,
         limit = 15,
+        username,
         cursor = ''
     }: {
         castHash: string,
+        username: string,
         limit: number,
         cursor?: string
     }) => {
-        const response = await fetch(`${this._apiEndpointBase}/user-thread-casts?castHashPrefix=${castHash}&limit=${limit}${cursor ? `&cursor=${cursor}` : ''}`, {
+        const response = await fetch(`${this._apiEndpointBase}/user-thread-casts?castHashPrefix=${castHash}&username=${username}&limit=${limit}${cursor ? `&cursor=${cursor}` : ''}`, {
             method: 'GET',
             headers: this.headers
         });
         return await response.json() as TWcUserThreadItems
     }
 
+    public searchSummary = async ({
+        query,
+    }: {
+        query: string,
+    }) => {
+       const response = await fetch(`${this._apiEndpointBase}/search-summary?q=${query}&maxChannels=2&maxUsers=4&addFollowersYouKnowContext=false`, {
+            method: 'GET',
+            headers: this.headers
+        });
+        return await response.json() as TWCSearchSummary
+    }
+
+    public searcUsers = async ({
+        query,
+        limit = 15,
+        cursor = ''
+    }: {
+        query: string,
+        limit?: number,
+        cursor?: string
+    }) => {
+       const response = await fetch(`${this._apiEndpointBase}/search-users?q=${query}&excludeSelf=false&includeDirectCastAbility=false&limit=${limit}${cursor ? `&cursor=${cursor}` : ''}`, {
+            method: 'GET',
+            headers: this.headers
+        });
+        return await response.json() as TWCSearchUsers
+    }
+
+    public searchCasts = async ({
+        query,
+        limit = 15,
+        cursor = ''
+    }: {
+        query: string,
+        limit?: number,
+        cursor?: string
+    }) => {
+       const response = await fetch(`${this._apiEndpointBase}/search-casts?q=${query}&limit=${limit}${cursor ? `&cursor=${cursor}` : ''}`, {
+            method: 'GET',
+            headers: this.headers
+        });
+        return await response.json() as TWCSearchCasts
+    }
+
+    public searchChannels = async ({
+        query,
+        limit = 15,
+        cursor = ''
+    }: {
+        query: string,
+        limit?: number,
+        cursor?: string
+    }) => {
+        // https://client.warpcast.com/v2/search-channels?q=ss&prioritizeFollowed=false&forComposer=false&limit=2
+       const response = await fetch(`${this._apiEndpointBase}/search-channels?q=${query}&prioritizeFollowed=false&forComposer=false&limit=${limit}${cursor ? `&cursor=${cursor}` : ''}`, {
+            method: 'GET',
+            headers: this.headers
+        });
+        return await response.json() as TWCSearchChannels
+    }
+
+    public getFavoriteFrames = async ({
+        limit = 12,
+        cursor = ''
+    }: {
+        limit?: number,
+        cursor?: string
+    }) => {
+        // /v1/favorite-frames?limit=20
+       const response = await fetch(`${this._apiEndpointBase.replace('v2', 'v1')}/favorite-frames?limit=${limit}${cursor ? `&cursor=${cursor}` : ''}`, {
+            method: 'GET',
+            headers: this.headers
+        });
+        return await response.json() as TWCFavoriteFrames
+    }
+
+    public getTopFrames = async ({
+        limit = 50,
+        cursor = ''
+    }: {
+        limit?: number,
+        cursor?: string
+    }) => {
+        // /v1/top-frameapps?limit=20
+       const response = await fetch(`${this._apiEndpointBase.replace('v2', 'v1')}/top-frameapps?limit=${limit}${cursor ? `&cursor=${cursor}` : ''}`, {
+            method: 'GET',
+            headers: this.headers
+        });
+        return await response.json() as TWCTopFrames
+    }
 }

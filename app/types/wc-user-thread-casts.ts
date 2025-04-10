@@ -1,6 +1,14 @@
 export interface TWcUserThreadItems {
+    result: TWcUserThreadItemsData
+}
+export interface TWcUserThreadItemsData {
     casts:            TtCast[];
     hasHiddenReplies: boolean;
+    next?:             Next;
+}
+
+export interface Next {
+    cursor: string;
 }
 
 export interface TtCast {

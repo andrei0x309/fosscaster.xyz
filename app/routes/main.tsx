@@ -3,11 +3,13 @@ import { Main } from "~/components/pages/main";
 import { Shell } from "~/components/template/shell";
 import { HydrateFallback } from "~/components/atomic/hydratation-fallback";
 import { useMainStore } from "~/store/main";
-import { lazy, Suspense, useState, useEffect, useRef } from 'react';
+import { lazy, Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from "@remix-run/react";
 import { useNotifBadgeStore } from "~/store/notif-badge-store"
 import { getNotifsUnseen } from '~/lib/api'
 import { addNotificationBadge, removeNotificationBadge } from '~/lib/misc'
+import { ComposeModal } from "~/components/functional/modals/compose-cast"
+
 
 const ProfilePage = lazy(() => import('~/components/pages/profile'))
 const BookmarkPage = lazy(() => import('~/components/pages/bookmarks'))
@@ -19,6 +21,8 @@ const AboutPage = lazy(() => import('~/components/pages/about'))
 const NotFoundPage = lazy(() => import('~/components/pages/404'))
 const ChannelPage = lazy(() => import('~/components/pages/channel'))
 const ConversationPage = lazy(() => import('~/components/pages/conversation'))
+const SearchPage = lazy(() => import('~/components/pages/search'))
+const MiniAppsPage = lazy(() => import('~/components/pages/mini-apps'))
 // const SearchPage = lazy(() => import('~/components/pages/search'))
 // const ChannelPage = lazy(() => import('~/components/pages/channel'))
 
@@ -42,6 +46,7 @@ export default function Index() {
   const [page, setPage] = useState('home')
   const [feedInitial, setFeedInitial] = useState('home')
   const [pageData , setPageData] = useState('')
+  const [additionalPageData, setAdditionalPageData] = useState('')
   const [profileUser, setProfileUser] = useState('')
   const [is404, setIs404] = useState(false)
   const { setRightSidebarVisible, isUserLoggedIn } = useMainStore()
@@ -85,6 +90,15 @@ export default function Index() {
     }
   }, [isUserLoggedIn, setNewNotificationsCount, setNewDmsCount])
 
+  const checkUserLooggedIn = useCallback(() => {
+    if (!isUserLoggedIn) {
+      setPage('home')
+      setFeedInitial('trending')
+      return false
+    }
+    return true
+  }, [isUserLoggedIn])
+
   useEffect(() => {
     setIs404(false)
     setPageData('')
@@ -106,7 +120,8 @@ export default function Index() {
         } else if (splitsLength === 3 && splits[2] === 'likes') {
           setPageData('likes')
         } else if (splitsLength === 3 && splits[2]?.startsWith('0x')){
-          setPageData(splits[2])
+          setPageData(splits[1])
+          setAdditionalPageData(splits[2])
           setPage('conversations')
         } else {
           setIs404(true)
@@ -117,51 +132,38 @@ export default function Index() {
       const channelId = splits[3]
       setPageData(channelId)
     }else if (location?.pathname === '/~/bookmarks') {
-      if(!isUserLoggedIn) {
-        setPage('home')
-        setFeedInitial('trending')
-        return
+      checkUserLooggedIn() && setPage('bookmarks')
+    } else if (location?.pathname?.startsWith('/~/explore')) {
+      if(checkUserLooggedIn()) {
+        const page = location?.pathname?.split('~/explore/')[1].replace('/', '')
+        setPage('explore')
+        setPageData(page)
       }
-      setPage('bookmarks')
-    } else if (location?.pathname === '/~/explore') {
-      if(!isUserLoggedIn) {
-        setPage('home')
-        setFeedInitial('trending')
-        return
-      }
-      setPage('explore')
     } else if (location?.pathname === '/~/notifications') {
-      if(!isUserLoggedIn) {
-        setPage('home')
-        setFeedInitial('trending')
-        return
-      }
-      setPage('notifications')
+      checkUserLooggedIn() && setPage('notifications')
+    } else if (location?.pathname === '/~/mini-apps') {
+      checkUserLooggedIn() && setPage('mini-apps')
     } else if (location?.pathname === '/~/inbox') {
-      if(!isUserLoggedIn) {
-        setPage('home')
-        setFeedInitial('trending')
-        return
+      if(checkUserLooggedIn()) {
+        setRightSidebarVisible(false)
+        setPage('inbox')
       }
-      setRightSidebarVisible(false)
-      setPage('inbox')
-    } else if (location?.pathname === '/~/settings') {
-      if(!isUserLoggedIn) {
-        setPage('home')
-        setFeedInitial('trending')
-        return
+    } else if (location?.pathname?.startsWith('/~/search')) {
+      setPage('search')
+      // get query q from url use useSearchParams
+      const searchParams = new URLSearchParams(location?.search)
+      const q = searchParams.get('q') ?? ''
+      const searchType = location?.pathname?.split('search/')[1].split('?')[0]
+      setPageData(q)
+      setAdditionalPageData(searchType ?? 'top')
+    }else if (location?.pathname === '/~/settings') {
+      if(checkUserLooggedIn()) {
+        setRightSidebarVisible(false)
+        setPage('settings')
       }
-      setRightSidebarVisible(false)
-      setPage('settings')
-    } else if( location?.pathname === '/~/trending') {
+    } else if( ['/~/trending', '/~/following', '/~/fc-oss', '/~/politics', '/~/cryptoleft'].includes(location?.pathname)) {
       setPage('home')
-      setFeedInitial('trending')
-    } else if( location?.pathname === '/~/trending-frames') {
-      setPage('home')
-      setFeedInitial('trending-frames')
-    } else if( location?.pathname === '/~/all-channels') {
-      setPage('home')
-      setFeedInitial('all-channels')
+      setFeedInitial(location?.pathname?.split('/~/')[1])
     } else if( location?.pathname === '/~/about') {
       setPage('about')
     } else {
@@ -172,7 +174,7 @@ export default function Index() {
       setRightSidebarVisible(true)
     }
 
-  }, [location?.pathname, location, page, feedInitial, setRightSidebarVisible, isUserLoggedIn]);
+  }, [location?.pathname, location, page, feedInitial, setRightSidebarVisible, isUserLoggedIn, checkUserLooggedIn]);
 
  
   return (
@@ -184,12 +186,15 @@ export default function Index() {
         { page === 'explore' && !is404 ? <ExplorePage key={4} /> : null }
          { page === 'notifications' && !is404 ? <NotificationsPage key={5} /> : null }
          { page === 'inbox' && !is404  ? <InboxPage key={6} /> : null }
-         { page === 'settings' && !is404  ? <SettingsPage key={7} /> : null }
-         {page === 'channel' && !is404  ? <ChannelPage key={8} channelId={pageData} /> : null}
-         { page === 'conversations' && !is404 ? <ConversationPage key={9} hash={pageData} /> : null }
-         {page === 'about' && !is404 ? <AboutPage key={10} /> : null}
+         {page === 'search' && !is404 ? <SearchPage key={7} query={pageData} searchType={additionalPageData} /> : null }
+         { page === 'settings' && !is404  ? <SettingsPage key={8} /> : null }
+         {page === 'channel' && !is404  ? <ChannelPage key={9} channelId={pageData} /> : null}
+         { page === 'conversations' && !is404 ? <ConversationPage key={10} hash={additionalPageData} username={pageData} /> : null }
+         {page === 'about' && !is404 ? <AboutPage key={11} /> : null}
+         {page === 'mini-apps' && !is404 ? <MiniAppsPage key={12} /> : null}
         {is404 && <NotFoundPage key={11} />}
       </Suspense>
+      <ComposeModal />
     </Shell>
   );
 }

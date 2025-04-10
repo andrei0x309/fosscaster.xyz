@@ -39,20 +39,24 @@ export function Main({ initialFeed, className = '' }: { initialFeed?: string, cl
   }, [setFeedLoading, setFeed, setIsInitialLoad, isInitialLoad])
 
   useEffect(() => {
-    let localCurrentFeed = ''
     const isSetToken = isTokenSet()
     if (initialFeed) {
       setCurrentFeed(initialFeed)
-      localCurrentFeed = initialFeed
-    } if(!isUserLoggedIn && !initialFeed) {
+    } else if(!isUserLoggedIn && !initialFeed) {
       setCurrentFeed('trending')
-      localCurrentFeed = 'trending'
     } else if(isUserLoggedIn && !initialFeed && isSetToken) {
       setCurrentFeed('home')
-      localCurrentFeed = 'home'
     }
-    fetchData(localCurrentFeed)
-  }, [isUserLoggedIn, initialFeed, fetchData])
+  }, [isUserLoggedIn, initialFeed])
+
+  useEffect(() => {
+    if (currentFeed) {
+      if(currentFeed === 'home' && !isUserLoggedIn) {
+        return
+      }
+      fetchData(currentFeed);
+    }
+  }, [currentFeed, fetchData, isUserLoggedIn]);
 
   const loadMore = async () => {
     setFeedLoading(true)
@@ -90,15 +94,14 @@ export function Main({ initialFeed, className = '' }: { initialFeed?: string, cl
 
            <CastHeader title='Home' />
 
-            { currentFeed && (<Tabs defaultValue={currentFeed} className="w-full">
+            { currentFeed && (<Tabs value={currentFeed} className="w-full">
               <TabsList className="w-full justify-start">
                 {isUserLoggedIn && <TabsTrigger value="home" onClick={() => handleFeedChange('home')}>Home</TabsTrigger>}
+                {isUserLoggedIn && <TabsTrigger value="following" onClick={() => handleFeedChange('following')}>Following</TabsTrigger> }
+                {!isUserLoggedIn && <TabsTrigger value="politics" onClick={() => handleFeedChange('politics')}>Politics</TabsTrigger> }
+                {!isUserLoggedIn && <TabsTrigger value="fc-oss" onClick={() => handleFeedChange('fc-oss')}>FC FOSS</TabsTrigger> }
+                {!isUserLoggedIn && <TabsTrigger value="cryptoleft" onClick={() => handleFeedChange('cryptoleft')}>CryptoLeft</TabsTrigger> }
                 <TabsTrigger value="trending" onClick={() => handleFeedChange('trending')}>Trending</TabsTrigger>
-                <TabsTrigger value="trending" onClick={() => handleFeedChange('trending')}>Trending</TabsTrigger>
-                
-                {/** getFeed */}
-                <TabsTrigger value="trending-frames" onClick={() => handleFeedChange('trending-frames')}>Frames</TabsTrigger>
-                <TabsTrigger value="all-channels" onClick={() => handleFeedChange('all-channels')}>All Channels</TabsTrigger>
               </TabsList>
             </Tabs> ) }
           </div>

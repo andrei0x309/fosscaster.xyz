@@ -1,4 +1,4 @@
-import { ResultCast } from '../wc-all-fid-casts'
+import { Item, CastElement } from '../wc-feed-items'
 
 export type T_USER_DATA = {
     authToken?: string
@@ -13,8 +13,21 @@ export type T_USER_DATA = {
 }
 
 export type T_MODAL_DATA = {
-    reply?: ResultCast | null
-    quote?: ResultCast | null
+    reply?: Item | null
+    quote?: CastElement | null
+}
+
+
+export type T_MINI_APP_DATA = {
+    homeUrl: string
+    name: string
+    splashImageUrl?: string
+    isInstalled?: boolean
+    iconUrl?: string
+    author?: {
+        username: string
+        avatarUrl: string
+    }
 }
 
 export type MainState = {
@@ -32,6 +45,9 @@ export type MainState = {
     isRightSidebarVisible: boolean
     isComposeModalOpen: boolean
     composeModalData: T_MODAL_DATA | null
+    isDcModalOpen: boolean
+    dcModalPage: string
+    miniAppToOpen: null  | T_MINI_APP_DATA
     navigate: (_a: string | number) => void
     toggleDarkMode: () => void
     setIsTablet: (a: boolean) => void
@@ -47,7 +63,11 @@ export type MainState = {
     setLightBoxOpen: (a: boolean) => void
     setNavigate: (a: (_a: string | number) => void) => void
     setRightSidebarVisible: (a: boolean) => void
-    setComposeModalOpen: (a: boolean, data?: T_MODAL_DATA) => void
+    setComposeModalOpen: (a: boolean) => void
+    setComposeModalData: (data: T_MODAL_DATA) => void
+    setDcModalOpen: (a: boolean) => void
+    setDcModalPage: (a: string) => void
+    openMiniApp:(a: null | T_MINI_APP_DATA) => void
 }
 
 export type T_META_DATA = { title: string; description: string; keywords: string }

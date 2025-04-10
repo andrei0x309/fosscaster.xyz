@@ -18,6 +18,9 @@ export const useMainStore = create<MainState>()(subscribeWithSelector((set) => (
     isRightSidebarVisible: true,
     isComposeModalOpen: false,
     composeModalData: null,
+    isDcModalOpen: false,
+    dcModalPage: '',
+    miniAppToOpen: null,
     navigate: () => {},
     toggleDarkMode: () => set((state) => ({ isDarkMode: !state.isDarkMode })),
     setIsTablet: (a) => set(() => ({ isTablet: a })),
@@ -33,10 +36,19 @@ export const useMainStore = create<MainState>()(subscribeWithSelector((set) => (
     setLightBoxOpen: (a) => set(() => ({ lightBoxOpen: a })),
     setNavigate: (a) => set(() => ({ navigate: a })),
     setRightSidebarVisible: (a) => set(() => ({ isRightSidebarVisible: a })),
-    setComposeModalOpen: (a, data = {
-        reply: null,
-        quote: null,
-    }) => set(() => ({ isComposeModalOpen: a, composeModalData: data })),
+    setComposeModalOpen: (a) => set(() => {
+        if(a === false) return {
+            composeModalData: null,
+            isComposeModalOpen: false
+        }
+        return {
+            isComposeModalOpen: true
+        }
+    }),
+    setComposeModalData: (a) => set(() => ({ composeModalData: a })),
+    setDcModalOpen: (a) => set(() => ({ isDcModalOpen: a})),
+    setDcModalPage: (a) => set(() => ({ dcModalPage: a })),
+    openMiniApp:(a) => set(() => ({ miniAppToOpen: a })),
 })))
 
 export const setInitialState = () => {

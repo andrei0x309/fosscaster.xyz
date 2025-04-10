@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useCallback } from 'react'
 import { useMainStore, setInitialState } from "~/store/main"
 import { LeftSidebar } from "~/components/template/left-sidebar"
 import { RightSidebar } from "~/components/template/right-sidebar"
+import { ModalManager } from  "~/components/functional/mini-app-manager"
 
 import { SignInOrSignUpModal } from "~/components/functional/modals/sign-or-register-modal"
 
@@ -58,6 +59,7 @@ export const Shell = React.memo(function Shell ({ children, noLeftSidebar = fals
         <div className="container mx-auto min-h-full flex">
         <SignInOrSignUpModal />
         <LightBoxModal />
+        <ModalManager />
         <div className={` bg-white dark:bg-neutral-950 flex min-h-screen flex-row justify-center`}>
           <LeftSidebar className={noLeftSidebar ? "hidden" : ""} />
 

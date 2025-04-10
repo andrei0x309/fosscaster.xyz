@@ -82,14 +82,6 @@ export function BookmarkPages({className = ''}: {className?: string}) {
   }
 
 
-  const handleClickCast = () => {
-    if(!isUserLoggedIn) {
-      setConnectModalOpen(true)
-      return
-    }
-    setComposeModalOpen(true)
-  }
-  
   return (
 
     // <main className="h-full w-full shrink-0 justify-center sm:mr-4 sm:w-[540px] lg:w-[680px]">
@@ -98,22 +90,8 @@ export function BookmarkPages({className = ''}: {className?: string}) {
 
       <main className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
         <div className="h-full min-h-screen">
-        <div className="sticky dark:bg-neutral-950 bg-white top-0 z-10 flex w-full border-b-[1px] bg-app border-default h-14 p-2 ">
-             {/* <div className="flex items-center justify-between">
-                <Button variant="ghost" size="icon" className=' mr-2' >
-                    <ArrowLeft className="h-6 w-6" onClick={() => navigate(-1)} />
-                </Button>
-                <span className="opacity-88">Bookmarks</span>
-                </div>
-              <div className="flex items-center justify-end flex-auto h-10">
-                <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={handleClickCast}>
-                  <PenSquare className="h-4 w-4 mr-2" />
-                  Cast
-                </Button>
-                <ComposeModal isOpen={isComposeModalOpen} setOpen={setComposeModalOpen} />
-              </div> */}
-              <CastHeader title='Bookmarks' hasBackButton={true} />
-      </div>
+        <CastHeader title='Bookmarks' hasBackButton={true} />
+  
 
       
                 {/* Feed */}

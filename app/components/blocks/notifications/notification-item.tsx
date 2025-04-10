@@ -72,7 +72,7 @@ export const NotificationItem = ({ notification }: { notification: NotificationI
       </div>
     </div>: ''}
 
-    { notification.type === 'cast-reaction' ?
+{ notification.type === 'cast-reaction' ?
 
 <div className="w-full mx-auto px-4 border-b-[1px] border-neutral-400/50 pb-2">
 <div className="flex flex-col space-y-3">

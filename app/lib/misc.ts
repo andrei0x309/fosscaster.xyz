@@ -1,6 +1,6 @@
 export const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-export const timeAgo = (date: string) => {
+export const timeAgo = (date: string | number) => {
 
     const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
     let interval = seconds / 31536000;
@@ -68,4 +68,10 @@ export function addNotificationBadge() {
     newLink.rel = 'shortcut icon';
     newLink.href = '/favicon.png';
     document.head.appendChild(newLink);
+  }
+
+  export function getStringByteLength(str: string): number {
+    const encoder = new TextEncoder();
+    const encodedBytes: Uint8Array = encoder.encode(str);
+    return encodedBytes.byteLength;
   }

@@ -1,7 +1,7 @@
 'use client'
 
 import { DialogTitle } from "@radix-ui/react-dialog"
-import { Dialog, DialogContent, DialogDescription } from "~/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription} from "~/components/ui/dialog"
 
 export function Modal({ isOpen, setIsOpen, children, dialogTitleText = '', preventClose = false, className = '' } : 
   { isOpen: boolean, setIsOpen: (value: boolean) => void, children: React.ReactNode, dialogTitleText?: string, preventClose?: boolean, className?: string }) {
@@ -35,7 +35,7 @@ export function Modal({ isOpen, setIsOpen, children, dialogTitleText = '', preve
           e.preventDefault()
         }
       }}
-      className={`sm:max-w-[600px] dark:bg-[#111] dark:text-teal-50  modal-dialog ${className}`} aria-labelledby="modal-title">
+      className={`sm:max-w-[600px] dark:bg-[#111] dark:text-teal-50 modal-dialog ${className}`} aria-labelledby="modal-title">
       <DialogTitle className="text-lg font-bold">{dialogTitleText}</DialogTitle>
       <DialogDescription className="hidden"></DialogDescription>
 

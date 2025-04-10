@@ -1,6 +1,6 @@
 import type { MetaFunction } from "@remix-run/node";
 import { Shell } from "~/components/template/shell"
-import { DirectCastInbox } from "~/components/pages/inbox"
+import { DirectCastInbox } from "~/components/pages/inbox-2"
 
 export const meta: MetaFunction = ({ params }) => {
    

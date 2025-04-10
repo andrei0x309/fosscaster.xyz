@@ -13,15 +13,15 @@ import { ScrollArea } from "~/components/ui/scroll-area"
 
 
 const defaultChannelsIds = [
-    'politics',
+    'fc-oss',
     'cryptoleft',
-    'yup',
+    'politics',
+    'dev',
+    'fc-devs',
     'farcasterunion',
     'no-channel',
     'random',
-    'six',
-    'tavern',
-    'fc-oss'
+    'six'
 ]
 
 export const ChannelsList = () =>  {

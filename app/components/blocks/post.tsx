@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
-import { MoreHorizontal, MessageCircle, Repeat2, Heart, MoreVertical, BookmarkIcon, Share2, Delete } from 'lucide-react';
+import { MoreHorizontal, MessageCircle, Repeat2, Heart, MoreVertical, BookmarkIcon, Share2, Delete, ExternalLink } from 'lucide-react';
 import { timeAgo } from '~/lib/misc';
 import { Link } from '@remix-run/react'
 import { PopOverMenu, PopOverMenuItem } from "~/components/blocks/drop-menu"
@@ -16,14 +16,17 @@ import {
   removeFromBookmark
  } from '~/lib/api';
 import { Badge } from '~/components/ui/badge';
-import { VideoJS } from '~/components/blocks/video' 
+import { VideoJS } from '~/components/blocks/video'
+import { MiniAppInCast } from '~/components/blocks/cast/mini-app-in-cast';
+import { QoutedCast } from '~/components/blocks/cast/qouted-cast';
+import { ImageEmbeds } from '~/components/blocks/cast/images-embeds';
 
 type TCast = Item | Record<string, any>
 
 const acctionClasses = ['action', 'video-js']
 
-export const Post = ({ item, i } : { item: TCast, i: number }) => {
-  const { mainUserData, setLightBoxOpen, setLightBoxSrc, navigate } = useMainStore()
+export const Post = ({ item, i, isComposeReply = false } : { item: TCast, i: number, isComposeReply?: boolean }) => {
+  const { mainUserData, navigate, setComposeModalData, isUserLoggedIn, setConnectModalOpen, setComposeModalOpen } = useMainStore()
   const { sendDeleteCast } = useDeleteCastEvent()
  
   const [isOwnCast, setIsOwnCast] = useState(false)
@@ -35,19 +38,22 @@ export const Post = ({ item, i } : { item: TCast, i: number }) => {
   const [isBookmarked, setIsBookmarked] = useState(cast?.viewerContext?.bookmarked)
   const [isBookmarkLoading, setIsBookmarkLoading] = useState(false)
 
-  const onImageClick = (src: string) => {
-    setLightBoxSrc(src)
-    setLightBoxOpen(true)
-  }
-
+  const [miniApps, setMiniApps] = useState([] as Item['cast']['embeds']['urls'][number]['openGraph']['frameEmbedNext'][])
+  const [qoutedCasts, setQoutedCasts] = useState([] as Item['cast']['embeds']['casts'])
+ 
   const deleteCast = async () => {
     await apiDeleteCast(cast.hash)
     sendDeleteCast({ hash: cast.hash })
   }
 
+  const goToWarpcast = () => {
+    window.open(`https://warpcast.com/${cast.author.username}/${cast.hash.slice(0,10)}`, '_blank')
+  }
+
   useEffect(() => {
     setCast(item.cast)
-    if (cast?.author.username === mainUserData?.username) {
+    parseEmbeds(item?.cast?.embeds)
+    if (mainUserData?.username && cast?.author?.username === mainUserData?.username) {
       setIsOwnCast(true)
     }
   }, [cast, item, mainUserData?.username])
@@ -57,7 +63,7 @@ export const Post = ({ item, i } : { item: TCast, i: number }) => {
     let parseKeyCounter = 0
     const renderElements = [] as JSX.Element[]
     let remaingText = text
-    const regex = /(@[a-zA-z-.0-9]+)/g
+    const regex = /(?:^|\s)(@[a-zA-Z-.0-9]+)(?!\S)/g
     const mentions = text.match(regex)
     if (mentions) {
       mentions.forEach((mention) => {
@@ -80,7 +86,7 @@ export const Post = ({ item, i } : { item: TCast, i: number }) => {
     }
     // Parse links 
     const newRenderElements = [] as JSX.Element[]
-    const linkRegex = /.*?(https?:\/\/[a-zA-Z0-9./\-?&%:=_]+).*?/g
+    const linkRegex = /.*?(https?:\/\/[a-zA-Z0-9./\-?&%:=_#@]+).*?/g
     renderElements.forEach((element) => {
       parseKeyCounter++
       if(element.type !== 'span') {
@@ -100,8 +106,6 @@ export const Post = ({ item, i } : { item: TCast, i: number }) => {
           parseKeyCounter++
           text = after
         })
-      } else {
-        newRenderElements.push(element)
       }
       if (text) {
         parseKeyCounter++
@@ -109,6 +113,30 @@ export const Post = ({ item, i } : { item: TCast, i: number }) => {
       }
     })
     return newRenderElements
+  }
+
+  const parseEmbeds = (embeds: Item['cast']['embeds']) => {
+    if (!embeds) return
+    const foundMiniApps = [] as Item['cast']['embeds']['urls'][number]['openGraph']['frameEmbedNext'][]
+    const foundQoutedCasts = [] as Item['cast']['embeds']['casts']
+
+      embeds?.urls?.forEach((url) => {
+        if (url.openGraph.frameEmbedNext) {
+          foundMiniApps.push(url.openGraph.frameEmbedNext)
+        }
+      })
+
+      embeds?.casts?.forEach((cast) => {
+        foundQoutedCasts.push(cast)
+      })
+      
+      if(foundMiniApps.length) {
+        setMiniApps(foundMiniApps)
+      }
+
+      if(foundQoutedCasts.length) {
+        setQoutedCasts(foundQoutedCasts)
+      }
   }
 
   const goToCast = (e: React.MouseEvent) => {
@@ -126,12 +154,11 @@ export const Post = ({ item, i } : { item: TCast, i: number }) => {
     }
     if (parents.find((parent) => acctionClasses.some((className) => parent.classList.contains(className)))) return
 
-
-    console.log(e.target)
     navigate(`/${cast.author.username}/${cast.hash.slice(0,10)}`)
   }
 
   const onLike = async () => {
+    if(!checkedLogin()) return
     if (isLikeLoading) return
     setIsLikeLoading(true)
     try {
@@ -148,7 +175,7 @@ export const Post = ({ item, i } : { item: TCast, i: number }) => {
   }
 
   const onBookmark = async () => {
-    console.log('bookmark')
+    if(!checkedLogin()) return
     if (isBookmarkLoading) return
     setIsBookmarkLoading(true)
     try {
@@ -177,11 +204,28 @@ export const Post = ({ item, i } : { item: TCast, i: number }) => {
     }
   }
 
+  const checkedLogin = () => {
+     if(!isUserLoggedIn) {
+       setConnectModalOpen(true)
+       return false
+     }
+     return true
+  }
+
+  const doReplyCast = () => {
+    if(!checkedLogin()) return
+    setComposeModalData({
+      reply: item as Item
+    })
+    setComposeModalOpen(true)
+  }
+
 
   return (
-    cast && <div style={{ wordBreak: 'break-word' }} className="p-4 hover:bg-neutral-100 dark:hover:bg-neutral-900 border-b border-neutral-400/50" onClick={goToCast} tabIndex={0} role='button' aria-hidden="true">
-                  <div className="flex space-x-4">
-                    <Avatar className="hover:border-2">
+    cast && <div style={{ wordBreak: 'break-word' }} className={`p-4 hover:bg-neutral-100 dark:hover:bg-neutral-900 border-neutral-400/50 ${!isComposeReply ? 'border-b': ''}`} onClick={!isComposeReply? goToCast: () => {}} tabIndex={0} role='button' aria-hidden="true">
+                  <div className="flex space-x-4 relative">
+                  { isComposeReply && <div className="absolute w-0.5 dark:bg-neutral-800 bg-neutral-300 left-[19px] top-10 bottom-[0%]"></div> }
+                    <Avatar className={`hover:border-2 ${isComposeReply? '!m-0': ''}`}>
                       <Link to={`/${cast.author.username}`}>
                       <AvatarImage src={cast.author.pfp.url} alt={`User ${i+1}`} />
                       <AvatarFallback>{cast.author.displayName.slice(0,2)}</AvatarFallback>
@@ -201,19 +245,22 @@ export const Post = ({ item, i } : { item: TCast, i: number }) => {
                         </div>
 
                         <div className="flex items-center space-x-2">
-                        <PopOverMenu 
+                        {!isComposeReply && <PopOverMenu 
                           trigger={<Button variant="ghost" size="sm">
                             <MoreHorizontal className="h-4 w-4" />
                             <span className="sr-only">More options</span>
                           </Button>}
                           content= {
                             <>
-                            {isOwnCast && <PopOverMenuItem onClick={deleteCast}>
+                            {isOwnCast && <PopOverMenuItem className="cursor-pointer" onClick={deleteCast}>
                               <Delete className="h-4 w-4 mr-1" />
                               Delete</PopOverMenuItem>}
+                              <PopOverMenuItem className="cursor-pointer" onClick={goToWarpcast}>
+                              <ExternalLink className="h-4 w-4 mr-1" />
+                              View on Warpcast</PopOverMenuItem>
                             
                             </>
-                          } />
+                          } /> }
                                                   {cast?.tags?.[0]?.id ? 
                         
                         <Badge variant="outline" className="text-neutral-500" onClick={() => navigate(`/~/channel/${cast?.tags?.[0]?.id}`)}>
@@ -234,21 +281,16 @@ export const Post = ({ item, i } : { item: TCast, i: number }) => {
                         </div>
                       )}
                                             
+                      <ImageEmbeds images={cast?.embeds?.images} />
+                  
 
-                <div className="flex flex-wrap relative min-w-0 max-w-full border-default w-full justify-between rounded-lg">
-                  { cast.embeds?.images?.map((img, i: number) =>
-                    <img key={`${i}${img.url.slice(-1. -10)}`} 
-                    src={img.url as string} 
-                    style={{ flex: '0 0 auto', width: `${(100 /  (cast.embeds?.images?.length ?? 1) - 1)}%` }} 
-                    alt={img.alt as string} className={`relative cursor-pointer object-cover object-left-top bg-overlay-faint max-h-[30rem] p-[2px] border`} 
-                    onClick={() => onImageClick(img.url as string)} aria-hidden="true"
-                    />
-                  )}
-                </div>
+                {miniApps?.length ? miniApps.map((app, i) => <MiniAppInCast key={i} app={app} />) : null}
+
+                {qoutedCasts?.length ? qoutedCasts.map((cast, i) => <QoutedCast key={i} cast={cast} />) : null}
       
-                      <div className="mt-2 flex items-center justify-between text-neutral-500">
+                      {!isComposeReply && <div className="mt-2 flex items-center justify-between text-neutral-500">
                         <div className="flex items-center space-x-4">
-                          <Button variant="ghost" size="sm" className="text-neutral-500 action">
+                          <Button variant="ghost" size="sm" className="text-neutral-500 action" onClick={doReplyCast}>
                             <MessageCircle className="h-4 w-4 mr-1" />
                             <span className="text-neutral-500">{cast.replies.count}</span>
                             <span className="sr-only">Comments</span>
@@ -279,6 +321,7 @@ export const Post = ({ item, i } : { item: TCast, i: number }) => {
                           </Button>
                         </div>
                       </div>
+                      }
                     </div>
                   </div>
                 </div>

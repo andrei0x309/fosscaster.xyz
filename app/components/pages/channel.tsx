@@ -126,8 +126,8 @@ export default function ChannelPage({
         
       {/* Profile Section    style={{ backgroundImage: `url('${channelInfo?.result?.channel?.headerImageUrl}')`}} */}
       <div className="relative">
-      <div className={`h-52 bg-contain dark:from-neutral-800 dark:to-neutral-900 bg-gradient-to-b`}>
-      {channelInfo?.result?.channel?.headerImageUrl ? <img loading="lazy" src={channelInfo?.result?.channel?.headerImageUrl} alt="yup" className="aspect-[3/1] h-full w-full object-cover object-center" /> : null}
+      <div className={`h-52 bg-contain dark:from-neutral-800 dark:to-neutral-900 bg-gradient-to-b from-neutral-200 to-neutral-400`}>
+      {channelInfo?.result?.channel?.headerImageUrl ? <img loading="lazy" src={channelInfo?.result?.channel?.headerImageUrl} alt={channelInfo?.result?.channel?.name} className="aspect-[3/1] h-full w-full object-cover object-center" /> : null}
         </div>
         <div className="absolute bottom-0 left-4 transform translate-y-1/2">
           <Avatar className="w-24 h-24 border-4 border-[#1c1c1c]">

@@ -1,5 +1,3 @@
-
-
 export const GithubIcon = ({ className = '' }: { className?: string }) => {
     return (<svg
         width="16"

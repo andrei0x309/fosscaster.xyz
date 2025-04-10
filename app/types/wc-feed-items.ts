@@ -1,3 +1,5 @@
+import { FrameEmbedNext } from "./cast/wc-mini-app";
+
 export interface TWcFeedItems {
     items:                   Item[];
     latestMainCastTimestamp: number;
@@ -19,7 +21,7 @@ export interface ItemCast {
     author:              Author;
     text:                string;
     timestamp:           number;
-    embeds?:             PurpleEmbeds;
+    embeds:             PurpleEmbeds;
     replies:             Reactions;
     reactions:           Reactions;
     recasts:             Recasts;
@@ -79,7 +81,7 @@ export interface PurpleEmbeds {
     unknowns:          any[];
     processedCastText: string;
     groupInvites:      any[];
-    casts?:            CastElement[];
+    casts:            CastElement[];
 }
 
 export interface CastElement {
@@ -114,6 +116,7 @@ export interface OpenGraph {
     domain:        string;
     image:         string;
     useLargeImage: boolean;
+    frameEmbedNext: FrameEmbedNext;
 }
 
 export enum URLType {
