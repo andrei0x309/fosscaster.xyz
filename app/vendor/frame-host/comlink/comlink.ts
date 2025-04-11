@@ -287,14 +287,9 @@ function isAllowedOrigin(
 export function expose(
   obj: any,
   ep: Endpoint = globalThis as any,
-  allowedOrigins: (string | RegExp)[] = ['*'],
 ) {
   function callback(ev: MessageEvent) {
     if (!ev || !ev.data) {
-      return
-    }
-    if (!isAllowedOrigin(allowedOrigins, ev.origin)) {
-      console.warn(`Invalid origin '${ev.origin}' for comlink proxy`)
       return
     }
     const { id, type, path } = {

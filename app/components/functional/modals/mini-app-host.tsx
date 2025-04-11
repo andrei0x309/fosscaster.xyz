@@ -9,8 +9,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { cn } from "~/lib/utils"
 import { useMainStore } from '~/store/main'
 import Loader from '~/components/atomic/loader'
-import { getEthersProvider, modal } from '~/lib/wallet'
+import { getEthersProvider, modal, getFidFromAddress, signMsg } from '~/lib/wallet'
 import { useWeb3ModalAccount, useWeb3Modal  } from '@web3modal/ethers/react'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card"
+import { Button } from "~/components/ui/button"
+import { constructWarpcastSWIEMsg } from "~/lib/wc-SIWF"
 
 
 type ClientContext = FrameHost['context']['client']
@@ -68,6 +71,11 @@ export function Modal({
   const modalRef = useRef<HTMLDivElement>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [showSplash, setShowSplash] = useState(true)
+  const [showSignIn, setShowSignIn] = useState(false)
+  const [error, setError] = useState("")
+  const siwfOnError = useRef<((error: string) => void) | null>(null)
+  const siwfOnSuccess = useRef<((data: any) => void) | null>(null)
+  const nonceRef = useRef("")
   const frameHostRef = useRef<FrameHost | null>(null)
   const frameEndpoint= useRef<ReturnType<typeof exposeToIframe> | null>(null)
   
@@ -80,27 +88,27 @@ export function Modal({
     navigate(`/${authorUsername}`)
   }
 
-  const getWalletProvider = useCallback(async () => {
-            if (!isConnected) {
-                await open()
-                let promiseClose: () => void = () => {}
-                new Promise((resolve) => {
-                    promiseClose = resolve as () => void
-                })
-                modal.subscribeState((state) => {
-                    if (state.open === false) {
-                        promiseClose()
-                    }
-                })
-                promiseClose()
-                if (!isConnected) {
-                    return null as unknown as ReturnType<typeof getEthersProvider>
-                }
-            }
-            const provider = getEthersProvider(modal.getWalletProvider()) as any
+  // const getWalletProvider = useCallback(async () => {
+  //           if (!isConnected) {
+  //               await open()
+  //               let promiseClose: () => void = () => {}
+  //               new Promise((resolve) => {
+  //                   promiseClose = resolve as () => void
+  //               })
+  //               modal.subscribeState((state) => {
+  //                   if (state.open === false) {
+  //                       promiseClose()
+  //                   }
+  //               })
+  //               promiseClose()
+  //               if (!isConnected) {
+  //                   return null as unknown as ReturnType<typeof getEthersProvider>
+  //               }
+  //           }
+  //           const provider = getEthersProvider(modal.getWalletProvider()) as any
             
-            return provider.provider
-   }, [isConnected, open])
+  //           return provider.provider
+  //  }, [isConnected, open])
 
   const createOrModifyFrameHost = useCallback(async () => {
     if (!isUserLoggedIn) return
@@ -108,8 +116,17 @@ export function Modal({
     if (!frameHostRef.current) {
       frameHostRef.current = {
         context: {
-          location: null as unknown as LocationContext,
-          client: null as unknown as ClientContext,
+          location: {
+            type: "launcher",
+          },
+          client: {
+            added: isInstalled,
+            clientFid: 1791,
+            notificationDetails: {
+              token: "",
+              url: "",
+            }
+          },
           user: {
             fid: mainUserData?.fid || 0,
             displayName: mainUserData?.displayName || "",
@@ -131,9 +148,27 @@ export function Modal({
         openUrl: (url) => {
           console.log('Frame host openUrl', url)
         },
-        signIn: async() => {
-          console.log('Frame host signIn')
-          return 'later' as any
+        signIn: async(options: any) => {
+          console.log('Frame host signIn', options)
+          nonceRef.current = options.nonce
+          let resolve = null as any
+          let reject = null as any
+          setShowSignIn(true)
+          const promise = new Promise((resolvePromise, rejectPromise) => {
+            resolve = resolvePromise
+            reject = rejectPromise
+          })
+          siwfOnSuccess.current = (data) => {
+            resolve(data)
+          }
+          siwfOnError.current = (
+            (error) => {
+              reject(error)
+            }
+          )
+          const data = await promise
+          setShowSignIn(false)
+          return data as any
         },
         viewProfile: async (fid) => {
           console.log('Frame host viewProfile', fid)
@@ -172,7 +207,7 @@ export function Modal({
       }
       console.log('Frame host created', frameHostRef.current)
       frameEndpoint.current = exposeToIframe({
-        frameOrigin: window.location.origin,
+        frameOrigin: "*",
         sdk: frameHostRef.current as any,
         iframe: iframeRef.current!,
         ethProvider: window.ethereum as any,
@@ -187,6 +222,71 @@ export function Modal({
    }
 
   }, [isUserLoggedIn, mainUserData?.fid, mainUserData?.displayName, mainUserData?.avatar, mainUserData?.username])
+
+  const doSIWF = async ({
+    url,
+    nonce,
+    onSuccess,
+    onError,
+  }: {
+    url: string
+    nonce: string
+    onSuccess: (data: any) => void
+    onError: (error: string) => void
+  }) => {
+           setError('')
+           if (!isConnected) {
+               await open()
+               let promiseClose: () => void = () => {}
+               new Promise((resolve) => {
+                   promiseClose = resolve as () => void
+               })
+               modal.subscribeState((state) => {
+                   if (state.open === false) {
+                       promiseClose()
+                   }
+               })
+               await promiseClose()
+               if (!isConnected) {
+                   setError('No address selected')
+                   onError?.('No address selected')
+                   return
+               }
+           }
+          const provider = getEthersProvider(modal.getWalletProvider())
+          const address = (await provider.getSigner()).address
+          const FID = await getFidFromAddress(address)
+          if (FID < 1) {
+              setError(`Address ${address} does not own a FID`)
+              onError?.('Address does not own a FID')
+              return
+          }
+          const appUrl = new URL(url)
+
+          const message = constructWarpcastSWIEMsg({
+            siweUri: url,
+            fid: FID,
+            nonce,
+            custodyAddress: address,
+            domain: appUrl.hostname,
+          })
+          const signature = await signMsg(provider, message)
+          if (!signature) {
+              setError('User denied signature')
+              onError?.('User denied signature')
+              return
+          }
+
+          onSuccess?.({
+              signature,
+              message,
+          })
+          setError('')
+          return {
+            signature,
+            message,
+          }
+  }
 
   useEffect(() => {
     if(!isUserLoggedIn) return
@@ -283,13 +383,60 @@ export function Modal({
             </div>
 
             {/* Modal Content */}
-            <div className="p-4 overflow-auto md:min-h-[30rem] lg:min-h-[50rem]">
-                  {showSplash && <div className="relative w-full h-full flex items-center justify-center flex-col">
+            <div className="overflow-auto md:min-h-[30rem] lg:min-h-[50rem] relative">
+                  {showSplash && <div className="relative w-full h-full flex items-center justify-center flex-col dark:bg-neutral-900 bg-neutral-400" style={{
+                    minHeight: 'inherit',
+                    position: 'absolute',
+                    zIndex: 30,
+                  }}>
                     <Image src={iconUrl} alt={name} className="inset-0 object-cover w-14 h-14 mb-4 mt-14" />
                     <Loader />
                   </div>
                   }
-                  <iframe ref={iframeRef} src={homeUrl} className="w-full h-full" title={name} />
+                  <iframe ref={iframeRef} src={homeUrl} className="w-full h-full"
+                  style={{
+                    minHeight: 'inherit',
+                    position: 'absolute',
+                    zIndex: 10,
+                  }}
+                  title={name} />
+
+                {showSignIn && <div className="relative w-full h-full flex items-center justify-center flex-col dark:bg-neutral-900 bg-neutral-200" style={{
+                    minHeight: 'inherit',
+                    position: 'absolute',
+                    zIndex: 20,
+                  }}>
+                  <Card className="w-full max-w-md dark:bg-neutral-950 bg-neutral-400 text-white border-0 shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-semibold mx-auto">Sign in Request</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                  <Image src={iconUrl} alt={name} className="inset-0 object-cover w-14 h-14 mb-4 mt-4 mx-auto" />
+                    <p className="dark:text-neutral-400 text-neutral-900 text-center">App <b>{name}</b> requested to sign in.</p>
+                    <p className="dark:text-neutral-300 text-neutral-800 text-center">Are you sure you want to proceed?</p>
+                  </CardContent>
+                  <CardFooter className="flex justify-between gap-4">
+                    <Button variant="outline" className="w-full dark:bg-neutral-800 dark:hover:bg-neutral-700 bg-neutral-500 hover:bg-neutral-600 text-white border-0" onClick={() => {
+                      siwfOnError?.current?.('User denied signature')
+                      setShowSignIn(false)
+                    }}>
+                      Cancel
+                    </Button>
+                    <Button className="w-full bg-red-600 hover:bg-red-500 text-white"
+                    onClick={() => {
+                      doSIWF({
+                        nonce: nonceRef.current,
+                        onError: siwfOnError.current as (error: string) => void,
+                        onSuccess: siwfOnSuccess.current as (data: any) => void,
+                        url: homeUrl,
+                      })
+                      setShowSignIn(false)
+                    }}
+                    >Sign in</Button>
+                  </CardFooter>
+                </Card>
+                  </div>
+                }
             </div>
           </div>
         </div>

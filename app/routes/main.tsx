@@ -185,7 +185,7 @@ export default function Index() {
         { page === 'bookmarks' && !is404 ? <BookmarkPage key={3} /> : null }
         { page === 'explore' && !is404 ? <ExplorePage key={4} /> : null }
          { page === 'notifications' && !is404 ? <NotificationsPage key={5} /> : null }
-         { page === 'inbox' && !is404  ? <InboxPage key={6} /> : null }
+         { page === 'inbox' && !is404  ? <InboxPage key={6} openChat={pageData} /> : null }
          {page === 'search' && !is404 ? <SearchPage key={7} query={pageData} searchType={additionalPageData} /> : null }
          { page === 'settings' && !is404  ? <SettingsPage key={8} /> : null }
          {page === 'channel' && !is404  ? <ChannelPage key={9} channelId={pageData} /> : null}

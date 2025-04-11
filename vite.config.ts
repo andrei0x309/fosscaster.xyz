@@ -20,4 +20,15 @@ export default defineConfig({
     }),
     tsconfigPaths(),
   ],
+  server: {
+    proxy: {
+      "/api": {
+        bypass: (req) => {
+          return req.url;
+        },
+        target: "http://localhost:3000",
+        changeOrigin: true,
+      },
+    }
+  }
 });

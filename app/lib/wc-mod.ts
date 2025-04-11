@@ -1,3 +1,4 @@
+import { WARPCAST_API_BASE } from './constants';
 import type {
     T_RESP_SUGGESTED_USERS,
     T_RESP_USER
@@ -49,7 +50,7 @@ export class WarpCastWebAPI {
 
     constructor(token?: string) {
         this._version = "0.0.2";
-        this._apiEndpointBase = "https://api.warpcast.com/v2";
+        this._apiEndpointBase = WARPCAST_API_BASE;
         if (token) {
             this._token = token;
             this.headers["authorization"] = `Bearer ${this._token}`;

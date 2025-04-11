@@ -4,7 +4,7 @@ import ChatSidebar from "./chat-sidebar"
 import ChatMessages from "./chat-messages"
 import ExpandingTextarea from "./expanding-textarea"
 
-export default function ChatInterface() {
+export default function ChatInterface({openChat = ''}: {openChat?: string}) {
   const [message, setMessage] = useState("")
   const [messages, setMessages] = useState<
     {

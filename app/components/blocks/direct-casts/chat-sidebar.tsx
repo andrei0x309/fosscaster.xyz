@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { Search, ArrowLeft, MoreHorizontal, Bell, Archive, Pin, LogOut, RotateCcw, X } from "lucide-react"
 import { useMainStore } from "~/store/main"
 import { getDirectCastInbox  } from "~/lib/api"
@@ -9,7 +9,7 @@ type Chats = Awaited<ReturnType<typeof getDirectCastInbox>>
  
 export default function ChatSidebar() {
 
-  const { setDcModalOpen } = useMainStore()
+  const { setDcModalOpen, isUserLoggedIn } = useMainStore()
 
   const [showRequests, setShowRequests] = useState(false)
   const [hoveredChat, setHoveredChat] = useState<string | null>(null)
@@ -31,6 +31,9 @@ export default function ChatSidebar() {
   // Track if there are more chats to load
   const [hasMoreRegular, setHasMoreRegular] = useState(true)
   const [hasMoreRequests, setHasMoreRequests] = useState(true)
+
+  const [initialRegularChatsLoaded, setInitialRegularChatsLoaded] = useState(false)
+  const [initialRequestChatsLoaded, setInitialRequestChatsLoaded] = useState(false)
 
   // Page tracking
   const regularPageRef = useRef(1)
@@ -70,7 +73,8 @@ export default function ChatSidebar() {
 //     },
 //   ]
 
-    const fetchInbox = async (category: 'default' | 'request' = 'default') => {
+    const fetchInbox = useCallback(async (category: 'default' | 'request' = 'default') => {
+      console.log('fetchInbox', category)
       if (isLoadingRegular && category =='default') return
       if (isLoadingRequests && category =='request') return
       try {
@@ -120,7 +124,7 @@ export default function ChatSidebar() {
         category =='request' && setIsLoadingRequests(false)
         setIsLoadingRegular(false)
       }
-    }
+    }, [isLoadingRegular, isLoadingRequests, loadedRegularChats?.next?.cursor, loadedRequestChats?.next?.cursor])
 
 //   const initialRequestChats: RequestChat[] = [
 //     { id: 101, name: "tesseractx", message: "", time: "", followers: 0 },
@@ -137,9 +141,16 @@ export default function ChatSidebar() {
 
   // Initialize with first batch of chats
   useEffect(() => {
-    fetchInbox('default')
-    fetchInbox('request')
-  }, [])
+    if(!isUserLoggedIn) return
+    if(!loadedRegularChats?.result?.conversations.length && !initialRegularChatsLoaded) {
+      setInitialRegularChatsLoaded(true)
+      fetchInbox('default')
+    }
+    if(!loadedRequestChats?.result?.conversations.length  && !initialRequestChatsLoaded) {
+      setInitialRequestChatsLoaded(true)
+      fetchInbox('request')
+    }
+  }, [fetchInbox, initialRegularChatsLoaded, initialRequestChatsLoaded, isUserLoggedIn, loadedRegularChats, loadedRequestChats])
 
   // Handle scroll for regular chats
   const handleRegularChatsScroll = () => {
@@ -176,7 +187,7 @@ export default function ChatSidebar() {
   const loadMoreRequestChats = () => {
     if (isLoadingRequests) return
     setIsLoadingRequests(true)
-    fetchInbox('request')
+    // fetchInbox('request')
   }
 
   const handleChatMenuClick = (id: string, e: React.MouseEvent) => {

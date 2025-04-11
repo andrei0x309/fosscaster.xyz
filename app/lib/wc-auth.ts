@@ -1,9 +1,11 @@
 import { getBytes } from 'ethers';
 import bufferLib from 'buffer';
 import type { TWCOnboardingAuth } from '~/types/wc-auth-onboarding'
+import { WARPCAST_API_BASE } from '~/lib/constants';
 
 const EIP_191_PREFIX = "eip191:";
-const WARPCAST_API = 'https://client.warpcast.com/v2'
+const WARPCAST_API = WARPCAST_API_BASE
+ 
 
 const NO_WALLET = 'NO_WALLET'
 const SIG_DENIED = 'SIG_DENIED'

@@ -9,12 +9,13 @@ import { memo } from "react"
 import { SuggestedChannels } from "~/components/blocks/right-sidebar/sugested-channels"
 import { GithubIcon } from "~/components/icons/github"
 import { VerifiedIcon } from "~/components/icons/verified"
+import { GIT_COMMIT_SHA } from '~/lib/git-commit'
 
 if (process.env.NODE_ENV === 'development') {
    // In production this will be set by the CI/CD pipeline
    process.env.GIT_HASH_COMMIT ='1337/development'
 } else {
-   process.env.GIT_HASH_COMMIT = process.env.CF_PAGES_COMMIT_SHA
+   process.env.GIT_HASH_COMMIT = GIT_COMMIT_SHA
 }
 
 export const RightSidebar = memo(function RightSidebar({ className = '' }: { className?: string }) {
