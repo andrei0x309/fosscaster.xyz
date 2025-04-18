@@ -73,7 +73,6 @@ export interface PurpleAuthor {
     profile:           PurpleProfile;
     followerCount:     number;
     followingCount:    number;
-    activeOnFcNetwork: boolean;
     viewerContext:     AuthorViewerContext;
 }
 
@@ -163,7 +162,6 @@ export interface ParentAuthorClass {
     profile:           ParentAuthorProfile;
     followerCount:     number;
     followingCount:    number;
-    activeOnFcNetwork: boolean;
     viewerContext?:    AuthorViewerContext;
     username?:         string;
 }

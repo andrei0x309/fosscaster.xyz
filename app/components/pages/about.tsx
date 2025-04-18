@@ -17,7 +17,7 @@ export default function AboutPage({className}: {className?: string}) {
     { /* Shor desc */}
     <p className="text-left" style={{ display: 'ruby'}}>This is an  open-source ( <GhButton onClick={
             () => window.open('https://https://github.com/andrei0x309/fc-app.pages.dev')
- }/> ) reversed clone of Warpcast, that uses Warpcast API to operate.</p>
+ }/> ) UI implementation of Warpcast, that uses Warpcast API to operate.</p>
     { /* Subtitle for FAQ */}
     <h2 className="text-2xl font-bold mt-8">FAQ</h2>
     { /* FAQ */}

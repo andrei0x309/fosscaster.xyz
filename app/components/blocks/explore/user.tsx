@@ -5,7 +5,7 @@ import { useState, } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
 import { Button } from "~/components/ui/button"
 
-export function UserItem ({ user }: { user: T_RESP_SUGGESTED_USERS['result']['users'][number] }) {
+export function UserItem ({ user, className = '' }: { user: T_RESP_SUGGESTED_USERS['result']['users'][number], className?: string }) {
 
     const [stateUser, setStateUser] = useState(user)
 
@@ -42,7 +42,7 @@ export function UserItem ({ user }: { user: T_RESP_SUGGESTED_USERS['result']['us
     }
 
     return (
-        <div key={stateUser.fid} className="flex items-start space-x-4 mb-6">
+        <div key={stateUser.fid} className={`flex items-start space-x-4 mb-6 ${className}`}>
         <Avatar className="w-10 h-10">
           <AvatarImage src={stateUser.pfp.url} alt={stateUser.username} />
           <AvatarFallback>{stateUser.username}</AvatarFallback>
@@ -53,7 +53,7 @@ export function UserItem ({ user }: { user: T_RESP_SUGGESTED_USERS['result']['us
               <h2 className="font-semibold flex items-center">
                 {stateUser.username}
               </h2>
-              <p className="text-gray-400 text-sm">{stateUser.username}</p>
+              <p className="text-neutral-400 text-sm">{stateUser.username}</p>
             </div>
             {!stateUser.viewerContext.following ? (
                 <Button variant="secondary" className="bg-red-600 hover:bg-red-700 text-white" onClick={() => handleFollowUser()}>

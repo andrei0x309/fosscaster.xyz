@@ -48,7 +48,7 @@ export const CastHeader = ({
     <div className={`sticky dark:bg-neutral-950 bg-white top-0 z-10 flex w-full border-b-[1px] bg-app border-default h-14 p-2 ${className}`}>
 
       <div className="flex items-center justify-between p-4 w-full">
-        <h1 className={`text-lg font-bold -mt-2 -ml-2 ${headerClassName}`}>
+        <h1 className={`text-lg font-bold -mt-2 ml-2 md:-ml-2 ${headerClassName}`}>
           {hasBackButton ? <Button variant="ghost" size="icon" className='top-[0.35rem] relative mr-2' >
             <ArrowLeft className="h-6 w-6" onClick={() => navigate(-1)} />
           </Button> : null}

@@ -31,6 +31,7 @@ export const PopOverMenu = ({ trigger, content, controlled = false, isOpen = fal
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clickOutsideToClose, controlled, isOpen]);
   
   return (

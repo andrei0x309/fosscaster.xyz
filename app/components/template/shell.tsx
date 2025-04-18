@@ -14,7 +14,6 @@ export const Shell = React.memo(function Shell ({ children, noLeftSidebar = fals
    { children: React.ReactNode, noLeftSidebar?: boolean, noRightSidebar?: boolean }) {
 
     const { isDarkMode, setIsTablet, setIsMobile, setNavigate } = useMainStore()
-
     const navigate = useRef(useNavigate())
 
     const memoizedNavigate = useCallback((path: string) => {

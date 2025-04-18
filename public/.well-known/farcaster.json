@@ -1,0 +1,19 @@
+{
+    "accountAssociation": {
+      "header": "eyJmaWQiOjE3OTEsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHhmOWM0ODNlNTFjOUIzNGMyYmNENTgyNTYwMzBlQjQzMmFEQTAyNDhmIn0",
+      "payload": "eyJkb21haW4iOiJibG9nLmZsYXNoc29mdC5ldSJ9",
+      "signature": "MHg5MjAyNTE1YzIxNzA3NDY0Y2VjYWI5ZjIxOTBkMTYwZTg5YjVjMjA1Y2M1NDdjN2I5N2Q5YWJhYmFhNjkwMmYzNzIwZDk1NmJlODAwMGYxMjgxMTk2NjJhNTkyZTgwYjU3Y2UzYjY1MTk4NDE3NWIxMTk3NjEwZmYyYTM3MGViNjFj"
+    },
+    "frame": {
+      "version": "1",
+      "name": "fosscaster.xyz",
+      "homeUrl": "https://fosscaster.xyz/",
+      "iconUrl": "https://fosscaster.xyz/hotlink-ok/splash.png",
+      "imageUrl": "https://fosscaster.xyz/hotlink-ok/img.png",
+      "buttonTitle": "Open Frame",
+      "splashImageUrl": "https://fosscaster.xyz/hotlink-ok/splash.png",
+      "splashBackgroundColor": "#35303f",
+      "webhookUrl": "https://fosscaster.xyz/api/fc-webhook"
+    }
+  }
+  

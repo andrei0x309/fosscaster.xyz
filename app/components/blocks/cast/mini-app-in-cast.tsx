@@ -1,9 +1,19 @@
 import type { FrameEmbedNext } from "~/types/cast/wc-mini-app"
+import { useMainStore } from "~/store/main"
 
 export const MiniAppInCast = ({app} : { app: FrameEmbedNext}) => {
 
+  const { openMiniApp } = useMainStore()
+
+  const doOpenMiniApp = () => {
+    openMiniApp({
+      homeUrl: app?.frameUrl,
+      fetchFrameData: true
+    })
+  }
+
   return (
-    <div className="mt-4 rounded-md overflow-hidden border-neutral-500 border-[1px] action">
+    <div className="mt-4 rounded-md overflow-hidden border-neutral-500 border-[1px] cursor-pointer action" onClick={() => doOpenMiniApp()} aria-hidden>
       <div className="bg-neutral-700/20 p-2 flex items-center justify-center">
       <img loading="lazy" src={app?.frameEmbed?.imageUrl} 
       alt="mini app" className="w-full opacity-100" 

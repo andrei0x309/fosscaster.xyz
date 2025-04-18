@@ -34,7 +34,16 @@ export interface ItemCast {
     channelMentions?:    ChannelMention[];
     mentions?:           Author[];
     viewerContext:       CastViewerContext;
+    pinned?:             boolean;
+    parentAuthor?:      Author;
+    client?:            Clinet;
+}
 
+export interface Clinet {
+    fid:         number;
+    username:    string;
+    displayName: string;
+    pfp:         Pfp;
 }
 
 export interface Author {
@@ -45,7 +54,6 @@ export interface Author {
     profile:           Profile;
     followerCount:     number;
     followingCount:    number;
-    activeOnFcNetwork: boolean;
 }
 
 export interface Pfp {

@@ -11,4 +11,4 @@ fs.writeFileSync(path.join(__dirname, '../app/lib/git-commit.ts'), envContent, {
     encoding: 'utf8',
     flag: 'w',
 });
-console.log('Generated src/generated-env.ts with commit SHA.');
+console.info('Generated src/generated-env.ts with commit SHA.');

@@ -6,6 +6,9 @@ import { Trophy, ChevronDown, Loader } from 'lucide-react'
 import type { TWCFavoriteFrames } from "~/types/wc-favorite-frames"
 import type { TWCTopFrames } from "~/types/wc-top-frames"
 import { getFavoriteFrames, getTopFrames } from '~/lib/api'
+import { useMainStore } from '~/store/main'
+
+type TFrame = TWCFavoriteFrames['result']['frames'][number]
 
 export default function MiniApps({ className}: { className?: string }) {
  
@@ -15,6 +18,8 @@ export default function MiniApps({ className}: { className?: string }) {
     const [loading, setLoading] = useState(false)
     const [loadingTopFrames, setLoadingTopFrames] = useState(false)
     const [topFrames, setTopFrames] = useState({} as TWCTopFrames)
+    const { openMiniApp } = useMainStore()
+    
 
 
     const loadTopFrames = async () => {
@@ -43,7 +48,6 @@ export default function MiniApps({ className}: { className?: string }) {
         try {
             if(loading) return
             const apps = await getFavoriteFrames({ limit: 12})
-            console.log(apps)
         if (!apps.result?.frames?.length) {
             setUserHasApps(false)
             setLoading(false)
@@ -66,8 +70,22 @@ export default function MiniApps({ className}: { className?: string }) {
     useEffect(() => {
         callbackFetchApps()
         callbackLoadTopFrames()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
+    const doOpenMiniApp = (app: TFrame) => {
+       openMiniApp({
+        name: app.name,
+        homeUrl: app.homeUrl,
+        iconUrl: app.iconUrl,
+        author: {
+          avatarUrl: app.author?.pfp?.url || '',
+          username: app.author?.username
+        },
+        isInstalled: app?.viewerContext?.favorited,
+        splashImageUrl: app?.splashImageUrl
+      })
+    }
  
   return (
 
@@ -80,8 +98,8 @@ export default function MiniApps({ className}: { className?: string }) {
             </OptionalEndContent>
         </CastHeader>
 
-        <div className="mb-8 mt-4">
-          <h2 className="text-lg text-gray-400 mb-4">Added</h2>
+        {userHasApps && <div className="mb-8 mt-4">
+          <h2 className="text-lg text-neutral-400 mb-4">Added</h2>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
             {loading && (
               <div className="flex items-center justify-center">
@@ -90,7 +108,7 @@ export default function MiniApps({ className}: { className?: string }) {
             )}
 
             {miniApps.map((app, index) => (
-              <div key={index} className="flex flex-col items-center">
+              <div key={index} className="flex flex-col items-center cursor-pointer" onClick={() => doOpenMiniApp(app)} aria-hidden>
                 <div className="w-16 h-16 rounded-xl overflow-hidden mb-2">
                   <Image
                     src={app.iconUrl || "/placeholder.svg"}
@@ -105,8 +123,9 @@ export default function MiniApps({ className}: { className?: string }) {
             ))}
           </div>
         </div>
+       }
 
-        <h2 className="text-lg text-gray-400 mb-4">Top mini apps</h2>
+        <h2 className="text-lg text-neutral-400 mb-4">Top mini apps</h2>
 
         <div className="space-y-4">
          {loadingTopFrames && (
@@ -118,7 +137,7 @@ export default function MiniApps({ className}: { className?: string }) {
           {topFrames?.result?.frames.map((app, index) => (
             <div key={index} className="flex items-center justify-between">
               <div className="flex items-center">
-                <div className="w-12 h-12 rounded-lg overflow-hidden mr-3">
+                <div className="w-12 h-12 rounded-lg overflow-hidden mr-3" onClick={() => doOpenMiniApp(app as TFrame)} aria-hidden>
                   <Image
                     src={app.iconUrl || "/placeholder.svg"}
                     alt={app.name}
@@ -129,10 +148,10 @@ export default function MiniApps({ className}: { className?: string }) {
                 </div>
                 <div>
                   <h3 className="font-medium">{app.name}</h3>
-                  <p className="text-gray-400 text-xs">by {app?.author?.username}</p>
+                  <p className="text-neutral-400 text-xs">by {app?.author?.username}</p>
                 </div>
               </div>
-              <Button className="bg-red-600 hover:bg-red-700 text-white rounded-md">Open</Button>
+              <Button className="bg-red-600 hover:bg-red-700 text-white rounded-md" onClick={() => doOpenMiniApp(app as TFrame)} aria-hidden>Open</Button>
             </div>
           ))}
         </div>

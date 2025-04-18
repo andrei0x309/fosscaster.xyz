@@ -1,8 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
-import { PenSquare } from "lucide-react"
-import { Button } from "~/components/ui/button"
+import { useEffect, useState, useCallback } from 'react'
 import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import { useMainStore } from "~/store/main"
 import { getFeed, isTokenSet } from "~/lib/api"
@@ -14,10 +12,9 @@ import { CastHeader } from '../blocks/header/cast-header'
 
 
 export function Main({ initialFeed, className = '' }: { initialFeed?: string, className?: string }) {
-  const { isUserLoggedIn, setConnectModalOpen, navigate  } = useMainStore()
+  const { isUserLoggedIn, navigate  } = useMainStore()
 
   const [feed, setFeed] = useState({ result: [] as unknown as TWcFeedItems})
-  const [isComposeModalOpen, setComposeModalOpen] = useState(false)
   const [feedLoading, setFeedLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const [isInitialLoad, setIsInitialLoad] = useState(false)
@@ -92,7 +89,7 @@ export function Main({ initialFeed, className = '' }: { initialFeed?: string, cl
         <div className="h-full min-h-screen">
           <div className="sticky bg-white dark:bg-neutral-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-26 p-2">
 
-           <CastHeader title='Home' />
+           <CastHeader title='Home' className='mb-2' />
 
             { currentFeed && (<Tabs value={currentFeed} className="w-full">
               <TabsList className="w-full justify-start">
@@ -111,7 +108,7 @@ export function Main({ initialFeed, className = '' }: { initialFeed?: string, cl
         {!isInitialLoad && !isNoContent ? <SimpleLoader /> : null}
 
         { isInitialLoad ? [...(feed?.result?.items ?? [])].map((item, i) => (
-                <Post key={i} item={item} i={i} />
+                <Post key={i} item={item}  />
               )) : null}
  
         <InfiniteScroll hasMore={hasMore} isLoading={feedLoading} next={loadMore} threshold={1}>

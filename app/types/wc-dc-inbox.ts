@@ -22,6 +22,8 @@ export interface Conversation {
     isGroup:        boolean;
     createdAt:      number;
     viewerContext:  ConversationViewerContext;
+    photoUrl?: string
+    name?: string
 }
 
 export interface LastMessage {

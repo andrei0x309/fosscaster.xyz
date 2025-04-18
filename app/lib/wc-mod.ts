@@ -28,6 +28,8 @@ import type { TWCDcUsers } from '../types/wc-dc-users'
 import type { TWCDcInbox } from '../types/wc-dc-inbox'
 import type { TWCFavoriteFrames } from '../types/wc-favorite-frames'
 import type { TWCTopFrames } from '../types/wc-top-frames'
+import type { TWCFrame } from '../types/wc-frame'
+import type { TWCDCMessages } from '../types/wc-dc-messages'
  
 export class WarpCastWebAPI {
     private _version: string;
@@ -94,6 +96,16 @@ export class WarpCastWebAPI {
             headers: this.headers
         });
         return await response.json() as TWCNotifsUnseen;
+    }
+
+    public async markNotifsSeen () {
+        // mark-all-notifications-read
+        const response = await fetch(`${this._apiEndpointBase}/mark-all-notifications-read`, {
+            method: 'PUT',
+            headers: this.headers,
+            body: JSON.stringify({})
+        });
+        return await response.json();
     }
 
     public async getChannelInfo (channelId: string) {
@@ -219,6 +231,32 @@ export class WarpCastWebAPI {
             body: JSON.stringify({ targetFid })
         });
         return await response.json();
+    }
+
+    public async recast (castHash: string) {
+        const response = await fetch(`${this._apiEndpointBase}/recasts`, {
+            method: 'PUT',
+            headers: this.headers,
+            body: JSON.stringify({ castHash })
+        });
+        return await response.json() as {
+            "result": {
+                "castHash": string
+            }
+        }
+    }
+
+    public async undoRecast  (castHash: string) {
+        const response = await fetch(`${this._apiEndpointBase}/undo-recast`, {
+            method: 'DELETE',
+            headers: this.headers,
+            body: JSON.stringify({ castHash })
+        });
+        return await response.json() as {
+            "result": {
+                "castHash": string
+            }
+        }
     }
 
     public async followingPages ({
@@ -374,6 +412,32 @@ export class WarpCastWebAPI {
         return await response.json() as TWCSearchChannels
     }
 
+    public async channelRespondToInvite ({
+        accept,
+        channelKey,
+        role,
+    }: {
+        accept: boolean,
+        channelKey: string,
+        role: string
+    }) {
+        const response = await fetch(`${this._apiEndpointBase.replace('/v2', '/v1')}/manage-channel-users`, {
+            method: 'PATCH',
+            headers: this.headers,
+            body: JSON.stringify({
+                accept,
+                channelKey,
+                role
+            })
+        });
+        return await response.json() as  {
+            "result": {
+                "success": true
+            }
+        }
+    }
+    
+
     public async dcGroupInvite ({
         conversationId
     }: {
@@ -409,6 +473,25 @@ export class WarpCastWebAPI {
                 "success": boolean,
             }
         }
+    }
+
+    public async dcGetMessages ({
+        conversationId,
+        limit = 50,
+        cursor = '',
+        messageId = ''
+    }: {
+        conversationId: string,
+        limit?: number,
+        cursor?: string
+        messageId?: string
+    }){
+        //https://client.warpcast.com/v2/direct-cast-conversation-messages?conversationId=5fd1eacfb158db15c718a20d174d16674f662c195773c2ccfa78da9957f06918&messageId=27a93da4c6eb4e53321e346cb9383578&limit=50
+        const response = await fetch(`${this._apiEndpointBase}/direct-cast-conversation-messages?conversationId=${conversationId}&limit=${limit}${cursor ? `&cursor=${cursor}` : ''}${messageId ? `&messageId=${messageId}` : ''}`, {
+            method: 'GET',
+            headers: this.headers
+        });
+        return await response.json() as TWCDCMessages
     }
 
     public async dcCreateGroup({
@@ -491,15 +574,38 @@ export class WarpCastWebAPI {
         text,
         castDistribution = "default",
         embeds = [],
+        channelKey = '',
+        parentHash = ''
     }: {
         text: string,
         castDistribution?: string,
-        embeds?: Array<Record<string, any>>,
+        embeds?: string[],
+        channelKey?: string,
+        parentHash?: string
     }) {
+        const sendObj = {
+            text,
+            embeds
+        } as Record<string, any>;
+
+        if (castDistribution !== 'default') {
+            sendObj.castDistribution = castDistribution;
+        }
+
+        if (channelKey) {
+            sendObj.channelKey = channelKey;
+        }
+
+        if (parentHash) {
+            sendObj.parent = {
+                hash: parentHash
+            }
+        }
+
         const response = await fetch(`${this._apiEndpointBase}/casts`, {
             method: 'POST',
             headers: this.headers,
-            body: JSON.stringify({ text, embeds, castDistribution })
+            body: JSON.stringify(sendObj)
         });
         return await response.json() as TSendCastResult;
     }
@@ -734,19 +840,19 @@ export class WarpCastWebAPI {
         return await response.json() as TWCDcUsers
     }
 
-    public async sendDirectCast ({ receiverFID, senderFID, type, message }: {
-        receiverFID: number,
-        senderFID: number,
-        type: string,
+    public async sendDirectCast ({ conversationId, type = 'text', message }: {
+        conversationId: string,
+        type?: string,
         message: string
     }) {
         // hash
-        const conversationId = `${receiverFID}-${senderFID}`
         const messageId = await this.hash(`${conversationId}-${Date.now()}`)
+        const isGroup = !conversationId.includes('-')
+        const receiverFID = !isGroup ? conversationId.split('-')[0] : ''
 
         const data = {
             conversationId,
-            recipientFids: [receiverFID],
+            recipientFids: isGroup ? [] : [receiverFID],
             messageId,
             type,
             message
@@ -756,7 +862,11 @@ export class WarpCastWebAPI {
             headers: this.headers,
             body: JSON.stringify(data)
         });
-        return await response.json();
+        return await response.json() as {
+            "result": {
+                "success": boolean
+            }
+        }
     }
 
     public async warpcastCreateSignedKeyRequest () {
@@ -776,8 +886,8 @@ export class WarpCastWebAPI {
         return await response.json() as TWCStorageUtilization;
     }
 
-    public async getDiscoverChannels () {
-        const response = await fetch(`${this._apiEndpointBase}/discover-channels`, {
+    public async getDiscoverChannels ({cursor= '', limit = 15}: {cursor?: string, limit?: number}) {
+        const response = await fetch(`${this._apiEndpointBase}/discover-channels?limit=${limit}${cursor ? `&cursor=${cursor}` : ''}`, {
             method: 'GET',
             headers: this.headers
         });
@@ -971,10 +1081,14 @@ export class WarpCastWebAPI {
 
     public searchSummary = async ({
         query,
+        maxChannels = 2,
+        maxUsers = 4,
     }: {
         query: string,
+        maxChannels?: number,
+        maxUsers?: number,
     }) => {
-       const response = await fetch(`${this._apiEndpointBase}/search-summary?q=${query}&maxChannels=2&maxUsers=4&addFollowersYouKnowContext=false`, {
+       const response = await fetch(`${this._apiEndpointBase}/search-summary?q=${query}&maxChannels=${maxChannels}&maxUsers=${maxUsers}&addFollowersYouKnowContext=false`, {
             method: 'GET',
             headers: this.headers
         });
@@ -1043,6 +1157,18 @@ export class WarpCastWebAPI {
             headers: this.headers
         });
         return await response.json() as TWCFavoriteFrames
+    }
+
+    public getFrame = async ({
+        domain,
+    }: {
+        domain: string,
+    }) => {
+        const response = await fetch(`${this._apiEndpointBase.replace('v2', 'v1')}/frame?domain=${domain}`, {
+            method: 'GET',
+            headers: this.headers
+        });
+        return await response.json() as TWCFrame
     }
 
     public getTopFrames = async ({

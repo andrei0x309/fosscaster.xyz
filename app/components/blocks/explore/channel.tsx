@@ -5,7 +5,7 @@ import { useState, } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
 import { Button } from "~/components/ui/button"
 
-export function ChannelItem ({ channel }: { channel: TWCDiscoverChannels['result']['channels'][number] }) {
+export function ChannelItem ({ channel, className = '' }: { channel: TWCDiscoverChannels['result']['channels'][number], className?: string }) {
 
     const [stateChannel, setStateChannel] = useState(channel)
 
@@ -42,7 +42,7 @@ export function ChannelItem ({ channel }: { channel: TWCDiscoverChannels['result
     }
 
     return (
-        <div key={stateChannel.key} className="flex items-start space-x-4 mb-6">
+        <div key={stateChannel.key} className={`flex items-start space-x-4 mb-6 ${className}`}>
             <Avatar className="w-10 h-10">
                 <AvatarImage src={stateChannel.fastImageUrl} alt={stateChannel.name} />
                 <AvatarFallback>{stateChannel.name[0]}</AvatarFallback>
@@ -51,7 +51,7 @@ export function ChannelItem ({ channel }: { channel: TWCDiscoverChannels['result
                 <div className="flex justify-between items-start">
                     <div>
                         <h2 className="font-semibold">{stateChannel.name}</h2>
-                        <p className="text-gray-400 text-sm">
+                        <p className="text-neutral-400 text-sm">
                             {stateChannel.key} Mmebers: {stateChannel.memberCount && `• Followers: ${stateChannel.followerCount}`}
                         </p>
                     </div>
@@ -65,7 +65,7 @@ export function ChannelItem ({ channel }: { channel: TWCDiscoverChannels['result
                         </Button>
                     )}
                 </div>
-                <p className="text-sm mt-1 text-gray-300">{stateChannel.description}</p>
+                <p className="text-sm mt-1 text-neutral-300">{stateChannel.description}</p>
             </div>
         </div>
     )

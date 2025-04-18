@@ -3,10 +3,30 @@
 import { DialogTitle } from "@radix-ui/react-dialog"
 import { Dialog, DialogContent, DialogDescription} from "~/components/ui/dialog"
 
-export function Modal({ isOpen, setIsOpen, children, dialogTitleText = '', preventClose = false, className = '' } : 
-  { isOpen: boolean, setIsOpen: (value: boolean) => void, children: React.ReactNode, dialogTitleText?: string, preventClose?: boolean, className?: string }) {
+export function Modal({ 
+  isOpen,
+  setIsOpen,
+  children,
+  dialogTitleText = '',
+  preventClose = false,
+  doPreventCloseAnimation = true,
+  className = '',
+  onTryToClose = () => {} 
+} : 
+{ isOpen: boolean,
+  setIsOpen: (value: boolean) => void,
+  children: React.ReactNode,
+  dialogTitleText?: string,
+  preventClose?: boolean,
+  doPreventCloseAnimation?: boolean,
+  className?: string,
+  onTryToClose?: () => void 
+}) {
   
   const preventCloseFn = () => {
+    if (!doPreventCloseAnimation) {
+      return
+    }
     const el = document.querySelector('.modal-dialog')
 
     el?.animate([
@@ -24,9 +44,17 @@ export function Modal({ isOpen, setIsOpen, children, dialogTitleText = '', preve
     })
   }
 
+  const onOpenChange = (state: boolean) => {
+    if(!state){
+      onTryToClose()
+    }
+    return preventClose ? preventCloseFn() : setIsOpen(state)
+  }
+  
+
 
   return (
-    <Dialog open={isOpen} onOpenChange={preventClose ? preventCloseFn: setIsOpen} aria-describedby="modal-description" aria-labelledby="modal-title">
+    <Dialog open={isOpen} onOpenChange={onOpenChange} aria-describedby="modal-description" aria-labelledby="modal-title">
       <DialogContent
       aria-describedby="modal"
       

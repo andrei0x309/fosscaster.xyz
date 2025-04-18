@@ -45,7 +45,6 @@ export function ConversationPage({ hash, username, className = '' }: { hash: str
     
     setMainCast({ cast: feed.result.casts[sliceFrom] })
     setCastReplies(feed.result.casts.slice(sliceFrom+1).map((cast) => ({ cast })))
-    console.log('maincast', feed.result.casts[sliceFrom])
  
   }, [setFeedLoading, setIsInitialLoad, isInitialLoad])
 
@@ -119,7 +118,7 @@ export function ConversationPage({ hash, username, className = '' }: { hash: str
  
         <div>
         
-        <Post item={mainCast} i={0} />
+        <Post item={mainCast} />
      <div className="flex items-center gap-3 border-0 border-t-1 border-b-2 border-neutral-400/50 hover:bg-slate-500/10" onClick={(e) => doReply(e)} aria-hidden>
       {mainUserData?.avatar ?
       <Avatar onClick={() => navigate(`/${mainUserData?.username}`)} className="h-10 w-10 cursor-pointer hover:opacity-70 m-3 action">
@@ -129,7 +128,7 @@ export function ConversationPage({ hash, username, className = '' }: { hash: str
       : <UserIcon className='w-10 my-2 mx-4' />
      }
       <div className="flex-1">
-      <div className="w-full bg-transparent outline-none text-gray-500 cursor-pointer h-full p-3">Cast your reply</div>
+      <div className="w-full bg-transparent outline-none text-neutral-500 cursor-pointer h-full p-3">Cast your reply</div>
       </div>
       <Button className="bg-red-600 hover:bg-red-700 text-white rounded-md px-4 py-2 m-3">Reply</Button>
     </div>
@@ -137,7 +136,7 @@ export function ConversationPage({ hash, username, className = '' }: { hash: str
         {/* {!isInitialLoad && !isNoContent ? <SimpleLoader /> : null} */}
 
         { castReplies.length ? castReplies.map((item, i) => (
-                <Post key={i} item={item} i={i} />
+                <Post key={i} item={item} />
               )) : null}
  
         <InfiniteScroll hasMore={hasMore} isLoading={feedLoading} next={() => {}} threshold={1}>

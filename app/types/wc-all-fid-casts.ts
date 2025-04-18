@@ -43,7 +43,6 @@ export interface Author {
     profile:           Profile;
     followerCount:     number;
     followingCount:    number;
-    activeOnFcNetwork: boolean;
     viewerContext?:    AuthorViewerContext;
 }
 

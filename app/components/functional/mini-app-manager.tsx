@@ -6,6 +6,7 @@ import { cn } from "~/lib/utils"
 import { useMainStore } from "~/store/main"
 import type { ModalProps } from "./modals/mini-app-host"
 import { Img as Image } from 'react-image'
+import { getFrame } from '~/lib/api'
 // import { T_MINI_APP_DATA } from "~/types/stores/store"
 
 // Maximum number of minimized modals allowed
@@ -15,178 +16,7 @@ export function ModalManager() {
 
   const { miniAppToOpen, openMiniApp } = useMainStore()
   const [modals, setModals] = useState<ModalProps[]>([] as ModalProps[])
-
-  // const [modals, setModals] = useState<ModalData[]>([
-  //   {
-  //     id: "1",
-  //     title: "Spaces",
-  //     subtitle: "built by moe",
-  //     isInstalled: false,
-  //     icon: "🌐",
-  //     isOpen: true,
-  //     isMinimized: false,
-  //     content: (
-  //       <div className="flex flex-col gap-4">
-  //         <div className="h-40 bg-muted/30 flex items-center justify-center text-muted-foreground">NO LIVE SPACES</div>
-  //         <div className="space-y-4">
-  //           <input
-  //             type="text"
-  //             placeholder="Space Title"
-  //             className="w-full px-4 py-2 rounded-md border border-input bg-background"
-  //           />
-  //           <button className="w-full py-3 bg-muted hover:bg-muted/80 transition-colors rounded-md">
-  //             Create Space
-  //           </button>
-  //         </div>
-  //       </div>
-  //     ),
-  //   },
-  //   {
-  //     id: "2",
-  //     title: "Scout Game",
-  //     subtitle: "built by scoutgamexyz",
-  //     isInstalled: true,
-  //     icon: "🎮",
-  //     isOpen: false,
-  //     isMinimized: false,
-  //     content: (
-  //       <div className="flex flex-col gap-4">
-  //         <div className="bg-gradient-to-b from-blue-400 to-purple-600 p-4 rounded-md text-white">
-  //           <div className="flex items-center gap-2 mb-2">
-  //             <span className="bg-white/20 p-1 rounded-full">ℹ️</span>
-  //             <span>
-  //               Scout Game's <u>DEV token</u>
-  //             </span>
-  //             <span className="font-bold">21</span>
-  //           </div>
-  //           <h2 className="text-2xl font-bold mb-2">Fantasy Sports for Onchain Developers</h2>
-  //           <p className="mb-4">Pick great developers. Earn rewards. Everyone can play. No coding required!</p>
-  //           <div className="flex justify-center items-center py-2">
-  //             <span className="animate-pulse">Logging in...</span>
-  //           </div>
-  //         </div>
-  //       </div>
-  //     ),
-  //   },
-  //   {
-  //     id: "3",
-  //     title: "Weather App",
-  //     subtitle: "built by weatherxyz",
-  //     isInstalled: true,
-  //     icon: "🌤️",
-  //     isOpen: false,
-  //     isMinimized: false,
-  //     content: (
-  //       <div className="flex flex-col gap-4 items-center">
-  //         <div className="text-4xl">🌤️</div>
-  //         <h2 className="text-xl font-bold">Weather Forecast</h2>
-  //         <p className="text-muted-foreground">Current temperature: 72°F</p>
-  //       </div>
-  //     ),
-  //   },
-  //   {
-  //     id: "4",
-  //     title: "Calculator",
-  //     subtitle: "built by calcxyz",
-  //     isInstalled: false,
-  //     icon: "🧮",
-  //     isOpen: false,
-  //     isMinimized: false,
-  //     content: (
-  //       <div className="flex flex-col gap-2">
-  //         <input type="text" readOnly value="0" className="w-full p-2 text-right text-xl border rounded-md" />
-  //         <div className="grid grid-cols-4 gap-2">
-  //           {["7", "8", "9", "÷", "4", "5", "6", "×", "1", "2", "3", "-", "0", ".", "=", "+"].map((key) => (
-  //             <button key={key} className="p-2 bg-muted hover:bg-muted/80 rounded-md">
-  //               {key}
-  //             </button>
-  //           ))}
-  //         </div>
-  //       </div>
-  //     ),
-  //   },
-  //   {
-  //     id: "5",
-  //     title: "Notes",
-  //     subtitle: "built by notesxyz",
-  //     isInstalled: true,
-  //     icon: "📝",
-  //     isOpen: false,
-  //     isMinimized: false,
-  //     content: (
-  //       <div className="flex flex-col gap-4">
-  //         <textarea placeholder="Type your notes here..." className="w-full h-40 p-2 border rounded-md"></textarea>
-  //         <div className="flex justify-end">
-  //           <button className="px-4 py-2 bg-muted hover:bg-muted/80 rounded-md">Save</button>
-  //         </div>
-  //       </div>
-  //     ),
-  //   },
-  //   {
-  //     id: "6",
-  //     title: "Calendar",
-  //     subtitle: "built by calxyz",
-  //     isInstalled: false,
-  //     icon: "📅",
-  //     isOpen: false,
-  //     isMinimized: false,
-  //     content: (
-  //       <div className="flex flex-col gap-4">
-  //         <div className="text-center">
-  //           <h2 className="text-xl font-bold">April 2025</h2>
-  //         </div>
-  //         <div className="grid grid-cols-7 gap-1">
-  //           {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
-  //             <div key={day} className="text-center font-medium">
-  //               {day}
-  //             </div>
-  //           ))}
-  //           {Array.from({ length: 30 }, (_, i) => (
-  //             <div key={i} className="text-center p-2 hover:bg-muted/50 rounded-md">
-  //               {i + 1}
-  //             </div>
-  //           ))}
-  //         </div>
-  //       </div>
-  //     ),
-  //   },
-  //   {
-  //     id: "7",
-  //     title: "Tasks",
-  //     subtitle: "built by tasksxyz",
-  //     isInstalled: true,
-  //     icon: "✅",
-  //     isOpen: false,
-  //     isMinimized: false,
-  //     content: (
-  //       <div className="flex flex-col gap-4">
-  //         <div className="flex items-center gap-2">
-  //           <input type="text" placeholder="Add a task..." className="flex-1 p-2 border rounded-md" />
-  //           <button className="px-4 py-2 bg-muted hover:bg-muted/80 rounded-md">Add</button>
-  //         </div>
-  //         <div className="space-y-2">
-  //           <div className="flex items-center gap-2">
-  //             <input type="checkbox" id="task1" />
-  //             <label htmlFor="task1">Complete project documentation</label>
-  //           </div>
-  //           <div className="flex items-center gap-2">
-  //             <input type="checkbox" id="task2" />
-  //             <label htmlFor="task2">Schedule team meeting</label>
-  //           </div>
-  //           <div className="flex items-center gap-2">
-  //             <input type="checkbox" id="task3" checked />
-  //             <label htmlFor="task3" className="line-through">
-  //               Review pull requests
-  //             </label>
-  //           </div>
-  //         </div>
-  //       </div>
-  //     ),
-  //   },
-  // ])
-
-
-  
+ 
   // State for sidebar collapse
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true)
 
@@ -267,20 +97,38 @@ export function ModalManager() {
         }),
       )
     } else {
-      const newModal = {
-        homeUrl: miniAppToOpen.homeUrl,
-        name: miniAppToOpen.name,
-        isOpen: true,
-        isMinimized: false,
-        onClose: () => handleCloseModal(miniAppToOpen.homeUrl),
-        onMinimize: () => handleMinimizeModal(miniAppToOpen.homeUrl),
-        onMaximize: () => handleMaximizeModal(miniAppToOpen.homeUrl),
-        isInstalled: miniAppToOpen.isInstalled,
-        iconUrl: miniAppToOpen.iconUrl,
-        splashImageUrl: miniAppToOpen.splashImageUrl,
-        author: miniAppToOpen.author,
-      } as ModalProps
-      setModals([...modals, newModal])
+      (async () => {
+        let miniAppToOpenData = miniAppToOpen
+        if(miniAppToOpen?.fetchFrameData) {
+          const frameData = (await getFrame({domain: new URL(miniAppToOpen.homeUrl).hostname}))?.result?.frame ?? {}
+          miniAppToOpenData = {
+           isInstalled: frameData.viewerContext?.favorited,
+           author: {
+            avatarUrl: frameData?.author?.pfp?.url,
+            username : frameData?.author?.username,
+           },
+           homeUrl: frameData?.homeUrl,
+           iconUrl: frameData?.iconUrl,
+           name: frameData?.name,
+           splashImageUrl: frameData?.splashImageUrl,
+           fetchFrameData: false,
+          }
+        }
+        const newModal = {
+          homeUrl: miniAppToOpenData.homeUrl,
+          name: miniAppToOpenData.name,
+          isOpen: true,
+          isMinimized: false,
+          onClose: () => handleCloseModal(miniAppToOpenData.homeUrl),
+          onMinimize: () => handleMinimizeModal(miniAppToOpenData.homeUrl),
+          onMaximize: () => handleMaximizeModal(miniAppToOpenData.homeUrl),
+          isInstalled: miniAppToOpenData.isInstalled,
+          iconUrl: miniAppToOpenData.iconUrl,
+          splashImageUrl: miniAppToOpenData.splashImageUrl,
+          author: miniAppToOpenData.author,
+        } as ModalProps
+        setModals([...modals, newModal])
+      })();
     }
       
     }, [handleCloseModal, handleMaximizeModal, handleMinimizeModal, miniAppToOpen, modals, openMiniApp])
@@ -302,10 +150,10 @@ export function ModalManager() {
       </div> */}
 
       {/* Render open modals */}
-      {openModals.map((modal: ModalProps) => (
+      {openModals.map((modal: ModalProps, index: number) => (
         <Modal
           homeUrl={modal.homeUrl}
-          key={modal.homeUrl}
+          key={`opened:${index}:${modal.homeUrl}`}
           name={modal.name}
           iconUrl={modal.iconUrl}
           isInstalled={modal.isInstalled}
@@ -360,9 +208,9 @@ export function ModalManager() {
 
           {/* Minimized apps list */}
           <div className="flex-1 overflow-y-auto">
-            {minimizedModals.map((modal: ModalProps) => (
+            {minimizedModals.map((modal: ModalProps, index: number) => (
               <div
-                key={modal.homeUrl}
+                key={`minimized:${index}:${modal.homeUrl}`}
                 className={cn(
                   "flex items-center border-b border-neutral-300 hover:bg-neutral-200 dark:border-neutral-600 dark:hover:bg-neutral-500 transition-colors",
                   modal.isInstalled ? "dark:text-white text-black" : "dark:text-white/70 text-black/70",

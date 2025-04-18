@@ -20,7 +20,6 @@ export type T_USER = {
     },
     "followerCount": number
     "followingCount":  number
-    "activeOnFcNetwork": boolean
     "viewerContext": {
       "following":  boolean
       "followedBy": boolean

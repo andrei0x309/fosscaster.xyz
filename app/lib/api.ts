@@ -24,8 +24,9 @@ export const isTokenSet = () => {
     return wc.isTokenSet()
 }
 
-export const sendCast = async ({ text, castDistribution, embeds} : {text: string, castDistribution?: string, embeds?: Array<Record<any, any>>}) => {
-    return await wc.sendCast({ text, castDistribution, embeds})
+export const sendCast = async ({ text, castDistribution, embeds, channelKey, parentHash} : 
+    {text: string, castDistribution?: string, embeds?: string[], channelKey?: string, parentHash?: string}) => {
+    return await wc.sendCast({ text, castDistribution, embeds, channelKey, parentHash})
 }
 
 export const deleteCast = async (hash: string) => {
@@ -56,6 +57,10 @@ export const getNotifsUnseen = async () => {
     return await wc.getNotifsUnseen()
 }
 
+export const markNotifsSeen = async () => {
+    return await wc.markNotifsSeen()
+}
+
 export const getChannelInfo = async (channelId: string) => {
     return await wc.getChannelInfo(channelId)
 }
@@ -80,8 +85,8 @@ export const removeFromBookmark = async (hash: string) => {
     return await wc.removeFromBookmark({castHash: hash})
 }
 
-export const getDiscoverChannels = async () => {
-    return await wc.getDiscoverChannels()
+export const getDiscoverChannels = async ({ cursor = '', limit = 15 }: { cursor?: string, limit?: number } = {}) => {
+    return await wc.getDiscoverChannels({ cursor, limit })
 }
 
 export const getTrendingChannels = async () => {
@@ -110,6 +115,14 @@ export const follow = async (fid: string) => {
 
 export const unfollow = async (fid: string) => {
     return await wc.unfollow(fid)
+}
+
+export const recast = async (castHash: string) => {
+    return await wc.recast(castHash)
+}
+
+export const undoRecast = async (castHash: string) => {
+    return await wc.undoRecast(castHash)
 }
 
 export const onboarding = async (bearerHeader: string, timestamp: number) => {
@@ -181,6 +194,18 @@ export const getUserChannels = async ({fid, limit = 15, cursor}: {fid: number, l
     return await wc.getUserChannels({fid, limit, cursor})
 }
 
+export const dcGetMessages = async ({conversationId, limit = 15, cursor, messageId = ''}: {conversationId: string, limit?: number, cursor?: string, messageId?: string}) => {
+    return await wc.dcGetMessages({conversationId, limit, cursor, messageId})
+}
+
+export const sendDirectCast = async ({conversationId, type, message}: {conversationId: string, type?: string, message: string}) => {
+    return await wc.sendDirectCast({conversationId, message, type})
+}
+
+export const channelRespondToInvite = async ({channelKey, accept, role}: {channelKey: string, accept: boolean, role: string}) => {
+    return await wc.channelRespondToInvite({channelKey, accept, role})
+}
+
 export const setProfile = async ({ displayName, bio, location, locationId }: { displayName?: string, bio?: string, location?: string, locationId?: string }) => {
     return await wc.setProfile({ displayName, bio, location, locationId })
 }
@@ -193,8 +218,8 @@ export const getCastThread = async ({castHash, limit = 15, username, cursor}: {c
     return await wc.getCastThread({castHash, limit, cursor, username})
 }
 
-export const searchSummary = async ({query}: {query: string}) => {
-    return await wc.searchSummary({query})
+export const searchSummary = async ({query, maxChannels, maxUsers}: {query: string, maxChannels?: number, maxUsers?: number}) => {
+    return await wc.searchSummary({query, maxChannels, maxUsers})
 }
 
 export const searcUsers = async ({query, limit = 15, cursor}: {query: string, limit?: number, cursor?: string}) => {
@@ -211,6 +236,10 @@ export const searchChannels = async ({query, limit = 15, cursor}: {query: string
 
 export const getFavoriteFrames = async ({limit = 12, cursor}: {limit?: number, cursor?: string}) => {
     return await wc.getFavoriteFrames({limit, cursor})
+}
+
+export const getFrame = async ({domain}: {domain: string}) => {
+    return await wc.getFrame({domain})
 }
 
 export const getTopFrames = async ({limit = 50, cursor}: {limit?: number, cursor?: string}) => {

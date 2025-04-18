@@ -51,6 +51,8 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
   const [isNoContent, setIsNoContent] = useState(false)
   const [loadMoreKey, setLoadMoreKey] = useState(0)
   const [wasFeedSelected, setWasFeedSelected] = useState(false)
+  const [isFollowingYou, setIsFollowingYou] = useState(false)
+  const [areYouFollowing, setAreYouFollowing] = useState(false)
   const [followersYouKnow, setFollowersYouKnow] = useState({} as Awaited<ReturnType<typeof getFollowersYouKnow>>)
 
   const location = useLocation()
@@ -88,6 +90,9 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
       return
     }
     setUser(user)
+    setIsFollowingYou(user?.user?.viewerContext?.followedBy ?? false)
+    setAreYouFollowing(user?.user?.viewerContext?.following ?? false)
+
     setIsOwnProfile(Number(user.user.fid) === Number(mainUserData?.fid))
   }, [pageProfile, mainUserData?.fid, navigate])
 
@@ -169,7 +174,8 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
       }))
       doSelectFeed({feed: 'casts-and-replies', feedResult: newFeed})
     } else if (currentSelectedFeed === 'channels') {
-      const channels = await getUserFollowingChannels({fid: user.user.fid})
+      if(!user.user.fid) return
+      const channels = await getUserFollowingChannels({fid: user.user.fid, forComposer: false, limit:50})
       setChannels(channels)
       doSelectFeed({feed: 'channels', isFeed: false, channelsResult: channels})
     }
@@ -209,6 +215,13 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
     setLoadMoreKey(loadMoreKey + 1)
   }
 
+  const doUnfollow = async () => {
+
+  }
+
+  const doFollow = async () => {
+
+  }
  
   return (
 
@@ -236,9 +249,10 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
               <div>
                 <h1 className="text-xl font-bold items-center inline-block">
                 {user?.user?.displayName}
-                </h1>                  <span className="text-gray-400 text-sm ml-2 inline-block">Follows you</span>
+                </h1>                  
+                {isFollowingYou && <span className="text-neutral-400 text-sm ml-2 inline-block">Follows you</span>}
 
-                <p className="text-gray-400">@{user?.user?.username}</p>
+                <p className="text-neutral-400">@{user?.user?.username}</p>
                 </div>
             </div>
                             
@@ -266,7 +280,7 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
                           </div>
                              
 
-                          <p className="mb-2 break-words dark:text-gray-300 text-gray-600">
+                          <p className="mb-2 break-words dark:text-neutral-300 text-neutral-600">
                               {user?.user?.profile?.bio?.text}
                           </p>
 
@@ -278,11 +292,14 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
 
                           <div className="flex space-x-4 mb-4">
                           {!isOwnProfile && (
-                         <Button variant="outline">Unfollow</Button>
+                            <>
+                            { areYouFollowing && <Button variant="outline" onClick={doUnfollow}>Unfollow</Button> }
+                            { !areYouFollowing && <Button variant="outline" onClick={doFollow}>Follow</Button> }
+                            </>
                           )}
                         </div>
                         
-         {isUserLoggedIn && !isOwnProfile && followersYouKnow?.result?.totalCount && (
+         {isUserLoggedIn && !isOwnProfile && followersYouKnow?.result?.totalCount ? (
           <>
          <div className="flex items-center space-x-2 mb-4">
           <div className="flex -space-x-2">
@@ -295,7 +312,7 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
               />
             ))}
           </div>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-neutral-400">
             Followed by&nbsp;
             {followersYouKnow.result?.users.map((user, index) => (
               <>
@@ -309,7 +326,7 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
           </p>
         </div>
         </>
-        )}
+        ): null}
 
         <div className="flex space-x-4 mb-6 border-b pb-2 border-neutral-700">
           <Button variant="ghost" className={`text-neutral-400 ${selectedFeed === 'casts' ? 'bg-accent text-accent-foreground' : ''}`} onClick={() => handleFeedChange('casts')}>Casts</Button>
@@ -317,7 +334,7 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
           {isUserLoggedIn ?
           <>
           <Button variant="ghost" className={`text-neutral-400 ${selectedFeed === 'likes' ? 'bg-accent text-accent-foreground' : ''}`} onClick={() => handleFeedChange('likes')}>Likes</Button>
-          <Button variant="ghost" className={`text-neutral-400 ${selectedFeed === 'channels' ? 'bg-accent text-accent-foreground' : ''}`} onClick={() => handleFeedChange('channels')}>Channels</Button>
+          {/* <Button variant="ghost" className={`text-neutral-400 ${selectedFeed === 'channels' ? 'bg-accent text-accent-foreground' : ''}`} onClick={() => handleFeedChange('channels')}>Channels</Button> */}
           </> : null}
         </div>
 
@@ -340,7 +357,7 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
 {isFeed(selectedFeed)  &&  <div className={`${feedLoading ? 'opacity-50' : ''}`}>
 
 {[...(feed?.result?.casts ?? [])].map((item, i) => (
-          <Post key={i} item={{cast: item}} i={i} />
+          <Post key={i} item={{cast: item}} />
         ))}
 
   <InfiniteScroll hasMore={hasMore} isLoading={feedLoading} next={loadMore} threshold={1}>
@@ -353,7 +370,7 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
           {/* TEST Feed */}
           {/* <div>
       {[...(testFeed?.result?.items ?? [])].map((item, i) => (
-                <Post key={i} item={item} i={i} />
+                <Post key={i} item={item} />
               ))}
 
         {!isInitialLoad && !isNoContent && <SimpleLoader />}
@@ -376,8 +393,8 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
             </Avatar>
             <div>
               <h2 className="text-lg font-semibold">{channel.name}</h2>
-              <p className="text-sm text-gray-400">/{channel.key} · 👥 {channel.memberCount}</p>
-              <p className="mt-1 text-sm text-gray-300">{channel.description}</p>
+              <p className="text-sm text-neutral-400">/{channel.key} · 👥 {channel.memberCount}</p>
+              <p className="mt-1 text-sm text-neutral-300">{channel.description}</p>
             </div>
           </div>
           <Button variant="outline" size="sm" className="mt-1">
@@ -421,8 +438,8 @@ export default ProfilePage
 //               frames, frames, frames /bleu bleuonbase.twitter
 //             </p>
 //             <div className="flex space-x-4 mb-4">
-//               <span><strong>2K</strong> <span className="text-gray-400">Following</span></span>
-//               <span><strong>21K</strong> <span className="text-gray-400">Followers</span></span>
+//               <span><strong>2K</strong> <span className="text-neutral-400">Following</span></span>
+//               <span><strong>21K</strong> <span className="text-neutral-400">Followers</span></span>
 //             </div>
 //           </div>
 //           <div className="flex space-x-2">
@@ -451,16 +468,16 @@ export default ProfilePage
 //             <Image src="/placeholder.svg" alt="User 2" width={24} height={24} className="rounded-full border-2 border-[#1c1c24]" />
 //             <Image src="/placeholder.svg" alt="User 3" width={24} height={24} className="rounded-full border-2 border-[#1c1c24]" />
 //           </div>
-//           <p className="text-sm text-gray-400">
+//           <p className="text-sm text-neutral-400">
 //             Followed by @horsefacts.eth, @blankspace, @downshift.eth and 213 others you know
 //           </p>
 //         </div>
         
-//         <div className="flex space-x-4 mb-6 border-b border-gray-700">
+//         <div className="flex space-x-4 mb-6 border-b border-neutral-700">
 //           <Button variant="ghost" className="text-white">Casts</Button>
-//           <Button variant="ghost" className="text-gray-400">Casts + Replies</Button>
-//           <Button variant="ghost" className="text-gray-400">Likes</Button>
-//           <Button variant="ghost" className="text-gray-400">Channels</Button>
+//           <Button variant="ghost" className="text-neutral-400">Casts + Replies</Button>
+//           <Button variant="ghost" className="text-neutral-400">Likes</Button>
+//           <Button variant="ghost" className="text-neutral-400">Channels</Button>
 //         </div>
         
 //         <div className="space-y-4">
@@ -477,7 +494,7 @@ export default ProfilePage
 //                 <div className="flex items-center justify-between">
 //                   <div>
 //                     <span className="font-bold">agusti</span>
-//                     <span className="text-gray-400 ml-2">@bleu.eth · 25m</span>
+//                     <span className="text-neutral-400 ml-2">@bleu.eth · 25m</span>
 //                   </div>
 //                   <Button variant="ghost" size="icon">
 //                     <MoreHorizontal className="h-4 w-4" />
@@ -502,7 +519,7 @@ export default ProfilePage
 //                   <p>blockchain connoisseur</p>
 //                   <p>dev's not french</p>
 //                 </Card>
-//                 <div className="flex justify-between mt-4 text-gray-400">
+//                 <div className="flex justify-between mt-4 text-neutral-400">
 //                   <Button variant="ghost" size="icon"><MessageSquare className="h-4 w-4" /></Button>
 //                   <Button variant="ghost" size="icon"><Repeat2 className="h-4 w-4" /></Button>
 //                   <Button variant="ghost" size="icon"><Heart className="h-4 w-4" /></Button>
@@ -510,7 +527,7 @@ export default ProfilePage
 //                   <Button variant="ghost" size="icon"><Bookmark className="h-4 w-4" /></Button>
 //                   <Button variant="ghost" size="icon"><Share2 className="h-4 w-4" /></Button>
 //                 </div>
-//                 <p className="text-gray-400 text-sm mt-2">1 reply · 1 like · /someone-build</p>
+//                 <p className="text-neutral-400 text-sm mt-2">1 reply · 1 like · /someone-build</p>
 //               </div>
 //             </div>
 //           </Card>
@@ -528,7 +545,7 @@ export default ProfilePage
 //                 <div className="flex items-center justify-between">
 //                   <div>
 //                     <span className="font-bold">agusti</span>
-//                     <span className="text-gray-400 ml-2">@bleu.eth · 1d</span>
+//                     <span className="text-neutral-400 ml-2">@bleu.eth · 1d</span>
 //                   </div>
 //                   <Button variant="ghost" size="icon">
 //                     <MoreHorizontal className="h-4 w-4" />
@@ -546,7 +563,7 @@ export default ProfilePage
 //                   height={300}
 //                   className="mt-4 rounded-lg"
 //                 />
-//                 <div className="flex justify-between mt-4 text-gray-400">
+//                 <div className="flex justify-between mt-4 text-neutral-400">
 //                   <Button variant="ghost" size="icon"><MessageSquare className="h-4 w-4" /></Button>
 //                   <Button variant="ghost" size="icon"><Repeat2 className="h-4 w-4" /></Button>
 //                   <Button variant="ghost" size="icon"><Heart className="h-4 w-4" /></Button>

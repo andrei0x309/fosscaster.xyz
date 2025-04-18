@@ -1,33 +1,17 @@
 'use client'
 
-import {Img as Image} from 'react-image'
 import { useEffect, useState, useCallback } from 'react'
-import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs"
-import { ScrollArea } from "~/components/ui/scroll-area"
-import { useMainStore } from "~/store/main"
 import { getBookmarkedCasts } from "~/lib/api"
 import type {TBookmarkedCasts } from "~/types/wc-bookmarked-casts"
-// import InfiniteScroll from "~/components/ui/extension/infinite-scroll"
-import { ComposeModal } from "~/components/functional/modals/compose-cast"
 import { Post } from "~/components/blocks/post"
-import { Button } from "~/components/ui/button"
-// import { Card } from "~/components/ui/card"
-// import { MoreHorizontal, MessageSquare, Repeat2, Heart, Bookmark, Share2 } from 'lucide-react'
-import type { TWCUserByUsername } from "~/types/wc-user-by-username"
-import type { TAllFidCasts } from "~/types/wc-all-fid-casts"
 import { SimpleLoader } from "~/components/atomic/simple-loader"
-import { formatNumber } from "~/lib/misc"
-import { Card } from "~/components/ui/card"
-import { MoreHorizontal, PenSquare, MessageSquare, Repeat2, Heart, LayoutGrid, Bookmark, Share2, ArrowLeft, Mail, Bell } from 'lucide-react'
 import  InfiniteScroll from "~/components/ui/extension/infinte-scroll"
 import { CastHeader } from "~/components/blocks/header/cast-header"
 
 
 export function BookmarkPages({className = ''}: {className?: string}) {
-  const { isUserLoggedIn, setConnectModalOpen, navigate  } = useMainStore()
 
   const [feed, setFeed] = useState({} as TBookmarkedCasts)
-  const [isComposeModalOpen, setComposeModalOpen] = useState(false)
   const [feedLoading, setFeedLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const [isInitialLoad, setIsInitialLoad] = useState(false)
@@ -95,10 +79,11 @@ export function BookmarkPages({className = ''}: {className?: string}) {
 
       
                 {/* Feed */}
-                <div className={`space-y-4 ${feedLoading ? 'opacity-50' : ''}`}>
+          <div className={`space-y-4 ${feedLoading ? 'opacity-50' : ''}`}>
+          {feedLoading && <div className='my-2'><SimpleLoader /></div>}
 
-      {[...(feed?.result?.bookmarks?.map(i => ({ cast: i})) ?? [])].map((item, i) => (
-                <Post key={i} item={item} i={i} />
+          {[...(feed?.result?.bookmarks?.map(i => ({ cast: i})) ?? [])].map((item, i) => (
+                <Post key={i} item={item} />
               ))}
 
         <InfiniteScroll hasMore={hasMore} isLoading={feedLoading} next={loadMore} threshold={1}>

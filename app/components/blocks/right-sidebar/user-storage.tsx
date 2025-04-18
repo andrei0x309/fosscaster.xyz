@@ -26,7 +26,7 @@ export const StorageCard = () => {
   return (
     <>
     <StyledWrapper>
-      <div className="container bg-gray-100 dark:dark:bg-zinc-900 rounded-lg p-4 mb-4">
+      <div className="container bg-neutral-100 dark:dark:bg-zinc-900 rounded-lg p-4 mb-4">
       <h2 className="font-semibold mb-2">Storage {!isUserLoggedIn ? <span className="text-[.7rem] font-normal">(login to see your storage)</span> : null}</h2>
         <div className={`storage-box ${!isUserLoggedIn ? 'opacity-40' : ''}`}>
           <div className={`storage-bar`} >

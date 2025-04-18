@@ -15,7 +15,6 @@ import {
     getChannelFollowersYouKnow 
 } from "~/lib/api"
 import  InfiniteScroll from "~/components/ui/extension/infinte-scroll"
-import { ComposeModal } from "~/components/functional/modals/compose-cast"
 import { Post } from "~/components/blocks/post"
 import { SimpleLoader } from '../atomic/simple-loader'
 import { useImmer } from "use-immer"
@@ -143,14 +142,14 @@ export default function ChannelPage({
         <div className="flex justify-between items-start">
           <div>
             <h2 className="text-2xl font-bold">{ channelInfo?.result?.channel?.name ?? 'NA'  }</h2>
-            <p className="text-gray-400">/{ channelInfo?.result?.channel?.key ?? 'NA' }</p>
+            <p className="text-neutral-400">/{ channelInfo?.result?.channel?.key ?? 'NA' }</p>
           </div>
           <div className="text-right">
-            <p className="font-semibold">{formatNumber(channelInfo?.result?.channel?.memberCount ?? 0)} <span className="text-gray-400 text-sm">members</span></p>
-            <p className="font-semibold">{formatNumber(channelInfo?.result?.channel?.followerCount ?? 0)} <span className="text-gray-400 text-sm">followers</span></p>
+            <p className="font-semibold">{formatNumber(channelInfo?.result?.channel?.memberCount ?? 0)} <span className="text-neutral-400 text-sm">members</span></p>
+            <p className="font-semibold">{formatNumber(channelInfo?.result?.channel?.followerCount ?? 0)} <span className="text-neutral-400 text-sm">followers</span></p>
           </div>
         </div>
-        <p className="mt-2 text-gray-500 dark:text-gray-300"></p>
+        <p className="mt-2 text-neutral-500 dark:text-neutral-300"></p>
         <div className="flex items-center mt-2 space-x-2">
             
          {followersYouKnow?.result?.totalCount > 0 ?  (<><div className="flex -space-x-2"> 
@@ -161,7 +160,7 @@ export default function ChannelPage({
             </Avatar>
           ))}
           </div>
-          <span className="text-sm text-gray-400">{followersYouKnow?.result?.totalCount} mutual followers</span>
+          <span className="text-sm text-neutral-400">{followersYouKnow?.result?.totalCount} mutual followers</span>
           </>
         ): null}
  
@@ -184,12 +183,13 @@ export default function ChannelPage({
         </div>
       </div>
 
- 
-      <div>
+      
+      <div className="mt-1">
         {!isInitialLoad && !isNoContent ? <SimpleLoader /> : null}
 
         { isInitialLoad ? [...(feed?.result?.items ?? [])].map((item, i) => (
-                <Post key={i} item={item} i={i} />
+                <Post key={i} item={item}
+                />
               )) : null}
  
         <InfiniteScroll hasMore={hasMore} isLoading={feedLoading} next={loadMore} threshold={1}>

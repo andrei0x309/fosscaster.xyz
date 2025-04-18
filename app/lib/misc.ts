@@ -1,8 +1,9 @@
 export const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-export const timeAgo = (date: string | number) => {
-
-    const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+export const timeAgo = (date: string | number, shortFormat = false) => {
+    
+    const dateInMs = new Date(date).getTime()
+    const seconds = Math.floor((Date.now() - dateInMs) / 1000);
     let interval = seconds / 31536000;
     let intervalType: string;
 
@@ -36,7 +37,15 @@ export const timeAgo = (date: string | number) => {
     if (interval > 1 || interval === 0) {
         intervalType += 's';
     }
-
+    if (shortFormat) {
+       if (intervalType.startsWith('second') || intervalType.startsWith('minute')  || intervalType.startsWith('hour') ) {
+           return interval.toFixed(0) + ' ' + intervalType;
+        }
+       const year = new Date().getFullYear()
+       const day = new Date(dateInMs).getDate() + 1
+       const month = new Date(dateInMs).getMonth() + 1
+       return `${day}/${month}/${year.toString().slice(2)}`
+    }
     return interval.toFixed(0) + ' ' + intervalType + ' ago';
 }
 

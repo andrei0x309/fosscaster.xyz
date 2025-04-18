@@ -221,7 +221,7 @@ export function Modal({
      }
    }
 
-  }, [isUserLoggedIn, mainUserData?.fid, mainUserData?.displayName, mainUserData?.avatar, mainUserData?.username])
+  }, [isUserLoggedIn, mainUserData?.fid, mainUserData?.displayName, mainUserData?.avatar, mainUserData?.username, isInstalled])
 
   const doSIWF = async ({
     url,
@@ -383,7 +383,7 @@ export function Modal({
             </div>
 
             {/* Modal Content */}
-            <div className="overflow-auto md:min-h-[30rem] lg:min-h-[50rem] relative">
+            <div className="overflow-auto min-h-[26rem] md:min-h-[30rem] lg:min-h-[50rem] relative">
                   {showSplash && <div className="relative w-full h-full flex items-center justify-center flex-col dark:bg-neutral-900 bg-neutral-400" style={{
                     minHeight: 'inherit',
                     position: 'absolute',

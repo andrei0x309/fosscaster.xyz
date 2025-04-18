@@ -1,4 +1,12 @@
-import { Item, CastElement } from '../wc-feed-items'
+import { Item, ItemCast } from '../wc-feed-items'
+
+
+export type T_USER_SETTINGS = {
+    isCryptoLeftFeedDisabled?: boolean
+    isTrendingFeedEnabled?: boolean
+    isSaveDraftEnabled?: boolean
+    isPrimaryFeedFollowing?: boolean
+}
 
 export type T_USER_DATA = {
     authToken?: string
@@ -10,24 +18,27 @@ export type T_USER_DATA = {
     location?: string
     locationId?: string
     url?: string
+    settings?: T_USER_SETTINGS
 }
 
 export type T_MODAL_DATA = {
     reply?: Item | null
-    quote?: CastElement | null
+    quote?: ItemCast | null
+    channelKey?: string
 }
 
 
 export type T_MINI_APP_DATA = {
     homeUrl: string
-    name: string
+    name?: string
     splashImageUrl?: string
     isInstalled?: boolean
     iconUrl?: string
     author?: {
         username: string
         avatarUrl: string
-    }
+    },
+    fetchFrameData?: boolean
 }
 
 export type MainState = {

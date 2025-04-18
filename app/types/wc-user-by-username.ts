@@ -17,7 +17,6 @@ export interface User {
     profile:           Profile;
     followerCount:     number;
     followingCount:    number;
-    activeOnFcNetwork: boolean;
     viewerContext:     ViewerContext;
 }
 

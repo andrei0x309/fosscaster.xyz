@@ -19,7 +19,6 @@ export const MiniAppsSidebar = () => {
         const fetchApps = async () => {
             try {
                 const apps = await getFavoriteFrames({ limit: 12})
-                console.log(apps)
             if (!apps.result?.frames?.length) {
                 setUserHasApps(false)
                 setLoading(false)
@@ -39,7 +38,7 @@ export const MiniAppsSidebar = () => {
 
 
     return (
-        <div className="container bg-gray-100 dark:dark:bg-zinc-900 rounded-lg p-4 mb-4">
+        <div className="container bg-neutral-100 dark:dark:bg-zinc-900 rounded-lg p-4 mb-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold">Mini Apps</h2>
             <div className="flex space-x-2">

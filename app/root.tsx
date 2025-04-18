@@ -9,23 +9,26 @@ import "./tailwind.css";
 import '~/assets/global.css'
 import '@radix-ui/themes/styles.css';
 import { HydrateFallback } from "~/components/atomic/hydratation-fallback";
+import { Toaster } from "~/components/ui/toaster"
+
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
       <head>
-        <meta charSet="utf-8" />
         <link rel="shortcut ico" href="/favicon.png" />
+        <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
       </head>
-      <body suppressHydrationWarning={true} className="dark:bg-neutral-950 bg-white">
+      <body className="dark:bg-neutral-950 bg-white">
       <div id="app" className="mx-auto">
         {children}
         </div>
         <ScrollRestoration />
         <Scripts />
+        <Toaster />
       </body>
     </html>
   );

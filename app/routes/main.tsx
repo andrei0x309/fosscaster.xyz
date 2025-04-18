@@ -30,12 +30,12 @@ export const meta: MetaFunction = () => {
   return [
     { title: "FC App - Warpcast SPA clone" },
     { name: "description", content: "Welcome to Remix (SPA Mode)!" },
-  ];
-  // const { setConnectModalOpen  } = useMainStore()
- 
+    {
+      property: "og:title",
+      content: "FC App - Warpcast SPA clone",
+    },
+  ]; 
 };
-
-const noRightSidebar = ['/~/inbox', '/~/settings']
 
 
 export default function Index() {
@@ -51,32 +51,30 @@ export default function Index() {
   const [is404, setIs404] = useState(false)
   const { setRightSidebarVisible, isUserLoggedIn } = useMainStore()
 
-  const { setNewDmsCount, setNewNotificationsCount } = useNotifBadgeStore()
+  const { setNewDmsCount, setNewNotificationsCount, newDmsCount } = useNotifBadgeStore()
 
   const notificationInterval = useRef<NodeJS.Timeout | null>(null)
 
+  const notifCheck = useCallback(async () => {
+    getNotifsUnseen().then((data) => {
+      setNewNotificationsCount(data.result.notificationsCount)
+      if(data?.result?.inboxCount !== newDmsCount) {
+        setNewDmsCount(data.result.inboxCount)
+      }
+      if(data.result.notificationsCount > 0) {
+        addNotificationBadge()
+      } else {
+        removeNotificationBadge()
+      }
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (isUserLoggedIn) {
-      getNotifsUnseen().then((data) => {
-        setNewNotificationsCount(data.result.notificationsCount)
-        setNewDmsCount(data.result.inboxCount)
-        if(data.result.notificationsCount > 0) {
-          addNotificationBadge()
-        } else {
-          removeNotificationBadge()
-        }
-      })
+      notifCheck()
       notificationInterval.current = setInterval(() => {
-        getNotifsUnseen().then((data) => {
-          setNewNotificationsCount(data.result.notificationsCount)
-          setNewDmsCount(data.result.inboxCount)
-          if(data.result.notificationsCount > 0) {
-            addNotificationBadge()
-          } else {
-            removeNotificationBadge()
-          }
-        })
+        notifCheck()
       }, 7000)
     } else {
       if (notificationInterval.current) {
@@ -88,7 +86,8 @@ export default function Index() {
         clearInterval(notificationInterval.current)
       }
     }
-  }, [isUserLoggedIn, setNewNotificationsCount, setNewDmsCount])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isUserLoggedIn])
 
   const checkUserLooggedIn = useCallback(() => {
     if (!isUserLoggedIn) {
@@ -105,6 +104,7 @@ export default function Index() {
     if (location?.pathname === '/' || location?.pathname === '/home') {
       setPage('home')
       setFeedInitial('')
+      setRightSidebarVisible(true)
     } else if (!location?.pathname?.startsWith('/~')) {      
         setPage('profile')
         const splits = location?.pathname?.split('/')
@@ -126,24 +126,38 @@ export default function Index() {
         } else {
           setIs404(true)
         }
+      setRightSidebarVisible(true)
     } else if (location?.pathname?.startsWith('/~/channel/')) {
       setPage('channel')
       const splits = location?.pathname?.split('/')
       const channelId = splits[3]
       setPageData(channelId)
-    }else if (location?.pathname === '/~/bookmarks') {
-      checkUserLooggedIn() && setPage('bookmarks')
+      setRightSidebarVisible(true)
+    }else if (location?.pathname?.startsWith('/~/bookmarks')) {
+      if(checkUserLooggedIn()) {
+        setPage('bookmarks')
+        setRightSidebarVisible(true)
+      }
     } else if (location?.pathname?.startsWith('/~/explore')) {
       if(checkUserLooggedIn()) {
-        const page = location?.pathname?.split('~/explore/')[1].replace('/', '')
+        const page = location?.pathname?.split('~/explore/')?.[1]?.replace('/', '') || ''
         setPage('explore')
         setPageData(page)
       }
-    } else if (location?.pathname === '/~/notifications') {
-      checkUserLooggedIn() && setPage('notifications')
+      setRightSidebarVisible(true)
+    } else if (location?.pathname?.startsWith('/~/notifications')) {
+       if(checkUserLooggedIn()) {
+        setPage('notifications')
+        const page = location?.pathname?.split('~/notifications/')?.[1]?.replace('/', '') || ''
+        setPageData(page)
+      }
+      setRightSidebarVisible(true)
     } else if (location?.pathname === '/~/mini-apps') {
-      checkUserLooggedIn() && setPage('mini-apps')
-    } else if (location?.pathname === '/~/inbox') {
+      if(checkUserLooggedIn()) {
+        setPage('mini-apps')
+        setRightSidebarVisible(true)
+      }
+    } else if (location?.pathname.startsWith('/~/inbox')) {
       if(checkUserLooggedIn()) {
         setRightSidebarVisible(false)
         setPage('inbox')
@@ -156,7 +170,8 @@ export default function Index() {
       const searchType = location?.pathname?.split('search/')[1].split('?')[0]
       setPageData(q)
       setAdditionalPageData(searchType ?? 'top')
-    }else if (location?.pathname === '/~/settings') {
+      setRightSidebarVisible(true)
+    }else if (location?.pathname?.startsWith('/~/settings')) {
       if(checkUserLooggedIn()) {
         setRightSidebarVisible(false)
         setPage('settings')
@@ -164,13 +179,12 @@ export default function Index() {
     } else if( ['/~/trending', '/~/following', '/~/fc-oss', '/~/politics', '/~/cryptoleft'].includes(location?.pathname)) {
       setPage('home')
       setFeedInitial(location?.pathname?.split('/~/')[1])
+      setRightSidebarVisible(true)
     } else if( location?.pathname === '/~/about') {
       setPage('about')
+      setRightSidebarVisible(true)
     } else {
       setIs404(true)
-    }
-
-    if(!noRightSidebar.includes(location?.pathname)) {
       setRightSidebarVisible(true)
     }
 
@@ -184,8 +198,8 @@ export default function Index() {
         {page === 'profile' && !is404  ? <ProfilePage key={2} profile={profileUser} startFeed={pageData} /> : null }
         { page === 'bookmarks' && !is404 ? <BookmarkPage key={3} /> : null }
         { page === 'explore' && !is404 ? <ExplorePage key={4} /> : null }
-         { page === 'notifications' && !is404 ? <NotificationsPage key={5} /> : null }
-         { page === 'inbox' && !is404  ? <InboxPage key={6} openChat={pageData} /> : null }
+         { page === 'notifications' && !is404 ? <NotificationsPage key={5} page={pageData} /> : null }
+         { page === 'inbox' && !is404  ? <InboxPage key={6}/> : null }
          {page === 'search' && !is404 ? <SearchPage key={7} query={pageData} searchType={additionalPageData} /> : null }
          { page === 'settings' && !is404  ? <SettingsPage key={8} /> : null }
          {page === 'channel' && !is404  ? <ChannelPage key={9} channelId={pageData} /> : null}

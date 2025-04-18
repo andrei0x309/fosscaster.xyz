@@ -1,21 +1,28 @@
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useRef, useEffect, useCallback, useContext } from "react"
 import { Search, ArrowLeft, MoreHorizontal, Bell, Archive, Pin, LogOut, RotateCcw, X } from "lucide-react"
 import { useMainStore } from "~/store/main"
 import { getDirectCastInbox  } from "~/lib/api"
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
 import { timeAgo } from "~/lib/misc"
+import { useDebouncedCallback } from "~/hooks/use-debounced-callback"
+import { ChatContext } from './chat-context'
+import { UserIcon } from '~/components/icons/user'
+import { GroupIcon } from '~/components/icons/group'
+import { useLocation } from '@remix-run/react'
 
 type Chats = Awaited<ReturnType<typeof getDirectCastInbox>>
  
 export default function ChatSidebar() {
 
-  const { setDcModalOpen, isUserLoggedIn } = useMainStore()
+  const { setDcModalOpen, navigate } = useMainStore()
+  const { setCurrentConversation } = useContext(ChatContext)
 
   const [showRequests, setShowRequests] = useState(false)
   const [hoveredChat, setHoveredChat] = useState<string | null>(null)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false)
 
+ 
   // Refs for scroll containers
   const regularChatsContainerRef = useRef<HTMLDivElement>(null)
   const requestChatsContainerRef = useRef<HTMLDivElement>(null)
@@ -31,100 +38,63 @@ export default function ChatSidebar() {
   // Track if there are more chats to load
   const [hasMoreRegular, setHasMoreRegular] = useState(true)
   const [hasMoreRequests, setHasMoreRequests] = useState(true)
+  
+  const location = useLocation()
+  
 
-  const [initialRegularChatsLoaded, setInitialRegularChatsLoaded] = useState(false)
-  const [initialRequestChatsLoaded, setInitialRequestChatsLoaded] = useState(false)
-
-  // Page tracking
-  const regularPageRef = useRef(1)
-  const requestPageRef = useRef(1)
-
-//   // Initial chat data
-//   const initialRegularChats: RegularChat[] = [
-//     { id: 1, name: "dddddddii", message: "You: test", time: "7:10 PM" },
-//     { id: 2, name: "geoffgolberg", message: "This dude gets it", time: "3/28/25" },
-//     {
-//       id: 3,
-//       name: "Devs: Composer Actions",
-//       message: "You: @horsefacts.eth @deodad Is there any reason why...",
-//       time: "3/27/25",
-//     },
-//     { id: 4, name: "ccarella.eth", message: "awesome thanks", time: "3/12/25" },
-//     {
-//       id: 5,
-//       name: "Devs: Channel API Preview",
-//       message: "dwr.eth: https://warpcast.com/dwr.eth/0xe3f18321...",
-//       time: "2/15/25",
-//     },
-//     { id: 6, name: "airstack.eth", message: "You: https://moxie-frames.airstack.xyz/mb", time: "2/15/25" },
-//     { id: 7, name: "Scout Cast x Andrei0x309", message: "", time: "12/6/24" },
-//     { id: 8, name: "v", message: "", time: "1/23/25" },
-//     {
-//       id: 9,
-//       name: "samuelhuber.eth",
-//       message: "You: Merry Christmas, may you have a much better...",
-//       time: "12/26/24",
-//     },
-//     {
-//       id: 10,
-//       name: "sunlight = the best disinfectant",
-//       message: "geoffgolberg: Hope Zinger accepts the challenge..",
-//       time: "12/6/24",
-//     },
-//   ]
+    useEffect( () => {
+      const conversationId = location?.pathname?.split('/inbox/')[1]
+      const conversation = loadedRegularChats?.result?.conversations?.find((chat) => chat.conversationId === conversationId)
+      if (conversation) {
+        setCurrentConversation(conversation)
+      }
+    }, [loadedRegularChats?.result?.conversations, location?.pathname, setCurrentConversation])
 
     const fetchInbox = useCallback(async (category: 'default' | 'request' = 'default') => {
-      console.log('fetchInbox', category)
       if (isLoadingRegular && category =='default') return
       if (isLoadingRequests && category =='request') return
+      if (!hasMoreRegular && category =='default') return
+      if (!hasMoreRequests && category =='request') return
       try {
-      category =='default' && setIsLoadingRegular(true)
-      category =='request' && setIsLoadingRequests(true)
-      const cursor = category =='default' ? loadedRegularChats?.next?.cursor : loadedRequestChats?.next?.cursor
+      if (category === 'default') setIsLoadingRegular(true)
+      if (category === 'request') setIsLoadingRequests(true)
+      const cursor = category === 'default' ? loadedRegularChats?.next?.cursor : loadedRequestChats?.next?.cursor
       const inbox = await getDirectCastInbox({
         cursor,
         category
       })
-      if (category =='default') {
-      setLoadedRegularChats( (prev) => {
-           if (!inbox.next) {
-              setHasMoreRegular(false)
-            }
-            setIsLoadingRegular(false)
-            return {
-              next: inbox.next,
-              result: {
-                ...inbox.result,
-                conversations: [...(prev?.result?.conversations ?? []), ...inbox.result.conversations],
-              }
-            }
-          })
-      } else {
-        setLoadedRequestChats( (prev) => {
-          if (!inbox.next) {
-            setHasMoreRequests(false)
+      if (category === 'default') {
+      const hasMore = inbox.next?.cursor ? true : false
+      setHasMoreRegular(hasMore)
+      const newInbox = {
+        next: inbox.next,
+        result: {
+          ...inbox.result,
+          conversations: [...(loadedRegularChats?.result?.conversations ?? []), ...inbox.result.conversations],
+        }
+      }
+      setLoadedRegularChats(newInbox)
+      setIsLoadingRegular(false)
+      } else if (category === 'request') {
+        const hasMore = inbox.next?.cursor ? true : false
+        setHasMoreRequests(hasMore)
+        const newInbox = {
+          next: inbox.next,
+          result: {
+            ...inbox.result,
+            conversations: [...(loadedRequestChats?.result?.conversations ?? []), ...inbox.result.conversations],
           }
-          setIsLoadingRequests(false)
-          return {
-            next: inbox.next,
-            result: {
-              ...inbox.result,
-              conversations: [...(prev?.result?.conversations ?? []), ...inbox.result.conversations],
-            }
-          }
-        })
+        }
+        setLoadedRequestChats(newInbox)
+        setIsLoadingRequests(false)
       } 
      } catch (error) {
         category =='default' && setIsLoadingRegular(false)
         category =='request' && setIsLoadingRequests(false)
+        setIsLoadingRegular(false)
         console.error("Error fetching default inbox:", error)
       }
-      finally {
-        category =='default' && setIsLoadingRegular(false)
-        category =='request' && setIsLoadingRequests(false)
-        setIsLoadingRegular(false)
-      }
-    }, [isLoadingRegular, isLoadingRequests, loadedRegularChats?.next?.cursor, loadedRequestChats?.next?.cursor])
+    }, [hasMoreRegular, hasMoreRequests, isLoadingRegular, isLoadingRequests, loadedRegularChats, loadedRequestChats?.next?.cursor, loadedRequestChats?.result?.conversations])
 
 //   const initialRequestChats: RequestChat[] = [
 //     { id: 101, name: "tesseractx", message: "", time: "", followers: 0 },
@@ -141,28 +111,22 @@ export default function ChatSidebar() {
 
   // Initialize with first batch of chats
   useEffect(() => {
-    if(!isUserLoggedIn) return
-    if(!loadedRegularChats?.result?.conversations.length && !initialRegularChatsLoaded) {
-      setInitialRegularChatsLoaded(true)
       fetchInbox('default')
-    }
-    if(!loadedRequestChats?.result?.conversations.length  && !initialRequestChatsLoaded) {
-      setInitialRequestChatsLoaded(true)
       fetchInbox('request')
-    }
-  }, [fetchInbox, initialRegularChatsLoaded, initialRequestChatsLoaded, isUserLoggedIn, loadedRegularChats, loadedRequestChats])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Handle scroll for regular chats
-  const handleRegularChatsScroll = () => {
+  const handleRegularChatsScroll = useDebouncedCallback(() => {
     if (!regularChatsContainerRef.current || isLoadingRegular || !hasMoreRegular) return
 
     const { scrollTop, scrollHeight, clientHeight } = regularChatsContainerRef.current
-
+ 
     // If scrolled to bottom (with a small buffer)
-    if (scrollHeight - scrollTop - clientHeight < 50) {
-      loadMoreRegularChats()
+    if (scrollHeight - scrollTop - clientHeight < 50 ) {
+      fetchInbox('default')
     }
-  }
+  })
 
   // Handle scroll for request chats
   const handleRequestChatsScroll = () => {
@@ -172,23 +136,10 @@ export default function ChatSidebar() {
 
     // If scrolled to bottom (with a small buffer)
     if (scrollHeight - scrollTop - clientHeight < 50) {
-      loadMoreRequestChats()
+       fetchInbox('request')
     }
   }
 
-  // Load more regular chats
-  const loadMoreRegularChats = () => {
-    if (isLoadingRegular) return
-    setIsLoadingRegular(true)
-    fetchInbox('default')
-  }
-
-  // Load more request chats
-  const loadMoreRequestChats = () => {
-    if (isLoadingRequests) return
-    setIsLoadingRequests(true)
-    // fetchInbox('request')
-  }
 
   const handleChatMenuClick = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -222,7 +173,7 @@ export default function ChatSidebar() {
               >
                 <MoreHorizontal size={20} />
               </button>
-              <button className="text-neutral-400 hover:text-white">
+              <button className="text-neutral-400 hover:text-white hover:scale-105" onClick={() => setDcModalOpen(true)}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"
@@ -319,17 +270,33 @@ export default function ChatSidebar() {
             {loadedRegularChats?.result?.conversations.map((chat) => (
               <div
                 key={chat.conversationId}
-                className="p-4 hover:bg-neutral-800 cursor-pointer flex items-start relative"
+                className="p-4 dark:hover:bg-neutral-800 hover:bg-neutral-200 cursor-pointer flex items-start relative"
                 onMouseEnter={() => setHoveredChat(chat?.conversationId)}
                 onMouseLeave={() => setHoveredChat(null)}
-              >
+                onClick={() => {
+                  navigate(`/~/inbox/${chat?.conversationId}`)
+                }}
+                aria-hidden
+              >  
+                {!chat?.isGroup ?
+                (chat?.viewerContext?.counterParty?.pfp?.url ?
                 <Avatar className="hover:border-2">
-                      <AvatarImage src={chat?.viewerContext?.counterParty?.pfp?.url} alt={`User ${chat?.viewerContext?.counterParty?.username}`} />
-                      <AvatarFallback>{chat?.viewerContext?.counterParty?.username.slice(0,2)}</AvatarFallback>
+                      <AvatarImage src={chat.viewerContext.counterParty.pfp.url} alt={`User ${chat?.viewerContext?.counterParty?.username}`} />
+                      <AvatarFallback>{chat.viewerContext.counterParty.username.slice(0,2)}</AvatarFallback>
+                </Avatar>   
+                : <UserIcon className="w-8 h-8 ml-1" />)
+                :
+                ( chat.photoUrl ?
+                <Avatar className="hover:border-2">
+                      <AvatarImage src={chat.photoUrl} alt={`Group ${chat?.name}`} />
+                      <AvatarFallback>{chat?.name}</AvatarFallback>
                 </Avatar>
+                : <GroupIcon className="w-8 h-8 ml-1" />
+                )
+                }
                 <div className="ml-3 flex-1 min-w-0">
                   <div className="flex justify-between">
-                    <span className="font-medium truncate">{chat?.viewerContext?.counterParty?.username}</span>
+                    <span className="font-medium truncate">{ !chat?.isGroup ? chat?.viewerContext?.counterParty?.username : chat?.name}</span>
                     {hoveredChat === chat?.conversationId ? (
                       <button
                         onClick={(e) => handleChatMenuClick(chat?.conversationId, e)}
@@ -338,7 +305,7 @@ export default function ChatSidebar() {
                         <MoreHorizontal size={16} />
                       </button>
                     ) : (
-                      <span className="text-neutral-400 text-sm">{timeAgo(new Date(chat?.lastMessage?.serverTimestamp ?? chat.createdAt).toISOString())}</span>
+                      <span className="text-neutral-400 text-sm">{timeAgo(chat?.lastMessage?.serverTimestamp ?? 0, true)}</span>
                     )}
                   </div>
                   <p className="text-neutral-400 text-sm truncate">{chat?.lastMessage?.message}</p>
@@ -460,7 +427,7 @@ export default function ChatSidebar() {
                         <MoreHorizontal size={16} />
                       </button>
                     ) : (
-                      <span className="text-neutral-400 text-sm">{timeAgo(new Date(chat?.lastMessage?.serverTimestamp ?? chat.createdAt).toISOString())}</span>
+                      <span className="text-neutral-400 text-sm">{timeAgo(chat?.lastMessage?.serverTimestamp ?? 0, true)}</span>
                     )}
                   </div>
                   {chat.viewerContext?.counterParty?.viewerContext?.followersYouKnow?.totalCount > 0 && (

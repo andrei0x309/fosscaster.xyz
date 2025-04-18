@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
+import { Switch } from "~/components/ui/switch"
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
 import { ChevronRight, Upload, Trash2 } from 'lucide-react'
 import { useMainStore } from '~/store/main'
@@ -47,6 +48,7 @@ import {
 } from '~/lib/api'
 import { getFnameLastTransfer } from '~/lib/third-party'
 
+
 export default function SettingsPage({className}: {className?: string}) {
   
   const { mainUserData, setUserData, isRightSidebarVisible } = useMainStore()
@@ -65,7 +67,6 @@ export default function SettingsPage({className}: {className?: string}) {
   
 
   const noContentYet = [
-    'Feeds',
     'Verified Addresses',
     'Direct Casts',
     'Actions',
@@ -79,7 +80,8 @@ export default function SettingsPage({className}: {className?: string}) {
     'Verified Addresses',
     'Direct Casts',
     'Actions',
-    'Muted Words'
+    'Muted Words',
+    'Signers'
   ]
 
   const handleRemoveAvatar = async () => {
@@ -272,7 +274,9 @@ const handleSetProfile = async () => {
 
     <div className={`flex h-full w-full shrink-0 justify-center sm:w-[850px] lg:w-[980px] ${className}`}>
       {/* Sidebar */}
-      <div className="w-64 p-4">
+      <div className="w-64">
+        <div className="border-b-[1px] border-neutral-400/40 border-r-[1px]">
+        <div className="p-4">
         <h2 className="text-2xl font-bold mb-6">Settings</h2>
         {sidebarItems.map((item) => (
           <Button
@@ -285,6 +289,8 @@ const handleSetProfile = async () => {
             <ChevronRight className="h-4 w-4" />
           </Button>
         ))}
+         </div>
+        </div>
       </div>
 
       {/* Main Content */}
@@ -334,7 +340,7 @@ const handleSetProfile = async () => {
             <div className="space-y-4">
               <div>
                 
-                <label htmlFor="username" className="block text-sm font-medium mb-1">Username<span className="text-sm text-gray-500"> (You can set your fname from Register Fname section)</span> </label>
+                <label htmlFor="username" className="block text-sm font-medium mb-1">Username<span className="text-sm text-neutral-500"> (You can set your fname from Register Fname section)</span> </label>
                 <Input id="username" defaultValue={mainUserData?.username ?? 'No Fname set'} disabled />
               </div>
               <div>
@@ -361,7 +367,7 @@ const handleSetProfile = async () => {
             <div className="space-y-4">
               <div>
               <p className="text-xl font-semibold">Register Fname</p>
-              <p className="text-sm text-gray-500">You can regsiter a Fname here, only one Fname can be registered per FID, if already own a fid you can set it as primary here, if you sign with the owner fid.</p>
+              <p className="text-sm text-neutral-500">You can regsiter a Fname here, only one Fname can be registered per FID, if already own a fid you can set it as primary here, if you sign with the owner fid.</p>
 
                 <label htmlFor="fname" className="block text-sm font-medium mb-1">Fname</label>
                 <Input id="fname" placeholder="Enter your fname" />
@@ -389,11 +395,35 @@ const handleSetProfile = async () => {
           </div>
         ) : null}
 
+        {activeSection === 'Feeds' ? 
+           <div className="max-w-2xl">
+           <div className="space-y-4">
+             <p className="text-xl font-semibold mb-4">Feeds Settings</p>
+
+             <div className="flex items-center justify-between max-w-[20rem]">
+                          <div>
+                            <h3 className="font-medium flex items-center justify-between">Disable CryptoLeft Feed  <Switch /></h3>
+                            <p className="text-sm text-neutral-400">This will remove cryptoleft crypto from your feed tabs</p>
+                          </div>
+                         
+              </div>
+              <div className="flex items-center justify-between max-w-[20rem]">
+                          <div>
+                            <h3 className="font-medium flex items-center justify-between ">Enable Trending Feed <Switch /></h3>
+                            <p className="text-sm text-neutral-400">This will enable trending feed from Warpcast be aware this feed is practically advertising.</p>
+                          </div>
+                          
+              </div>
+
+
+              </div>
+            </div> : null}
+
         {noContentYet.includes(activeSection) ? 
           
           <div className="max-w-2xl">
             <p className="text-xl font-semibold">No enough intersting content</p>
-            <p className="text-sm text-gray-500">This section is empty will add later something</p>
+            <p className="text-sm text-neutral-500">This section is empty will add later something</p>
           </div>
         
         : null}

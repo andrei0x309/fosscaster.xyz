@@ -1,22 +1,24 @@
 "use client"
 
 import * as React from "react"
-import { Search, Users } from "lucide-react"
+import { Search, Users, Loader2 } from "lucide-react"
 
 import { searchSummary } from  "~/lib/api"
 import { Input } from "~/components/ui/input"
 import type { TWCSearchSummary } from "~/types/wc-search-summary"
 import { SimpleLoader } from "~/components/atomic/simple-loader"
 import { useMainStore } from "~/store/main"
+import { UserIcon } from "~/components/icons/user"
+import { Img as Image } from 'react-image'
+import { Link } from "@remix-run/react"
 
- 
 export function SearchSidebar() {
   const [searchQuery, setSearchQuery] = React.useState("")
   const [showResults, setShowResults] = React.useState(false)
   const [searchResults, setSearchResults] = React.useState<TWCSearchSummary>({} as TWCSearchSummary)
   const [isLoading, setIsLoading] = React.useState(false)
 
-  const { navigate } = useMainStore()
+  const { navigate, isDarkMode } = useMainStore()
 
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsLoading(true)
@@ -57,7 +59,7 @@ export function SearchSidebar() {
   return (
         <div ref={searchRef} className="relative w-full">
                           <div className="relative">
-                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-neutral-500" />
                 <Input type="search" placeholder="Search casts, channels and users"  
                 className="w-full pl-10 h-10 text-sm mb-4"
                 value={searchQuery}
@@ -66,15 +68,19 @@ export function SearchSidebar() {
                 />
               </div>
           { isLoading && 
-          <div className="absolute top-full left-0 right-0 -mt-1 bg-sidebar-accent rounded-md overflow-hidden shadow-lg z-50 bg-gray-100 dark:dark:bg-zinc-900 border border-neutral-400/50 min-h-[26rem] justify-center content-center">
+          <div className="absolute top-full left-0 right-0 -mt-1 bg-sidebar-accent rounded-md overflow-hidden shadow-lg z-50 bg-neutral-100 dark:dark:bg-zinc-900 border border-neutral-400/50 min-h-[26rem] justify-center content-center">
           <SimpleLoader /> 
           </div>
           }
           {showResults && !isLoading && (
-            <div className="absolute top-full left-0 right-0 -mt-1 bg-sidebar-accent rounded-md overflow-hidden shadow-lg z-50 bg-gray-100 dark:dark:bg-zinc-900 border border-neutral-400/50">
+            <div className="absolute top-full left-0 right-0 -mt-1 bg-sidebar-accent rounded-md overflow-hidden shadow-lg z-50 bg-neutral-100 dark:dark:bg-zinc-900 border border-neutral-400/50">
               <div className="p-2">
                 {searchQuery && (
-                  <div className="flex items-center px-3 py-2 text-sm text-sidebar-foreground hover:dark:dark:bg-zinc-800 hover:bg-white rounded-md cursor-pointer" onClick={() => navigate(`/~/search/top?q=${searchQuery}`)} onKeyDown={() => {}} role="button" tabIndex={0}>
+                  <div className="flex items-center px-3 py-2 text-sm text-sidebar-foreground hover:dark:dark:bg-zinc-800 hover:bg-white rounded-md cursor-pointer" onClick={(() => {
+                    navigate(`/~/search/top?q=${searchQuery}`)
+                    setShowResults(false)
+                    })}
+                    onKeyDown={() => {}} role="button" tabIndex={0}>
                     <Search className="h-4 w-4 mr-2" />
                     <span>{searchQuery}</span>
                   </div>
@@ -85,16 +91,21 @@ export function SearchSidebar() {
                   {searchResults?.result?.users.length > 0 ? (
                     <div className="space-y-1">
                       {searchResults?.result?.users.map((user) => (
+                        <Link to={`/${user.username}`} key={user.fid} onClick={() => setShowResults(false)}>
                         <div
-                          key={user.fid}
-                          className="flex items-center gap-2 px-3 py-2 hover:bg-sidebar-accent/50 rounded-md cursor-pointer"
+                          className="hover:dark:dark:bg-zinc-800 hover:bg-white flex items-center gap-2 px-3 py-2 hover:bg-sidebar-accent/50 rounded-md cursor-pointer"
                         >
                           <div className="relative h-8 w-8 rounded-full overflow-hidden">
-                            <img
-                              src={user.pfp.url || "/placeholder.svg"}
-                              alt={user?.username}
-                              className="h-full w-full object-cover"
-                            />
+                            {user?.pfp?.url ? (
+                              <Image
+                                src={[user?.pfp?.url, isDarkMode ? '/svgs/UserWhite.svg' : '/svgs/UserBlack.svg']}
+                                alt={user?.username}
+                                className="h-full w-full object-cover"
+                                loader={<Loader2 className="h-5 w-5 text-red-500 animate-spin" />}
+                              />
+                            ) : (
+                              <UserIcon className="h-full w-full object-cover" />
+                            )}
                           </div>
                           <div className="flex flex-col min-w-0">
                             <span className="text-sm font-medium truncate">{user?.username}</span>
@@ -106,6 +117,7 @@ export function SearchSidebar() {
                             </div>
                           </div>
                         </div>
+                        </Link>
                       ))}
                     </div>
                   ) : (
@@ -118,16 +130,17 @@ export function SearchSidebar() {
                   {searchResults?.result?.channels.length > 0 ? (
                     <div className="space-y-1">
                       {searchResults?.result?.channels?.map((channel) => (
+                     <Link to={`/~/channel/${channel.key}`} key={channel.key} onClick={() => setShowResults(false)}>
                         <div
-                          key={channel.key}
-                          className="flex items-center gap-2 px-3 py-2 hover:bg-sidebar-accent/50 rounded-md cursor-pointer"
+                          className="hover:dark:dark:bg-zinc-800 hover:bg-white flex items-center gap-2 px-3 py-2 hover:bg-sidebar-accent/50 rounded-md cursor-pointer"
                         >
                           <div className="relative h-8 w-8 rounded-full overflow-hidden">
-                            <img
-                              src={channel?.fastImageUrl || channel?.imageUrl || "/placeholder.svg"}
-                              alt={channel?.name}
-                              className="h-full w-full object-cover"
-                            />
+                              <Image
+                                src={[channel?.fastImageUrl, channel?.imageUrl, '/placeholder.svg']}
+                                alt={channel.name}
+                                className="h-full w-full object-cover"
+                                loader={<Loader2 className="h-5 w-5 text-red-500 animate-spin" />}
+                              />
                           </div>
                           <div className="flex flex-col min-w-0">
                             <span className="text-sm font-medium truncate">{channel.name}</span>
@@ -137,6 +150,7 @@ export function SearchSidebar() {
                             </div>
                           </div>
                         </div>
+                        </Link>
                       ))}
                     </div>
                   ) : (
@@ -145,7 +159,11 @@ export function SearchSidebar() {
                 </div>
 
                 <div className="mt-2">
-                  <button className="w-full text-center text-xs text-sidebar-foreground/70 py-2 hover:text-sidebar-foreground">
+                  <button className="hover:dark:dark:bg-zinc-800 hover:bg-white w-full text-center text-xs text-sidebar-foreground/70 py-2 hover:text-sidebar-foreground" 
+                  onClick={() => {
+                    navigate(`/~/search/top?q=${searchQuery}`)
+                    setShowResults(false)
+                  }}>
                     Show more results
                   </button>
                 </div>

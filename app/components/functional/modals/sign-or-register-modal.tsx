@@ -611,7 +611,7 @@ export function SignInOrSignUpModal() {
             inputData={inutText} 
             setInputData={setInputText} 
             placeholder="WC Auth Token..." 
-            className="mb-4 w-full dark:text-blue-600 text-gray-900"
+            className="mb-4 w-full dark:text-blue-600 text-neutral-900"
             containerClass='w-full'
             inputClass='w-[98%] mx-auto'
             />
@@ -652,7 +652,7 @@ export function SignInOrSignUpModal() {
             inputData={inputFname} 
             setInputData={setInputFname} 
             placeholder="Fname...(optional)" 
-            className="mb-4 w-full dark:text-blue-600 text-gray-900"
+            className="mb-4 w-full dark:text-blue-600 text-neutral-900"
             containerClass='w-full'
             inputClass='w-[98%] mx-auto'
             />

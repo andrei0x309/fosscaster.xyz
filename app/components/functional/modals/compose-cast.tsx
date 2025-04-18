@@ -11,11 +11,11 @@ import { DraftsContent } from '~/components/blocks/cast/drafts-content'
 import { SmileIcon, ImageIcon, Layout, X, Hash, Search, ChevronDown, Loader2,  } from "lucide-react"
 import { PopOverMenu, PopOverMenuItem } from '~/components/blocks/drop-menu'
 import { Input } from "~/components/ui/input"
-import { getStringByteLength } from '~/lib/misc'
+import { getStringByteLength, wait } from '~/lib/misc'
 import type { TWCSearchUsers } from '~/types/wc-search-users'
 import type { TWCSearchChannels } from '~/types/wc-search-channels'
 import { Img as Image } from 'react-image'
-import { wait } from '~/lib/misc'
+import { useToast } from "~/hooks/use-toast"
 
 
 const MAX_EMBEDS = 2
@@ -42,7 +42,6 @@ export function ComposeModal() {
      const [channelSearch, setChannelSearch] = useState("")
     const [lastSearch, setLastSearch] = useState("")
     const [showMentions, setShowMentions] = useState(false)
-    const [mentionSearch, setMentionSearch] = useState("")
     const [mentionStartIndex, setMentionStartIndex] = useState(-1)
     const [selectedMentions, setSelectedMentions] = useState<{ [key: number]: User }>({})
     const [searchChannelsList, setSearchChannelsList] = useState<TWCSearchChannels>({} as TWCSearchChannels)
@@ -51,26 +50,72 @@ export function ComposeModal() {
     const [hasMoreChannels, setHasMoreChannels] = useState(true)
     const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null)
     const [isChannelListOpen, setIsChannelListOpen] = useState(false)
+    const [saveDraftModalOpen, setSaveDraftModalOpen] = useState(false)
+
+    const { toast } = useToast()
 
 
-      const editorRef = useRef<HTMLDivElement>(null)
+
+      const [editorRef, setEditorRef] = useState<HTMLDivElement | null>(null)
+ 
       const channelListRef = useRef<HTMLDivElement>(null)
       const mentionListRef = useRef<HTMLDivElement>(null)
+      const channelListRefWarp = useRef<HTMLDivElement>(null)
 
 
   const characterCount = getStringByteLength(castText)
   const maxCharacters = 1024
- 
+
+  const pasteHandler = useCallback((event: ClipboardEvent) => {
+    event.preventDefault()
+    // check if files
+    if (event?.clipboardData?.files.length) {
+      console.log('files', event.clipboardData.files)
+      return
+    }
+    // if not files, get text
+    console.log('text I am here', event?.clipboardData?.getData('text/plain'))
+    const clipboardData = event.clipboardData
+    const pastedText = clipboardData?.getData('text/plain')
+    if (!pastedText) return
+    // add text to editor
+    const editable = editorRef
+    if (!editable) return
+    // find cusor position
+    const selection = window.getSelection()
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0)
+      range.deleteContents(); 
+      const textNode = document.createTextNode(pastedText);
+      range.insertNode(textNode);
+        range.collapse(false);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      // focus editor
+      editable.focus()
+    }
+  }, [editorRef])
 
   const doSendCast = async () => {
-    const editable = editorRef.current
+    const editable = editorRef
     if (!editable) return
 
     const text = editable.textContent || ''
     if (!text.trim()) return
 
-    await sendCast({ text })
+    const sentCast = await sendCast({ text, channelKey: selectedChannel?.key || '', embeds: castEmbeds ?? [], parentHash: composeModalData?.reply?.cast?.hash || '' })
     setComposeModalOpen(false)
+    if (sentCast?.result?.cast?.hash) {
+      toast({
+        title: 'Cast sent!',
+        description: 'Your cast has been sent successfully.',
+      })
+    } else {
+      toast({
+        title: 'Error',
+        description: 'There was an error sending your cast.',
+      })
+    }
   }
   
   const selectChannel = (channel: Channel) => {
@@ -79,9 +124,9 @@ export function ComposeModal() {
   }
 
   const getContentEditableInfo = () => {
-    if (!editorRef.current) return { text: "", cursorPosition: 0 }
+    if (!editorRef) return { text: "", cursorPosition: 0 }
 
-    const text = editorRef.current.innerText || ""
+    const text = editorRef.innerText || ""
 
     // Get cursor position
     const selection = window.getSelection()
@@ -90,7 +135,7 @@ export function ComposeModal() {
     if (selection && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0)
       const preCaretRange = range.cloneRange()
-      preCaretRange.selectNodeContents(editorRef.current)
+      preCaretRange.selectNodeContents(editorRef)
       preCaretRange.setEnd(range.endContainer, range.endOffset)
       cursorPosition = preCaretRange.toString().length
     }
@@ -147,40 +192,17 @@ export function ComposeModal() {
     }
   }, [hasMoreChannels, loadingMoreChannels, loadMoreChannels])
 
-  useEffect( () => {
-    try {
-      if (!isUserLoggedIn) return
-      getUserFollowingChannels({ limit: 50}).then( channels => setInitalChannels(channels))
-    } catch {
-      // ignore
-    }
-  }, [isUserLoggedIn])
-
-  useEffect( () => {
-    loadMoreChannels()
-  }, [channelSearch, loadMoreChannels])
-
-  useEffect(() => {
-    const channelListElement = channelListRef.current
-    if (channelListElement) {
-      channelListElement.addEventListener("scroll", handleChannelScroll)
-      return () => {
-        channelListElement.removeEventListener("scroll", handleChannelScroll)
-      }
-    }
-  }, [searchChannelsList, loadingMoreChannels, hasMoreChannels, handleChannelScroll])
-
 
    // Format text with colored mentions
    const formatTextWithMentions = useCallback(() => {
-    if (!editorRef.current || Object.keys(selectedMentions).length === 0) return
+    if (!editorRef || Object.keys(selectedMentions).length === 0) return
 
     // Save current selection
     const selection = window.getSelection()
     const savedRange = selection && selection.rangeCount > 0 ? selection.getRangeAt(0).cloneRange() : null
 
     // Get current text
-    const currentText = editorRef.current.innerText
+    const currentText = editorRef?.innerText || ""
 
     // Create HTML with colored mentions
     let html = currentText
@@ -193,8 +215,8 @@ export function ComposeModal() {
     })
 
     // Only update if there's a change to avoid cursor jumping
-    if (html !== editorRef.current.innerHTML) {
-      editorRef.current.innerHTML = html
+    if (html !== editorRef?.innerHTML) {
+      editorRef!.innerHTML = html
     }
 
     // Restore selection
@@ -202,21 +224,9 @@ export function ComposeModal() {
       selection.removeAllRanges()
       selection.addRange(savedRange)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMentions])
 
-  // Apply formatting when content changes or mentions change
-  useEffect(() => {
-    formatTextWithMentions()
-  }, [castText, formatTextWithMentions, selectedMentions])
-
-  useEffect(() => {
-    if (isComposeModalOpen && editorRef.current) {
-      editorRef.current.focus()
-    }
-  }, [isComposeModalOpen])
- 
- 
- 
  
   // Select a mention from the dropdown
   const selectMention = (user: User) => {
@@ -230,8 +240,8 @@ export function ComposeModal() {
       const newText = `${beforeMention}${mentionText} ${afterMention}`
 
       // Update the content and state
-      if (editorRef.current) {
-        editorRef.current.innerText = newText
+      if (editorRef) {
+        editorRef.innerText = newText
       }
       setCastText(newText)
 
@@ -240,14 +250,12 @@ export function ComposeModal() {
 
       // Reset mention state
       setShowMentions(false)
-      setMentionSearch("")
       setMentionStartIndex(-1)
 
       // Focus and set cursor position
       setTimeout(() => {
         const newPosition = mentionStartIndex + mentionText.length + 1 // +1 for the space
         setCursorPosition(newPosition)
-        console.log('setting', newPosition)
       }, 0)
     }
   }
@@ -256,7 +264,7 @@ export function ComposeModal() {
 
     // Set cursor position in contentEditable
     const setCursorPosition = (position: number) => {
-      const divElement = editorRef.current;
+      const divElement = editorRef;
       if (!divElement) {
         return;
       }
@@ -326,14 +334,9 @@ export function ComposeModal() {
       }
     };
 
-  useEffect( () => {
-      editorRef?.current?.focus()
-      console.log('cursor position',  editorRef?.current)
-  }, [editorRef])
-
-
+ 
   const handleInput = () => {
-    if (!editorRef.current) return
+    if (!editorRef) return
 
     const { text, cursorPosition } = getContentEditableInfo()
 
@@ -397,8 +400,8 @@ export function ComposeModal() {
             const newText = text.substring(0, mentionIndex) + text.substring(mentionIndex + mentionText.length)
   
             // Update the content and state
-            if (editorRef.current) {
-              editorRef.current.innerText = newText
+            if (editorRef) {
+              editorRef.innerText = newText
             }
             setCastText(newText)
   
@@ -432,47 +435,105 @@ export function ComposeModal() {
       }
     }
 
+
+    
+  // Apply formatting when content changes or mentions change
+  useEffect(() => {
+    formatTextWithMentions()
+  }, [castText, formatTextWithMentions, selectedMentions])
+
+
+  useEffect( () => {
+    try {
+      if (!isUserLoggedIn) return
+      getUserFollowingChannels({ limit: 50}).then( channels => setInitalChannels(channels))
+    } catch {
+      // ignore
+    }
+  }, [isUserLoggedIn])
+
+  useEffect( () => {
+    loadMoreChannels()
+  }, [channelSearch, loadMoreChannels])
+
+  useEffect(() => {
+    const channelListElement = channelListRef.current
+    if (channelListElement) {
+      channelListElement.addEventListener("scroll", handleChannelScroll)
+      return () => {
+        channelListElement.removeEventListener("scroll", handleChannelScroll)
+      }
+    }
+  }, [searchChannelsList, loadingMoreChannels, hasMoreChannels, handleChannelScroll])
+
+  useEffect( () => {
+     if(!isUserLoggedIn || !isComposeModalOpen || !editorRef) return
+    const editable = editorRef
+    editable?.addEventListener('paste', pasteHandler)
+
+    editable?.focus()
+    editable?.scrollIntoView({
+      block: 'end',
+      inline: 'end',
+      behavior: 'instant'
+    })
+
+      console.log('cursor position',  editorRef)
+      return () => {
+        editable?.removeEventListener('paste', pasteHandler)
+      }
+  }, [editorRef, isComposeModalOpen, isUserLoggedIn, pasteHandler])
+ 
+  useEffect(() => {
+    if (isChannelListOpen && channelListRef.current) {
+      channelListRef.current.focus();
+    }
+  }, [isChannelListOpen, channelListRef]);
+
+  useEffect(() =>  {
+    if (characterCount > 2) {
+      
+    }
+    
+  }, [isComposeModalOpen]);
+
 return (
     <>
      <Modal isOpen={isComposeModalOpen} setIsOpen={setComposeModalOpen}>
      <Tabs defaultValue="compose" value={activeTab} onValueChange={setActiveTab}  className="w-full">
-          {!composeModalData?.reply || composeModalData?.quote && <TabsList className="grid w-full grid-cols-2">
+          {!composeModalData?.reply && !composeModalData?.quote && <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="compose" className="dark:data-[state=active]:bg-[#2c2c2c]">Compose</TabsTrigger>
             <TabsTrigger value="drafts" className="dark:data-[state=active]:bg-[#2c2c2c]">Drafts</TabsTrigger>
           </TabsList>
         }
-        <TabsContent value="compose" className="mt-0 p-0">
+        <TabsContent value="compose" className="mt-0 p-0" onClick={
+          (e) => {
+            if (!mentionListRef?.current?.contains(e.target as Node) && !mentionListRef.current?.children[0]?.contains(e.target as Node)) {
+              setShowMentions(false)
+            }
+            if (!channelListRefWarp?.current?.contains(e.target as Node) && isChannelListOpen) {
+              setIsChannelListOpen(false)
+            }
+          }
+        }>
+        <div className="overflow-y-auto max-h-[calc(100vh-20rem)]">
         {
-          composeModalData?.reply && <Post isComposeReply={true} item={composeModalData.reply} i={0}/>
+          composeModalData?.reply && <Post isComposeReply={true} item={composeModalData.reply} noNavigate={true} />
         }
         <div className="flex items-start space-x-4 pt-4 relative">
-        {composeModalData?.reply && <div className="absolute w-0.5 dark:bg-neutral-800 bg-neutral-300 left-[35px] -top-[40px] bottom-[120px]"></div> }
+        {composeModalData?.reply && <div className="absolute w-0.5 dark:bg-neutral-800 bg-neutral-300 left-[35px] -top-[40px] bottom-[120px] h-[5rem]"></div> }
           <Avatar className="w-10 h-10">
             <AvatarImage src={mainUserData?.avatar} alt={`avatar ${mainUserData?.username}`} />
             <AvatarFallback>U</AvatarFallback>
           </Avatar>
           <div className="flex-1 relative">
-            <div
-              ref={editorRef}
-              contentEditable
-              tabIndex={0} // Add tabIndex attribute to make it tabbable
-              className="w-full min-h-[150px] max-h-[300px] overflow-y-auto bg-transparent border-none focus:outline-none whitespace-pre-wrap break-words dark:text-white break-before-all break-all"
-              onInput={handleInput}
-              onKeyDown={handleKeyDown}
-              aria-label="Compose new cast"
-              role="textbox"
-              data-placeholder="Start typing a new cast here..."
-            >
-            {/* {castText.length === 0 && <PlaceHolder />} */}
-
-            </div>
-                {/* Mentions dropdown */}
-                {showMentions && mentionSearchUsers?.result?.users?.length > 0 && (
+            {/* Mentions dropdown */}
+          {showMentions && mentionSearchUsers?.result?.users?.length > 0 && (
                   <div
                     ref={mentionListRef}
                     className="absolute z-20 mt-1 w-full max-w-[300px] bg-[#1a1a1a] border border-neutral-800 rounded-lg shadow-lg overflow-hidden"
                   >
-                    <div className="max-h-[300px] overflow-y-auto">
+                    <div className="max-h-[210px] overflow-y-auto">
                       {mentionSearchUsers?.result?.users?.map((user) => (
                         <button
                           key={user.fid}
@@ -492,11 +553,29 @@ return (
                     </div>
                   </div>
                 )}
+            <div
+              ref={setEditorRef}
+              contentEditable
+              tabIndex={0} // Add tabIndex attribute to make it tabbable
+              className={`${!composeModalData?.quote? 'min-h-[240px]': ''} w-full max-h-[300px] overflow-y-auto bg-transparent border-none focus:outline-none whitespace-pre-wrap break-words dark:text-white break-before-all break-all`}
+              onInput={handleInput}
+              onKeyDown={handleKeyDown}
+              aria-label="Compose new cast"
+              role="textbox"
+              data-placeholder="Start typing a new cast here..."
+            >
+            {/* {castText.length === 0 && <PlaceHolder />} */}
+
+            </div>
+          
           </div>
         </div>
-        {composeModalData?.quote && <QoutedCast cast={composeModalData?.quote} /> }
+        {composeModalData?.quote && <QoutedCast cast={composeModalData?.quote} noNavigation={true} /> }
+        </div>
         <div className="flex justify-between items-center mt-4">
           <div className="flex space-x-2">
+
+
             <Button variant="ghost" size="icon" className="w-10 h-10">
               <ImageIcon className="h-4 w-4" />
             </Button>
@@ -504,18 +583,11 @@ return (
               <SmileIcon className="h-4 w-4" />
             </Button> */}
 
-
-            <PopOverMenu 
-                  controlled={true}
-                  isOpen={isChannelListOpen}
-                  clickOutsideToClose={true}
-                  onClickOutside={() => setIsChannelListOpen(false)}
-                  trigger={
-                  <Button
+              {!isChannelListOpen && !composeModalData?.reply?.cast?.hash  && <Button
                   onClick={() => setIsChannelListOpen(true)}
                   variant="ghost"
                   size="sm"
-                  className="text-neutral-400 rounded-full flex items-center gap-1 px-2 h-8 mt-[0.4rem] -ml-2"
+                  className="text-neutral-400 rounded-full flex items-center gap-1 px-2 h-8 mt-[0.4rem] -ml-2 z-50"
                 > 
                   {!selectedChannel ? (<>
                   <Hash className="h-4 w-4" />
@@ -529,11 +601,17 @@ return (
                     e.stopPropagation();
                     setSelectedChannel(null);
                   } } />}
-                </Button>}
-              content={
-                <div className="p-0 dark:bg-[#1a1a1a] border-neutral-800 dark:text-white">
+                </Button>
+                }
+
+      {isChannelListOpen && (
+                  <div
+                    ref={channelListRefWarp}
+                    className="absolute z-25 mt-1 w-full max-w-[240px] bg-[#1a1a1a] border border-neutral-800 rounded-lg shadow-lg overflow-hidden"
+                  >
+                    <div className="p-0 dark:bg-[#1a1a1a] border-neutral-800 dark:text-white">
                 <div className="p-2 border-b border-neutral-800 flex">
-                  <div className="flex items-center gap-2 px-2 py-1 dark:bg-[#252525] border-neutral-500 border-[1px] rounded">
+                  <div className="flex items-center gap-2 px-2 py-1 dark:bg-[#252525] border-neutral-500 border-[1px] rounded w-full">
                     <Search className="h-4 w-4 dark:text-neutral-400" />
                     <Input
                       placeholder="Search channels"
@@ -543,10 +621,10 @@ return (
                     />
                   </div>
                 </div>
-                <div ref={channelListRef} className="py-1 max-h-60 overflow-auto">
+                <div ref={channelListRef} className="py-1 max-h-60 overflow-y-scroll" tabIndex={0} role='listbox'>
                   {(channelSearch === '' ? initalChannels.result?.channels ?? []: searchChannelsList.result?.channels ?? []).map((channel) => (
-                    <button
-                      key={channel.key}
+                    <button key={channel.key}
+                      
                       className="flex items-center gap-2 w-full px-3 py-2 text-left hover:bg-[#252525] transition-colors"
                       onClick={() => selectChannel(channel)}
                     >
@@ -566,9 +644,9 @@ return (
                   )}
                 </div>
                 </div>
-              }
+                  </div>
+                )}
               
-              />
 
           </div>
         
@@ -588,9 +666,27 @@ return (
         </div>
         </TabsContent>
         <TabsContent value="drafts" className="mt-0 p-0">
+        
           <DraftsContent />
         </TabsContent>
         </Tabs>
+    </Modal>
+    <Modal isOpen={saveDraftModalOpen} setIsOpen={setSaveDraftModalOpen}>
+            <div className="flex flex-col gap-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg font-medium">Save Draft</h2>
+                <Button variant="ghost" onClick={() => setSaveDraftModalOpen(false)}>
+                <X className="h-4 w-4" />
+                </Button>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div className="flex justify-end">
+                    <Button variant="outline">Save</Button>
+                  <Button variant="outline">Exit</Button>
+                  <Button variant="outline">Return to Cast</Button>
+                  </div>
+               </div>
+               </div>
     </Modal>
   </>
 )
