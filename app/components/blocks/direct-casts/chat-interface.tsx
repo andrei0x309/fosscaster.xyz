@@ -9,7 +9,7 @@ import { Conversation } from '~/types/wc-dc-inbox'
 import { ChatContext } from "./chat-context"
 import { dcGetMessages, sendDirectCast } from '~/lib/api'
 import type { TWCDCMessages } from "~/types/wc-dc-messages"
-import { useLocation } from '@remix-run/react'
+import { useLocation } from "react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
 import { UserIcon } from '~/components/icons/user'
 import { GroupIcon } from '~/components/icons/group'
@@ -36,14 +36,17 @@ export default function ChatInterface() {
     setOpenedChat(conversationId ?? '')
     if(!conversationId) return
     const isNewChat = conversationId !== prevOpenedChat
+    let cursor 
     if(isNewChat) {
       setMessages({} as TWCDCMessages)
       setHasMoreMessages(true)
       setPrevOpenedChat(conversationId)
+      cursor = ''
+    } else {
+      cursor = messages?.next?.cursor ?? ''
     }
  
-    const cursor = messages?.next?.cursor ?? ''
-    
+    console.log('cursor', cursor)
     const fetchedMessages = await dcGetMessages({
       conversationId,
       cursor,
@@ -55,13 +58,13 @@ export default function ChatInterface() {
       ...fetchedMessages,
       result: {
         ...fetchedMessages.result,
-        messages: [...fetchedMessages.result.messages.reverse(), ...messages.result.messages],
+        messages: [...(fetchedMessages?.result?.messages ?? []).reverse(), ...(messages?.result?.messages ?? [])],
       }
     }): {
       ...fetchedMessages,
       result: {
         ...fetchedMessages.result,
-        messages: fetchedMessages.result.messages.reverse(),
+        messages: (fetchedMessages?.result?.messages ?? []).reverse(),
       }
     })
   }, [location?.pathname, messages?.next?.cursor, messages?.result?.messages, prevOpenedChat])
@@ -107,12 +110,15 @@ export default function ChatInterface() {
         ...messages,
         result: {
           ...messages.result,
-          messages: [...messages.result.messages, newMessage]
+          messages: [...(messages?.result?.messages ?? []), newMessage]
         },
       })
 
+      const reciver = currentConversation.conversationId.replace(String(mainUserData?.fid || ''), '').replace('-', '')
+ 
       await sendDirectCast({
         conversationId: currentConversation.conversationId,
+        recieverFid: reciver,
         message,
       })
 
@@ -149,7 +155,7 @@ export default function ChatInterface() {
       <ChatSidebar />
       {openedChat !== '' ? 
       (<div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex items-center p-4 border-b border-neutral-700">
+        <div className="flex items-center p-[0.62rem] border-b border-neutral-700">
           <div className="flex items-center">
           {!currentConversation?.isGroup ?
                 (currentConversation?.viewerContext?.counterParty?.pfp?.url ?

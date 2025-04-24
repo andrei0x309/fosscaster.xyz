@@ -1,17 +1,15 @@
 
 import React, { useEffect, useRef, useCallback } from 'react'
 import { useMainStore, setInitialState } from "~/store/main"
-import { LeftSidebar } from "~/components/template/left-sidebar"
-import { RightSidebar } from "~/components/template/right-sidebar"
 import { ModalManager } from  "~/components/functional/mini-app-manager"
 
 import { SignInOrSignUpModal } from "~/components/functional/modals/sign-or-register-modal"
 
 import { LightBoxModal } from '~/components/functional/modals/light-box'
-import { useNavigate } from '@remix-run/react'
+import { useNavigate } from "react-router";
 
-export const Shell = React.memo(function Shell ({ children, noLeftSidebar = false, noRightSidebar = false }:
-   { children: React.ReactNode, noLeftSidebar?: boolean, noRightSidebar?: boolean }) {
+export const Shell = React.memo(function Shell ({ children = false}:
+   { children: React.ReactNode}) {
 
     const { isDarkMode, setIsTablet, setIsMobile, setNavigate } = useMainStore()
     const navigate = useRef(useNavigate())
@@ -60,11 +58,7 @@ export const Shell = React.memo(function Shell ({ children, noLeftSidebar = fals
         <LightBoxModal />
         <ModalManager />
         <div className={` bg-white dark:bg-neutral-950 flex min-h-screen flex-row justify-center`}>
-          <LeftSidebar className={noLeftSidebar ? "hidden" : ""} />
-
-        {children}
-
-         <RightSidebar className={noRightSidebar ? "hidden" : ""} />
+          {children}
           </div>
         </div>
     )

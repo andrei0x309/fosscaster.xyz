@@ -10,9 +10,8 @@ import { Post } from "~/components/blocks/post"
 import { SimpleLoader } from '../atomic/simple-loader'
 import { CastHeader } from '../blocks/header/cast-header'
 
-
 export function Main({ initialFeed, className = '' }: { initialFeed?: string, className?: string }) {
-  const { isUserLoggedIn, navigate  } = useMainStore()
+  const { isUserLoggedIn  } = useMainStore()
 
   const [feed, setFeed] = useState({ result: [] as unknown as TWcFeedItems})
   const [feedLoading, setFeedLoading] = useState(false)
@@ -26,13 +25,13 @@ export function Main({ initialFeed, className = '' }: { initialFeed?: string, cl
     if (!feed?.result?.items?.length) {
       setIsNoContent(true)
       setHasMore(false)
-      setFeedLoading(false)
       return
     }
     setFeed(feed)
     if(!isInitialLoad) {
       setIsInitialLoad(true)
     }
+    setFeedLoading(false)
   }, [setFeedLoading, setFeed, setIsInitialLoad, isInitialLoad])
 
   useEffect(() => {
@@ -51,11 +50,13 @@ export function Main({ initialFeed, className = '' }: { initialFeed?: string, cl
       if(currentFeed === 'home' && !isUserLoggedIn) {
         return
       }
+      setFeedLoading(true)
       fetchData(currentFeed);
     }
   }, [currentFeed, fetchData, isUserLoggedIn]);
 
   const loadMore = async () => {
+    console.log('load more')
     setFeedLoading(true)
     const excludedIds = feed?.result?.items?.map((item) => item.cast.hash) ?? []
     const newFeed = await getFeed({ feed: currentFeed, excludeItemIdPrefixes: excludedIds, olderThan: feed?.result?.items?.[feed.result.items.length - 1]?.cast?.timestamp })
@@ -76,16 +77,16 @@ export function Main({ initialFeed, className = '' }: { initialFeed?: string, cl
  const handleFeedChange = (feed: string) => {
   setIsInitialLoad(false)
     if (feed === 'home') {
-      navigate('/')
-      return
+      window.history.pushState(null, '', `/`)
+    } else {
+      window.history.pushState(null, '', `/~/${feed}`)
     }
-    navigate(`/~/${feed}`)
+    setCurrentFeed(feed)
   }
 
 
   return (
-
-      <main className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
+      <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
         <div className="h-full min-h-screen">
           <div className="sticky bg-white dark:bg-neutral-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-26 p-2">
 
@@ -111,7 +112,7 @@ export function Main({ initialFeed, className = '' }: { initialFeed?: string, cl
                 <Post key={i} item={item}  />
               )) : null}
  
-        <InfiniteScroll hasMore={hasMore} isLoading={feedLoading} next={loadMore} threshold={1}>
+        <InfiniteScroll hasMore={hasMore} isLoading={feedLoading} next={loadMore} threshold={0.3}>
         {isInitialLoad && hasMore && <div className='my-2'><SimpleLoader /></div>}
         </InfiniteScroll>
         </div>
@@ -122,7 +123,7 @@ export function Main({ initialFeed, className = '' }: { initialFeed?: string, cl
           
  
         </div>
-      </main>
+      </div>
 
       
   )

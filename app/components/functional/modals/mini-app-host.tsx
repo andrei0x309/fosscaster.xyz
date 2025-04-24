@@ -14,6 +14,9 @@ import { useWeb3ModalAccount, useWeb3Modal  } from '@web3modal/ethers/react'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
 import { constructWarpcastSWIEMsg } from "~/lib/wc-SIWF"
+import { addMiniAppToFavs, removeMiniAppFromFavs } from '~/lib/api'
+import { useToast } from '~/hooks/use-toast';
+
 
 
 type ClientContext = FrameHost['context']['client']
@@ -72,6 +75,9 @@ export function Modal({
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [showSplash, setShowSplash] = useState(true)
   const [showSignIn, setShowSignIn] = useState(false)
+  const [showAddApp, setShowAddApp] = useState(false)
+  const [stateIsInstalled, setStateIsInstalled] = useState(isInstalled)
+
   const [error, setError] = useState("")
   const siwfOnError = useRef<((error: string) => void) | null>(null)
   const siwfOnSuccess = useRef<((data: any) => void) | null>(null)
@@ -82,6 +88,7 @@ export function Modal({
   const { navigate, mainUserData, isUserLoggedIn } = useMainStore()
   const { open } = useWeb3Modal()
   const { isConnected } = useWeb3ModalAccount()
+  const { toast } = useToast()
 
   const navigateToProfile = (authorUsername: string) => {
     onMinimize()
@@ -139,17 +146,17 @@ export function Modal({
           }
         },
         ready: (options) => {
-          console.log('Frame host ready', options)
+          console.info('Frame host ready', options)
           setShowSplash(false)
         },
         close: () => {
-          console.log('Frame host close')
+          console.info('Frame host close')
         },
         openUrl: (url) => {
-          console.log('Frame host openUrl', url)
+          console.info('Frame host openUrl', url)
         },
         signIn: async(options: any) => {
-          console.log('Frame host signIn', options)
+          console.info('Frame host signIn', options)
           nonceRef.current = options.nonce
           let resolve = null as any
           let reject = null as any
@@ -171,37 +178,37 @@ export function Modal({
           return data as any
         },
         viewProfile: async (fid) => {
-          console.log('Frame host viewProfile', fid)
+          console.info('Frame host viewProfile', fid)
         },
         addFrame: async () => {
-          console.log('Frame host addFrame')
+          console.info('Frame host addFrame')
           return 'later' as any
         },
         setPrimaryButton: async (button) => {
-          console.log('Frame host setPrimaryButton', button)
+          console.info('Frame host setPrimaryButton', button)
         },
         eip6963RequestProvider: () => {
           announceProvider(frameEndpoint.current)
-          console.log('Frame host eip6963RequestProvider')
+          console.info('Frame host eip6963RequestProvider')
         },
         ethProviderRequest: async (request) => {
-          console.log('Frame host ethProviderRequest', request)
+          console.info('Frame host ethProviderRequest', request)
           return 'later' as any
         },
         ethProviderRequestV2: async (request) => {
-          console.log('Frame host ethProviderRequestV2', request)
+          console.info('Frame host ethProviderRequestV2', request)
           return 'later' as any
         },
         swap: async (swap) => {
-          console.log('Frame host swap', swap)
+          console.info('Frame host swap', swap)
           return 'later' as any
         },
         viewToken: async (token) => {
-          console.log('Frame host viewToken', token)
+          console.info('Frame host viewToken', token)
           return 'later' as any
         },
         composeCast: async (cast) => {
-          console.log('Frame host composeCast', cast)
+          console.info('Frame host composeCast', cast)
           return 'later' as any
         }
       }
@@ -288,6 +295,36 @@ export function Modal({
           }
   }
 
+  const doReloadIframe = async () => {
+    if (!iframeRef.current) return
+    const iframe = iframeRef.current
+    const src = iframe.src
+    iframe.src = src
+  }
+
+  const doAddFrameToFavorites = async () => {
+    await addMiniAppToFavs({
+      domain: new URL(homeUrl)?.hostname
+    })
+    setStateIsInstalled(true)
+    toast({
+      title: 'App added to favorites',
+      duration: 3000,
+    })
+  }
+
+  const doRemoveAppFromFavorites = async () => {
+    await removeMiniAppFromFavs({
+      domain: new URL(homeUrl)?.hostname
+    })
+    setStateIsInstalled(false)
+    toast({
+      title: 'App removed from favorites',
+      duration: 3000,
+    })
+  }
+  
+
   useEffect(() => {
     if(!isUserLoggedIn) return
     if (!iframeRef.current) return
@@ -359,7 +396,7 @@ export function Modal({
                     <ExternalLink className="mr-2 h-4 w-4" />
                     Copy link
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={doReloadIframe}>
                     <RefreshCw className="mr-2 h-4 w-4" />
                     Reload page
                   </DropdownMenuItem>
@@ -367,13 +404,13 @@ export function Modal({
                     <Bell className="mr-2 h-4 w-4" />
                     Turn on notifications
                   </DropdownMenuItem>
-                  {isInstalled ? (
-                    <DropdownMenuItem className="text-red-500">
+                  {stateIsInstalled ? (
+                    <DropdownMenuItem className="text-red-500" onClick={() => doRemoveAppFromFavorites()}>
                       <Trash className="mr-2 h-4 w-4" />
                       Remove Mini App
                     </DropdownMenuItem>
                   ) : (
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowAddApp(true)}>
                       <Plus className="mr-2 h-4 w-4" />
                       Add Mini App
                     </DropdownMenuItem>
@@ -437,6 +474,40 @@ export function Modal({
                 </Card>
                   </div>
                 }
+
+
+            {showAddApp && <div className="relative w-full h-full flex items-center justify-center flex-col dark:bg-neutral-900 bg-neutral-200" style={{
+                    minHeight: 'inherit',
+                    position: 'absolute',
+                    zIndex: 20,
+                  }}>
+                  <Card className="w-full max-w-md dark:bg-neutral-950 bg-neutral-400 text-white border-0 shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-semibold mx-auto">Add app Request</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                  <Image src={iconUrl} alt={name} className="inset-0 object-cover w-14 h-14 mb-4 mt-4 mx-auto" />
+                    <p className="dark:text-neutral-400 text-neutral-900 text-center">App <b>{name}</b> requested to be added to favorite apps.</p>
+                    <p className="dark:text-neutral-300 text-neutral-800 text-center">Do you allow this action?</p>
+                  </CardContent>
+                  <CardFooter className="flex justify-between gap-4">
+                    <Button variant="outline" className="w-full dark:bg-neutral-800 dark:hover:bg-neutral-700 bg-neutral-500 hover:bg-neutral-600 text-white border-0" onClick={() => {
+                      siwfOnError?.current?.('User denied signature')
+                      setShowAddApp(false)
+                    }}>
+                      Cancel
+                    </Button>
+                    <Button className="w-full bg-red-600 hover:bg-red-500 text-white"
+                    onClick={() => {
+                      doAddFrameToFavorites()
+                      setShowAddApp(false)
+                    }}
+                    >Yes</Button>
+                  </CardFooter>
+                </Card>
+                  </div>
+                }
+
             </div>
           </div>
         </div>

@@ -10,7 +10,7 @@ import { SimpleLoader } from "~/components/atomic/simple-loader"
 import { useMainStore } from "~/store/main"
 import { UserIcon } from "~/components/icons/user"
 import { Img as Image } from 'react-image'
-import { Link } from "@remix-run/react"
+import { Link } from "react-router";
 
 export function SearchSidebar() {
   const [searchQuery, setSearchQuery] = React.useState("")

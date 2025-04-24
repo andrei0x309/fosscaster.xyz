@@ -17,7 +17,7 @@ type User = TWCDcUsers['result']['users'][number]
 type ModalStep = "select-users" | "create-group" | "add-to-group"
 
 export function DirectCastModal() {
-  const { isDcModalOpen, dcModalPage, setDcModalOpen } = useMainStore()
+  const { isDcModalOpen, dcModalPage, setDcModalOpen, navigate, mainUserData } = useMainStore()
   
   const [searchQuery, setSearchQuery] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -171,8 +171,8 @@ export function DirectCastModal() {
   const handleContinue = () => {
     if (selectedUsers.length === 1) {
       // Handle direct message
-      console.log("Starting direct message with", selectedUsers[0].username)
-      // setOpen(false)
+      setDcModalOpen(false)
+      navigate(`/~/inbox/${mainUserData?.fid}-${selectedUsers[0].fid}`)
     } else if (selectedUsers.length > 1) {
       // Move to group creation step
       setCurrentStep("create-group")
@@ -233,14 +233,7 @@ export function DirectCastModal() {
               <DialogTitle className="text-white">
                 {currentStep === "create-group" || selectedUsers.length > 1 ? "New group" : "New direct cast"}
               </DialogTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => (currentStep === "create-group" ? goBack() : setDcModalOpen(false))}
-                className="h-6 w-6 rounded-full text-neutral-400 hover:text-white hover:bg-neutral-700"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+
             </div>
           </DialogHeader>
 

@@ -41,7 +41,6 @@ export const ChannelsList = () =>  {
 
     const loadChannels = useCallback(async () => {
         setLoading(true)
-        console.log('isUserLoggedIn', isUserLoggedIn, mainUserData)
         if (!isUserLoggedIn || !mainUserData || !mainUserData.fid) {
             const channels = (await Promise.all(defaultChannelsIds.map(async (channelId) => {
                 return await getChannelInfo(channelId)

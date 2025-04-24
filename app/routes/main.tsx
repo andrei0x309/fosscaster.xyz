@@ -1,14 +1,17 @@
-import type { MetaFunction } from "@remix-run/node";
+import type { MetaFunction } from "react-router";
 import { Main } from "~/components/pages/main";
 import { Shell } from "~/components/template/shell";
 import { HydrateFallback } from "~/components/atomic/hydratation-fallback";
 import { useMainStore } from "~/store/main";
 import { lazy, Suspense, useState, useEffect, useRef, useCallback } from 'react';
-import { useLocation } from "@remix-run/react";
+import { useLocation } from "react-router";
 import { useNotifBadgeStore } from "~/store/notif-badge-store"
 import { getNotifsUnseen } from '~/lib/api'
-import { addNotificationBadge, removeNotificationBadge } from '~/lib/misc'
+import { addNotificationBadge, removeNotificationBadge, debounce } from '~/lib/misc'
 import { ComposeModal } from "~/components/functional/modals/compose-cast"
+import { type scrollPageKey, useStoreScroll } from '~/store/scroll-restore'
+import { LeftSidebar } from "~/components/template/left-sidebar"
+import { RightSidebar } from "~/components/template/right-sidebar"
 
 
 const ProfilePage = lazy(() => import('~/components/pages/profile'))
@@ -37,6 +40,8 @@ export const meta: MetaFunction = () => {
   ]; 
 };
 
+const pagesToPreserveScroll = ['home', 'channel', 'conversations', 'profile', "bookmark", ] as scrollPageKey[]
+
 
 export default function Index() {
   
@@ -49,11 +54,15 @@ export default function Index() {
   const [additionalPageData, setAdditionalPageData] = useState('')
   const [profileUser, setProfileUser] = useState('')
   const [is404, setIs404] = useState(false)
-  const { setRightSidebarVisible, isUserLoggedIn } = useMainStore()
+  const { isUserLoggedIn } = useMainStore()
+  const [rightSidebarVisible, setRightSidebarVisible] = useState(false)
 
   const { setNewDmsCount, setNewNotificationsCount, newDmsCount } = useNotifBadgeStore()
 
   const notificationInterval = useRef<NodeJS.Timeout | null>(null)
+  
+  const { scrollStore, setScrollStore } = useStoreScroll()
+
 
   const notifCheck = useCallback(async () => {
     getNotifsUnseen().then((data) => {
@@ -98,115 +107,151 @@ export default function Index() {
     return true
   }, [isUserLoggedIn])
 
+
   useEffect(() => {
-    setIs404(false)
-    setPageData('')
-    if (location?.pathname === '/' || location?.pathname === '/home') {
-      setPage('home')
-      setFeedInitial('')
-      setRightSidebarVisible(true)
+      const handleScroll = () => {
+          if (pagesToPreserveScroll.includes(page as scrollPageKey) && window.scrollY > 0) {
+              setScrollStore(page as scrollPageKey, window.scrollY);
+          }
+      };
+      const debouncedHandleScroll = debounce(handleScroll, 100);
+      window.addEventListener('scroll', debouncedHandleScroll);
+      return () => {
+          window.removeEventListener('scroll', debouncedHandleScroll);
+      };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, scrollStore]);
+
+  useEffect(() => {
+
+      let currentPage = 'home' as scrollPageKey;
+      let currentFeed = '';
+      let currentPageData = '';
+      let currentAdditionalPageData = '';
+      let currentProfileUser = '';
+      let currentIs404 = false;
+      let currentRightSidebarVisible = true;
+
+    if (location?.pathname === '/' || ['/~/trending', '/~/following', '/~/fc-oss', '/~/politics', '/~/cryptoleft', '/home'].includes(location?.pathname)) {
+      currentPage = 'home'
+      if(location?.pathname?.includes('~')) {
+        currentFeed = location?.pathname?.split('/~/')[1]
+      }
     } else if (!location?.pathname?.startsWith('/~')) {      
-        setPage('profile')
+        currentPage = 'profile'
         const splits = location?.pathname?.split('/')
         const splitsLength = splits?.length
         const profileUser = splits[1]
-        setProfileUser(profileUser)
+        currentProfileUser = profileUser
         if(splitsLength === 2) {
-          setPageData('casts')
+          currentPageData = 'casts'
         } else if (splitsLength === 3 && splits[2] === 'casts-and-replies') {
-          setPageData('casts-and-replies')
+          currentPageData = 'casts-and-replies'
         } else if (splitsLength === 3 && splits[2] === 'channels') {
-          setPageData('channels')
+          currentPageData = 'channels'
         } else if (splitsLength === 3 && splits[2] === 'likes') {
-          setPageData('likes')
+          currentPageData = 'likes'
         } else if (splitsLength === 3 && splits[2]?.startsWith('0x')){
-          setPageData(splits[1])
-          setAdditionalPageData(splits[2])
-          setPage('conversations')
+          currentPageData = splits[1]
+          currentAdditionalPageData = splits[2]
+          currentPage = 'conversations'
         } else {
-          setIs404(true)
+          currentIs404 = true
         }
-      setRightSidebarVisible(true)
     } else if (location?.pathname?.startsWith('/~/channel/')) {
-      setPage('channel')
+      currentPage = 'channel'
       const splits = location?.pathname?.split('/')
       const channelId = splits[3]
-      setPageData(channelId)
-      setRightSidebarVisible(true)
+      currentPageData = channelId
     }else if (location?.pathname?.startsWith('/~/bookmarks')) {
       if(checkUserLooggedIn()) {
-        setPage('bookmarks')
-        setRightSidebarVisible(true)
+        currentPage = 'bookmarks' as scrollPageKey
       }
     } else if (location?.pathname?.startsWith('/~/explore')) {
       if(checkUserLooggedIn()) {
         const page = location?.pathname?.split('~/explore/')?.[1]?.replace('/', '') || ''
-        setPage('explore')
-        setPageData(page)
+        currentPage = 'explore' as scrollPageKey
+        currentPageData = page
       }
       setRightSidebarVisible(true)
     } else if (location?.pathname?.startsWith('/~/notifications')) {
        if(checkUserLooggedIn()) {
-        setPage('notifications')
+        currentPage = 'notifications' as scrollPageKey
         const page = location?.pathname?.split('~/notifications/')?.[1]?.replace('/', '') || ''
-        setPageData(page)
+        currentPageData = page
       }
       setRightSidebarVisible(true)
     } else if (location?.pathname === '/~/mini-apps') {
       if(checkUserLooggedIn()) {
-        setPage('mini-apps')
-        setRightSidebarVisible(true)
+        currentPage = 'mini-apps' as scrollPageKey
       }
     } else if (location?.pathname.startsWith('/~/inbox')) {
       if(checkUserLooggedIn()) {
-        setRightSidebarVisible(false)
-        setPage('inbox')
+        currentPage = 'inbox' as scrollPageKey
+        currentRightSidebarVisible = false
       }
     } else if (location?.pathname?.startsWith('/~/search')) {
-      setPage('search')
+      currentPage = 'search' as scrollPageKey
       // get query q from url use useSearchParams
       const searchParams = new URLSearchParams(location?.search)
       const q = searchParams.get('q') ?? ''
       const searchType = location?.pathname?.split('search/')[1].split('?')[0]
-      setPageData(q)
-      setAdditionalPageData(searchType ?? 'top')
-      setRightSidebarVisible(true)
+      currentPageData = q
+      currentAdditionalPageData = searchType ?? 'top'
     }else if (location?.pathname?.startsWith('/~/settings')) {
       if(checkUserLooggedIn()) {
-        setRightSidebarVisible(false)
-        setPage('settings')
+        currentPage = 'settings' as scrollPageKey
+        currentRightSidebarVisible = false
       }
-    } else if( ['/~/trending', '/~/following', '/~/fc-oss', '/~/politics', '/~/cryptoleft'].includes(location?.pathname)) {
-      setPage('home')
-      setFeedInitial(location?.pathname?.split('/~/')[1])
-      setRightSidebarVisible(true)
     } else if( location?.pathname === '/~/about') {
-      setPage('about')
-      setRightSidebarVisible(true)
+      currentPage = 'about' as scrollPageKey
     } else {
-      setIs404(true)
-      setRightSidebarVisible(true)
+      currentIs404 = true
     }
 
+    setPage(currentPage);
+    setFeedInitial(currentFeed);
+    setPageData(currentPageData);
+    setAdditionalPageData(currentAdditionalPageData);
+    setProfileUser(currentProfileUser);
+    setIs404(currentIs404);
+    setRightSidebarVisible(currentRightSidebarVisible);
+
+      requestAnimationFrame(() => {
+        if (pagesToPreserveScroll.includes(currentPage) && scrollStore[currentPage] !== undefined) {
+            window.scrollTo(0, scrollStore[currentPage]);
+        }
+        else if (!is404 && !pagesToPreserveScroll.includes(currentPage)) {
+             window.scrollTo(0, 0);
+        }
+    });
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location?.pathname, location, page, feedInitial, setRightSidebarVisible, isUserLoggedIn, checkUserLooggedIn]);
 
  
   return (
-    <Shell noRightSidebar={is404}>
+    <Shell>
       <Suspense fallback={<HydrateFallback />}>
-        {page === 'home' && !is404 ? <Main key={1} initialFeed={feedInitial} /> : null }
-        {page === 'profile' && !is404  ? <ProfilePage key={2} profile={profileUser} startFeed={pageData} /> : null }
-        { page === 'bookmarks' && !is404 ? <BookmarkPage key={3} /> : null }
-        { page === 'explore' && !is404 ? <ExplorePage key={4} /> : null }
-         { page === 'notifications' && !is404 ? <NotificationsPage key={5} page={pageData} /> : null }
-         { page === 'inbox' && !is404  ? <InboxPage key={6}/> : null }
-         {page === 'search' && !is404 ? <SearchPage key={7} query={pageData} searchType={additionalPageData} /> : null }
-         { page === 'settings' && !is404  ? <SettingsPage key={8} /> : null }
-         {page === 'channel' && !is404  ? <ChannelPage key={9} channelId={pageData} /> : null}
-         { page === 'conversations' && !is404 ? <ConversationPage key={10} hash={additionalPageData} username={pageData} /> : null }
-         {page === 'about' && !is404 ? <AboutPage key={11} /> : null}
-         {page === 'mini-apps' && !is404 ? <MiniAppsPage key={12} /> : null}
-        {is404 && <NotFoundPage key={11} />}
+      {/* <main> */}
+       <LeftSidebar key={'left-sidebar'} />
+       <Main key={'home'} initialFeed={feedInitial} className={page === 'home' && !is404  ? 'block' :'hidden'}/>
+       <ConversationPage key={'conversations'} hash={additionalPageData} username={pageData} className={page === 'conversations' && !is404  ? 'block' :'hidden'} />
+       <ProfilePage key={'profile'} profile={profileUser} startFeed={pageData} className={page === 'profile' && !is404 ? 'block' :'hidden'} />
+       <BookmarkPage key={'bookmarks'} className={page === 'bookmarks' && !is404 ? 'block' :'hidden'}  />
+       <ChannelPage key={'channel'} channelId={pageData} className={page === 'channel' && !is404 ? 'block' :'hidden'}  /> 
+        {page === 'explore' && !is404 ? <ExplorePage key={'explore'} /> : null }
+         {page === 'notifications' && !is404 ? <NotificationsPage key={'notifications'} page={pageData} /> : null }
+         {page === 'inbox' && !is404  ? <InboxPage key={'inbox'}/> : null }
+         {page === 'search' && !is404 ? <SearchPage key={'search'} query={pageData} searchType={additionalPageData} /> : null }
+         {page === 'settings' && !is404  ? <SettingsPage key={'settings'} /> : null }
+         {page === 'about' && !is404 ? <AboutPage key={'about'} /> : null}
+         {page === 'mini-apps' && !is404 ? <MiniAppsPage key={'miniapps'} /> : null}
+         {is404 && <NotFoundPage key={'404'} />}
+        {/* </main> */}
+        
+        {rightSidebarVisible && <RightSidebar key={'right-sidebar'} /> }
       </Suspense>
       <ComposeModal />
     </Shell>

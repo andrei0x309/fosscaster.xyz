@@ -147,7 +147,7 @@ export const getChannelFollowersYouKnow = async ({channelKey, limit = 3, cursor}
 }
 
 export const userByFid = async (fid: number | string) => {
-    return await wc.userByFid(String(fid))
+    return await wc.userByFid(fid)
 }
 
 export const completeRegistration = async ({
@@ -174,6 +174,27 @@ export const uploadImage = async ({file, doUploadAvatar = false}: {file: File, d
     return await wc.uploadImage({ file, doUploadAvatar})
 }
 
+export const dcGetConversation = async (conversationId: string) => {
+    return await wc.dcGetConversation(conversationId)
+}
+
+export const dcConversationRecentMessages = async ({conversationId}: {conversationId: string}) => {
+    return await wc.dcConversationRecentMessages({conversationId})
+}
+
+export const dcSendOpenEvent = async ({
+    conversationId,
+    userFid
+}: {
+    conversationId: string,
+    userFid: number
+}) => {
+    return await wc.dcSendOpenEvent({
+        conversationId,
+        userFid
+    })
+}
+
 export const getDirectCastInbox = async ({limit = 15, cursor = '', category = 'default'}: {limit?: number, cursor?: string, category?: "default" | "request" } = {}) => {
     return await wc.getDirectCastInbox({limit, cursor, category})
 }
@@ -198,8 +219,8 @@ export const dcGetMessages = async ({conversationId, limit = 15, cursor, message
     return await wc.dcGetMessages({conversationId, limit, cursor, messageId})
 }
 
-export const sendDirectCast = async ({conversationId, type, message}: {conversationId: string, type?: string, message: string}) => {
-    return await wc.sendDirectCast({conversationId, message, type})
+export const sendDirectCast = async ({conversationId, type, recieverFid, message}: {conversationId: string, recieverFid: string, type?: string, message: string}) => {
+    return await wc.sendDirectCast({conversationId, recieverFid, message, type})
 }
 
 export const channelRespondToInvite = async ({channelKey, accept, role}: {channelKey: string, accept: boolean, role: string}) => {
@@ -236,6 +257,14 @@ export const searchChannels = async ({query, limit = 15, cursor}: {query: string
 
 export const getFavoriteFrames = async ({limit = 12, cursor}: {limit?: number, cursor?: string}) => {
     return await wc.getFavoriteFrames({limit, cursor})
+}
+
+export const addMiniAppToFavs = async ({domain}: {domain: string}) => {
+    return await wc.addMiniAppToFavs({domain})
+}
+
+export const removeMiniAppFromFavs = async ({domain}: {domain: string}) => {
+    return await wc.removeMiniAppFromFavs({domain})
 }
 
 export const getFrame = async ({domain}: {domain: string}) => {

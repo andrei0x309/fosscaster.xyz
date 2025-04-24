@@ -21,13 +21,11 @@ if (process.env.NODE_ENV === 'development') {
 
 export const RightSidebar = memo(function RightSidebar({ className = '' }: { className?: string }) {
 
-    const { navigate, isRightSidebarVisible, isUserLoggedIn} = useMainStore()
+    const { navigate, isUserLoggedIn} = useMainStore()
 
 
       return (
-      <>
-          {/* Right Sidebar */}
-            {isRightSidebarVisible && <aside className={`hidden border-l border-neutral-400/50 pt-4 px-4 sticky top-0 h-screen shrink-0 max-w-[22rem] overflow-y-auto scrollbar-hide md:block ${className}`}>
+            <aside className={`hidden border-l border-neutral-400/50 pt-4 px-4 sticky top-0 h-screen shrink-0 max-w-[22rem] overflow-y-auto scrollbar-hide md:block ${className}`}>
               <SearchSidebar />
               <div className="bg-neutral-100 dark:bg-zinc-900 rounded-lg p-4 mb-4">
                 <h2 className="font-semibold mb-2">FC - fosscaster.xyz</h2>
@@ -45,10 +43,7 @@ export const RightSidebar = memo(function RightSidebar({ className = '' }: { cla
                 Commit attestaion {process.env.GIT_HASH_COMMIT.slice(0, 8)} <VerifiedIcon className="h-4 w-4 ml-1 mr-1 inline" />
                 </a>
               }
-            </aside>
-          }
-
-      </>)
+            </aside>)
   })
   
 

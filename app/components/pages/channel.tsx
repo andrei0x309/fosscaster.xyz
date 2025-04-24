@@ -117,7 +117,7 @@ export default function ChannelPage({
 
 
   return (
-    <main className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
+    <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
     <div className="h-full min-h-screen">
       <div className="sticky bg-white dark:bg-neutral-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-26 p-2">
 
@@ -192,7 +192,7 @@ export default function ChannelPage({
                 />
               )) : null}
  
-        <InfiniteScroll hasMore={hasMore} isLoading={feedLoading} next={loadMore} threshold={1}>
+        <InfiniteScroll hasMore={hasMore} isLoading={feedLoading} next={loadMore} threshold={0.3}>
         {isInitialLoad && hasMore && <div className='my-2'><SimpleLoader /></div>}
         </InfiniteScroll>
         </div>
@@ -202,6 +202,6 @@ export default function ChannelPage({
           </div>}
 
     </div>
-    </main>
+    </div>
   )
 }

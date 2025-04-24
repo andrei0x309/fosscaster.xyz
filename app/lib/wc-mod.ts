@@ -188,8 +188,7 @@ export class WarpCastWebAPI {
         }
     }
 
-
-    public async userByFid (fid: string) {
+    public async userByFid (fid: string | number) {
         try {
         const response = await fetch(`${this._apiEndpointBase}/user?fid=${fid}`, {
             method: 'GET',
@@ -431,6 +430,66 @@ export class WarpCastWebAPI {
             })
         });
         return await response.json() as  {
+            "result": {
+                "success": true
+            }
+        }
+    }
+
+    // try to use this to get DC marked as read, super privacy infringing to get all this data when you just open a DM
+    // I coud not find a DM mark as read endpoint they might use this analtics to mark as read
+    public async dcSendOpenEvent ({
+        conversationId,
+        userFid
+    }: {
+        conversationId: string,
+        userFid: number
+    }) {
+
+        const data = {
+            "api_key": "7dd7b12861158f5e89ab5508bd9ce4c0",
+            "events": [
+              {
+                "user_id": String(userFid),
+                "device_id": self?.crypto?.randomUUID(),
+                "session_id": Date.now(),
+                "time": Date.now(),
+                "app_version": "1.0.102",
+                "platform": "Android",
+                "os_name": "android",
+                "os_version": "13",
+                "device_manufacturer": "Google",
+                "device_model": "sdk_arm64",
+                "language": "en",
+                "country": "US",
+                "carrier": "",
+                "ip": "$remote",
+                "adid": null,
+                "android_app_set_id": null,
+                "insert_id": self?.crypto?.randomUUID(),
+                "event_type": "view direct cast conversation",
+                "event_properties": {
+                  "conversationId": conversationId,
+                  "conversationCategory": "default",
+                  "is_token_gated": false,
+                  "location": "PlaintextDirectCasts/PlaintextDirectCastsConversation",
+                  "warpcastPlatform": "mobile"
+                },
+                "event_id": Math.trunc(Math.random() * 10^4),
+                "library": "amplitude-react-native-ts/1.4.4"
+              }
+            ],
+            "options": {
+              "min_id_length": 1
+            }
+          }
+
+        const response = await fetch(`${this._apiEndpointBase}/amp/api2/2/httpapi`, {
+            method: 'POST',
+            headers: this.headers,
+            body: JSON.stringify(data)
+        });
+        return await response.json() as {
             "result": {
                 "success": true
             }
@@ -803,8 +862,6 @@ export class WarpCastWebAPI {
         return await response.json() as TWcUserThreadItems
     }
 
-
-
     public async sendPushNotification () {
         const response = await fetch(`${this._apiEndpointBase}/send-push-notification`, {
             method: 'POST',
@@ -812,6 +869,31 @@ export class WarpCastWebAPI {
             body: JSON.stringify({})
         });
         return await response.json();
+    }
+
+    public async dcGetConversation( conversationId: string) {
+        const response = await fetch(`${this._apiEndpointBase}/direct-cast-conversation?conversationId=${conversationId}`, {
+            method: 'POST',
+            headers: this.headers,
+            body: JSON.stringify({
+                conversationId
+            })
+        });
+        return await response.json() as {
+            resut: {
+               conversation: TWCDcInbox['result']['conversations'][0]
+            }
+        }
+    }
+
+    public async dcConversationRecentMessages({ conversationId }: {
+        conversationId: string,
+    }) {
+        const response = await fetch(`${this._apiEndpointBase}/direct-cast-conversation-recent-messages?conversationId=${conversationId}`, {
+            method: 'GET',
+            headers: this.headers
+        });
+        return await response.json() as TWCDCMessages
     }
 
     public async getDirectCastInbox ({ cursor = '', limit = 20, filter = '', category = 'default' }: {
@@ -840,19 +922,19 @@ export class WarpCastWebAPI {
         return await response.json() as TWCDcUsers
     }
 
-    public async sendDirectCast ({ conversationId, type = 'text', message }: {
+    public async sendDirectCast ({ conversationId, recieverFid, type = 'text', message }: {
         conversationId: string,
+        recieverFid: string,
         type?: string,
         message: string
     }) {
         // hash
         const messageId = await this.hash(`${conversationId}-${Date.now()}`)
-        const isGroup = !conversationId.includes('-')
-        const receiverFID = !isGroup ? conversationId.split('-')[0] : ''
-
+        const isGroup = !conversationId?.includes('-')
+ 
         const data = {
             conversationId,
-            recipientFids: isGroup ? [] : [receiverFID],
+            recipientFids: isGroup ? [] : [recieverFid],
             messageId,
             type,
             message
@@ -1157,6 +1239,44 @@ export class WarpCastWebAPI {
             headers: this.headers
         });
         return await response.json() as TWCFavoriteFrames
+    }
+
+    public addMiniAppToFavs = async ({
+        domain,
+    }: {
+        domain: string,
+    }) => {
+        const response = await fetch(`${this._apiEndpointBase.replace('v2', 'v1')}/favorite-frames`, {
+            method: 'PUT',
+            headers: this.headers,
+            body: JSON.stringify({
+                "domain": domain
+            })
+        })
+        return await response.json() as {
+            result: {
+                success: boolean
+            }
+        }
+    }
+
+    public removeMiniAppFromFavs = async ({
+        domain,
+    }: {
+        domain: string,
+    }) => {
+        const response = await fetch(`${this._apiEndpointBase.replace('v2', 'v1')}/favorite-frames`, {
+            method: 'DELETE',
+            headers: this.headers,
+            body: JSON.stringify({
+                "domain": domain
+            })
+        })
+        return await response.json() as {
+            result: {
+                success: boolean
+            }
+        }
     }
 
     public getFrame = async ({

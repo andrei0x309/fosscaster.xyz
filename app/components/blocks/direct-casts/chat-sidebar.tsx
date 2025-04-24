@@ -1,26 +1,34 @@
 import { useState, useRef, useEffect, useCallback, useContext } from "react"
 import { Search, ArrowLeft, MoreHorizontal, Bell, Archive, Pin, LogOut, RotateCcw, X } from "lucide-react"
 import { useMainStore } from "~/store/main"
-import { getDirectCastInbox  } from "~/lib/api"
+import { getDirectCastInbox, userByFid } from "~/lib/api"
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
 import { timeAgo } from "~/lib/misc"
 import { useDebouncedCallback } from "~/hooks/use-debounced-callback"
 import { ChatContext } from './chat-context'
 import { UserIcon } from '~/components/icons/user'
 import { GroupIcon } from '~/components/icons/group'
-import { useLocation } from '@remix-run/react'
+import { useLocation } from "react-router";
+import { Conversation } from "~/types/wc-dc-inbox"
+import { useNotifBadgeStore } from "~/store/notif-badge-store"
+import { getNewAuthentificatedChat, sendConvoRead } from '~/lib/wc-socket'
+import type { TWCDCMessages } from "~/types/wc-dc-messages"
+
 
 type Chats = Awaited<ReturnType<typeof getDirectCastInbox>>
+type Message = TWCDCMessages['result']['messages'][number]
  
 export default function ChatSidebar() {
 
-  const { setDcModalOpen, navigate } = useMainStore()
-  const { setCurrentConversation } = useContext(ChatContext)
+  const { setDcModalOpen, navigate, mainUserData } = useMainStore()
+  const { setCurrentConversation, setMessages, messages } = useContext(ChatContext)
 
   const [showRequests, setShowRequests] = useState(false)
   const [hoveredChat, setHoveredChat] = useState<string | null>(null)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false)
+
+  const chatsSockets = useRef<Record<string, any>>({})
 
  
   // Refs for scroll containers
@@ -30,6 +38,7 @@ export default function ChatSidebar() {
   // State for loaded chats
   const [loadedRegularChats, setLoadedRegularChats] = useState<Chats>({} as Chats)
   const [loadedRequestChats, setLoadedRequestChats] = useState<Chats>({} as Chats)
+  const [newConversation, setNewConversation] = useState({} as Conversation)
 
   // Loading states
   const [isLoadingRegular, setIsLoadingRegular] = useState(false)
@@ -38,17 +47,128 @@ export default function ChatSidebar() {
   // Track if there are more chats to load
   const [hasMoreRegular, setHasMoreRegular] = useState(true)
   const [hasMoreRequests, setHasMoreRequests] = useState(true)
+  const [activeChat, setActiveChat] = useState<string | null>('')
+  const [initalRegularLoaded, setInitalRegularLoaded] = useState(false)
   
   const location = useLocation()
+
+  const {  setNewDmsCount, newDmsCount } = useNotifBadgeStore()
   
 
+
+    // useEffect(() => {
+    //   (async () => {
+    //   if(!activeChat) return
+      
+    //   const reciverFID = activeChat?.split('-')[1]
+    //   if (!reciverFID) return
+    //   const user = await userByFid(reciverFID)
+
+    //   const newConvo = {
+    //     isGroup: false,
+    //     activeChat,
+    //     viewerContext: {
+    //       counterParty: user?.result?.user
+    //     },
+    //     adminFids: [] as number[],
+    //     name: user?.result?.user?.displayName || '',
+    //     photoUrl: user?.result?.user?.pfp?.url,
+    //     createdAt: Date.now() - 3000
+    //   } as unknown as Conversation
+
+    //   setNewConversation(newConvo)
+    //   setCurrentConversation(newConvo)
+    // }
+    // )()
+    // }, [loadedRegularChats?.result?.conversations?.length, activeChat])
+
     useEffect( () => {
+      (async () => {
       const conversationId = location?.pathname?.split('/inbox/')[1]
-      const conversation = loadedRegularChats?.result?.conversations?.find((chat) => chat.conversationId === conversationId)
-      if (conversation) {
+      if (!conversationId) return
+      if (activeChat === conversationId) return
+      if (!initalRegularLoaded) return
+      setActiveChat(conversationId)
+      const conversation = loadedRegularChats?.result?.conversations?.find((conversation: Conversation) => conversation.conversationId === conversationId)
+      if(conversation) {
         setCurrentConversation(conversation)
+          if(!chatsSockets.current[conversationId]) {
+             chatsSockets.current[conversationId] = await getNewAuthentificatedChat({
+              token: mainUserData?.authToken || '',
+              conversationId,
+              onMessage(message) {
+                  try {
+                    const data = JSON.parse(message)
+                    if(data?.messageType === 'refresh-direct-cast-conversation') {
+                      const messageObj = data?.payload?.message as Message
+                      console.log('refresh-direct-cast-conversation', messageObj)
+                      if(messageObj?.conversationId === conversation?.conversationId) {
+                        messages.result?.messages?.push(messageObj)
+                        setMessages(messages)
+                      }
+                      const convo = loadedRegularChats?.result?.conversations?.find((conversation: Conversation) => conversation.conversationId === conversation?.conversationId)
+                      if(convo) {
+                        convo.lastMessage = messageObj
+                        convo.viewerContext.unreadCount = 0
+                        setCurrentConversation(convo)
+                        setLoadedRegularChats({
+                          ...loadedRegularChats,
+                          result: {
+                            ...loadedRegularChats?.result,
+                            conversations: loadedRegularChats?.result?.conversations?.map((conversation: Conversation) => {
+                              if(conversation?.conversationId === conversationId) {
+                                return {
+                                  ...conversation,
+                                  lastMessage: messageObj,
+                                  viewerContext: {
+                                    ...conversation?.viewerContext,
+                                    unreadCount: 0
+                                  }
+                                }
+                              }
+                              return conversation
+                            })
+                          }
+                        })
+                      }
+                      sendConvoRead({
+                        socket: chatsSockets.current[conversationId],
+                        conversationId
+                      })
+                    }
+                  } catch (error) {
+                    console.log(error)
+                  }
+              },
+            })
+          }
+          conversation.viewerContext.unreadCount = 0
+          setNewDmsCount(newDmsCount - 1)
+        return
+      } else {
+        const reciverFID = conversationId?.split('-')[1]
+        if (!reciverFID) return
+        const user = await userByFid(reciverFID)
+
+        const newConvo = {
+          isGroup: false,
+          conversationId,
+          viewerContext: {
+            counterParty: user?.result?.user
+          },
+          adminFids: [] as number[],
+          name: user?.result?.user?.displayName || '',
+          photoUrl: user?.result?.user?.pfp?.url,
+          createdAt: Date.now() - 3000
+        } as unknown as Conversation
+
+        setNewConversation(newConvo)
+        setCurrentConversation(newConvo)
       }
-    }, [loadedRegularChats?.result?.conversations, location?.pathname, setCurrentConversation])
+  
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location?.pathname, setCurrentConversation, initalRegularLoaded])
 
     const fetchInbox = useCallback(async (category: 'default' | 'request' = 'default') => {
       if (isLoadingRegular && category =='default') return
@@ -75,6 +195,7 @@ export default function ChatSidebar() {
       }
       setLoadedRegularChats(newInbox)
       setIsLoadingRegular(false)
+      setInitalRegularLoaded(true)
       } else if (category === 'request') {
         const hasMore = inbox.next?.cursor ? true : false
         setHasMoreRequests(hasMore)
@@ -96,18 +217,6 @@ export default function ChatSidebar() {
       }
     }, [hasMoreRegular, hasMoreRequests, isLoadingRegular, isLoadingRequests, loadedRegularChats, loadedRequestChats?.next?.cursor, loadedRequestChats?.result?.conversations])
 
-//   const initialRequestChats: RequestChat[] = [
-//     { id: 101, name: "tesseractx", message: "", time: "", followers: 0 },
-//     { id: 102, name: "rhodelle", message: "", time: "", followers: 3 },
-//     { id: 103, name: "tanukipay", message: "", time: "2/24/25", followers: 3 },
-//     { id: 104, name: "tozya89", message: "", time: "2/23/25", followers: 0 },
-//     { id: 105, name: "hyperbot", message: "", time: "1/16/25", followers: 24, automated: true },
-//     { id: 106, name: "event", message: "", time: "1/7/25", followers: 66, automated: true },
-//     { id: 107, name: "wira.eth", message: "", time: "12/19/24", followers: 21 },
-//     { id: 108, name: "spotlight", message: "", time: "12/16/24", followers: 82, automated: true },
-//     { id: 109, name: "0xbcd", message: "", time: "12/12/24", followers: 8, automated: true },
-//     { id: 110, name: "openion", message: "", time: "11/26/24", followers: 0 },
-//   ]
 
   // Initialize with first batch of chats
   useEffect(() => {
@@ -217,25 +326,25 @@ export default function ChatSidebar() {
 
           <div className="p-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 dark:text-neutral-400 text-neutral-500" size={18} />
               <input
                 type="text"
                 placeholder="Search"
-                className="w-full bg-neutral-800 text-white pl-10 pr-4 py-2 rounded-full focus:outline-none"
+                className="w-full dark:bg-neutral-800 dark:text-white bg-neutral-200 text-neutral-900 pl-10 pr-4 py-2 rounded-full focus:outline-none"
               />
             </div>
           </div>
 
           <div className="p-2 flex space-x-2 overflow-x-auto border-b border-neutral-700">
-            <button className="px-4 py-1 bg-neutral-800 rounded-full text-sm font-medium">All</button>
-            <button className="px-4 py-1 bg-transparent text-neutral-400 rounded-full text-sm font-medium">Unread</button>
-            <button className="px-4 py-1 bg-transparent text-neutral-400 rounded-full text-sm font-medium">Groups</button>
-            <button className="px-4 py-1 bg-transparent text-neutral-400 rounded-full text-sm font-medium">1:1s</button>
+            <button className="px-4 py-1 dark:bg-neutral-800 bg-neutral-300 rounded-full text-sm font-medium">All</button>
+            <button className="px-4 py-1 bg-transparent dark:text-neutral-400 text-neutral-500 rounded-full text-sm font-medium">Unread</button>
+            <button className="px-4 py-1 bg-transparent dark:text-neutral-400 text-neutral-500 rounded-full text-sm font-medium">Groups</button>
+            <button className="px-4 py-1 bg-transparent dark:text-neutral-400 text-neutral-500 rounded-full text-sm font-medium">1:1s</button>
           </div>
 
           <div
             aria-hidden
-            className="p-4 border-b border-neutral-700 flex items-center justify-between cursor-pointer hover:bg-neutral-800"
+            className="p-4 border-b border-neutral-700 flex items-center justify-between cursor-pointer dark:hover:bg-neutral-800 hover:bg-neutral-300"
             onClick={() => setShowRequests(true)}
           >
             <div className="flex items-center">
@@ -267,17 +376,55 @@ export default function ChatSidebar() {
             onClick={handleClickOutside}
             onScroll={handleRegularChatsScroll}
           >
+            {newConversation?.viewerContext?.counterParty?.username && 
+            <div
+            key={newConversation.conversationId}
+            className={`p-4 dark:hover:bg-neutral-800 hover:bg-neutral-200 cursor-pointer flex items-start relative text-[0.9rem] ${activeChat === newConversation.conversationId ? 'dark:bg-neutral-800 bg-neutral-200 ' : ''}`}
+            onMouseEnter={() => setHoveredChat(newConversation?.conversationId)}
+            onMouseLeave={() => setHoveredChat(null)}
+            onClick={() => {
+              navigate(`/~/inbox/${newConversation?.conversationId}`)
+            }}
+            aria-hidden
+          >                { newConversation?.viewerContext?.counterParty?.pfp?.url ?
+            <Avatar className="hover:border-2">
+                  <AvatarImage src={newConversation.viewerContext.counterParty.pfp.url} alt={`User ${newConversation?.viewerContext?.counterParty?.username}`} />
+                  <AvatarFallback>{newConversation.viewerContext.counterParty.username.slice(0,2)}</AvatarFallback>
+            </Avatar>   
+            : <UserIcon className="w-8 h-8 ml-1" />}
+                             <div className="ml-3 flex-1 min-w-0">
+                  <div className="flex justify-between">
+                    <span className="font-medium truncate">{ !newConversation?.isGroup ? newConversation?.viewerContext?.counterParty?.username : newConversation?.name}</span>
+                    {hoveredChat === newConversation?.conversationId ? (
+                      <button
+                        onClick={(e) => handleChatMenuClick(newConversation?.conversationId, e)}
+                        className="text-neutral-400 hover:text-white"
+                      >
+                        <MoreHorizontal size={16} />
+                      </button>
+                    ) : (
+                      <span className="text-neutral-400 text-sm">{timeAgo(newConversation?.lastMessage?.serverTimestamp ?? 0, true)}</span>
+                    )}
+                  </div>
+                  <p className="text-neutral-400 text-sm truncate">
+                    {newConversation?.lastMessage?.type === 'text' && newConversation?.lastMessage?.message}
+                    </p>
+                </div>
+
+            </div>
+            }
+
             {loadedRegularChats?.result?.conversations.map((chat) => (
               <div
                 key={chat.conversationId}
-                className="p-4 dark:hover:bg-neutral-800 hover:bg-neutral-200 cursor-pointer flex items-start relative"
+                className={`p-4 dark:hover:bg-neutral-800 hover:bg-neutral-200 cursor-pointer flex items-start relative text-[0.9rem] ${activeChat === chat.conversationId ? 'dark:bg-neutral-800 bg-neutral-200 ' : ''} `}
                 onMouseEnter={() => setHoveredChat(chat?.conversationId)}
                 onMouseLeave={() => setHoveredChat(null)}
                 onClick={() => {
                   navigate(`/~/inbox/${chat?.conversationId}`)
                 }}
                 aria-hidden
-              >  
+              > 
                 {!chat?.isGroup ?
                 (chat?.viewerContext?.counterParty?.pfp?.url ?
                 <Avatar className="hover:border-2">
@@ -308,7 +455,21 @@ export default function ChatSidebar() {
                       <span className="text-neutral-400 text-sm">{timeAgo(chat?.lastMessage?.serverTimestamp ?? 0, true)}</span>
                     )}
                   </div>
-                  <p className="text-neutral-400 text-sm truncate">{chat?.lastMessage?.message}</p>
+                  <p className="text-neutral-400 text-sm truncate">
+                    {chat?.lastMessage?.type === 'group_membership_addition' ?
+                    `${chat?.lastMessage?.senderContext?.username} has added ${chat?.lastMessage?.actionTargetUserContext?.username ?? `FID: ${chat?.lastMessage?.actionTargetUserContext?.fid}`} to the group`
+                      : null}
+                      {chat?.lastMessage?.type === 'group_membership_removal' ?
+                    `${chat?.lastMessage?.senderContext?.username} has left the group`
+                      : null}
+                    {chat?.lastMessage?.type === 'text' && chat?.lastMessage?.message}
+                    </p>
+                  {/* small circle with unread count */}
+                  {chat?.viewerContext?.unreadCount > 0 && (
+                    <div className="absolute right-0 bottom-4 mt-1 mr-2 flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-xs">
+                      {chat?.viewerContext?.unreadCount}
+                    </div>
+                  )}
                 </div>
 
                 {/* Regular Chat Menu */}

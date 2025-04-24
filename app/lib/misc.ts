@@ -8,35 +8,32 @@ export const timeAgo = (date: string | number, shortFormat = false) => {
     let intervalType: string;
 
     if (interval >= 1) {
-        intervalType = 'year';
+        intervalType = 'yr';
     } else {
         interval = Math.floor(seconds / 2592000);
         if (interval >= 1) {
-            intervalType = 'month';
+            intervalType = 'mo';
         } else {
             interval = Math.floor(seconds / 86400);
             if (interval >= 1) {
-                intervalType = 'day';
+                intervalType = 'd';
             } else {
                 interval = Math.floor(seconds / 3600);
                 if (interval >= 1) {
-                    intervalType = "hour";
+                    intervalType = "hr";
                 } else {
                     interval = Math.floor(seconds / 60);
                     if (interval >= 1) {
-                        intervalType = "minute";
+                        intervalType = "min";
                     } else {
                         interval = seconds;
-                        intervalType = "second";
+                        intervalType = "s";
                     }
                 }
             }
         }
     }
 
-    if (interval > 1 || interval === 0) {
-        intervalType += 's';
-    }
     if (shortFormat) {
        if (intervalType.startsWith('second') || intervalType.startsWith('minute')  || intervalType.startsWith('hour') ) {
            return interval.toFixed(0) + ' ' + intervalType;
@@ -83,4 +80,17 @@ export function addNotificationBadge() {
     const encoder = new TextEncoder();
     const encodedBytes: Uint8Array = encoder.encode(str);
     return encodedBytes.byteLength;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  export function debounce<T extends Function>(func: T, delay: number): (...args: any[]) => void {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    return function(this: any, ...args: any[]) {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const context = this;
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        func.apply(context, args);
+      }, delay);
+    };
   }

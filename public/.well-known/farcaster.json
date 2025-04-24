@@ -8,12 +8,43 @@
       "version": "1",
       "name": "fosscaster.xyz",
       "homeUrl": "https://fosscaster.xyz/",
-      "iconUrl": "https://fosscaster.xyz/hotlink-ok/splash.png",
-      "imageUrl": "https://fosscaster.xyz/hotlink-ok/img.png",
+      "iconUrl": "https://fosscaster.xyz/hotlink-ok/favicon.png",
+      "imageUrl": "https://fosscaster.xyz/hotlink-ok/og/default.png",
       "buttonTitle": "Open Frame",
-      "splashImageUrl": "https://fosscaster.xyz/hotlink-ok/splash.png",
+      "splashImageUrl": "https://fosscaster.xyz/hotlink-ok/favicon.png",
       "splashBackgroundColor": "#35303f",
       "webhookUrl": "https://fosscaster.xyz/api/fc-webhook"
-    }
+    },
+    "triggers": [
+      {
+        "type": "cast",
+        "id": "fosscaster-blog-id",
+        "url": "https://fosscaster.xyz"
+      },
+      {
+        "type": "composer",
+        "id": "fosscaster-blog-id",
+        "url": "https://fosscaster.xyz"
+      }
+    ],
+    "subtitle": "fosscaster.xyz",
+    "description": "Open source implementation of web farcaster client",
+    "screenshotUrls": [
+      "https://fosscaster.xyz/hotlink-ok/screenshots/screenshot-1.png",
+      "https://fosscaster.xyz/hotlink-ok/screenshots/screenshot-2.png"
+    ],
+    "primaryCategory": "developer-tools",
+    "tags": [
+      "sveltekit",
+      "svelte",
+      "starter",
+      "sveltekit miniapp",
+      "developer"
+    ],
+    "heroImageUrl": "https://fosscaster.xyz/hotlink-ok/og/default.png",
+    "tagline": "Open source implementation of web farcaster client",
+    "ogTitle": "fosscaster.xyz",
+    "ogDescription": "Open source implementation of web farcaster client",
+    "ogImageUrl": "https://fosscaster.xyz/hotlink-ok/og/default.png"
   }
   

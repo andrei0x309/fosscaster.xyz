@@ -28,7 +28,7 @@ import {
   getFollowersYouKnow,
   userByFid
 } from "~/lib/api"
-import { useLocation } from '@remix-run/react'
+import { useLocation } from "react-router";
 import { CastHeader } from '~/components/blocks/header/cast-header'
 
 
@@ -188,6 +188,11 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
   const isFeed  = (feed: string) => {
     return feed === 'casts' || feed === 'likes' || feed === 'casts-and-replies'
   }
+
+  const dmUser = async () => {
+    const dmLink = `${mainUserData?.fid}-${user?.user?.fid}`
+    navigate(`/~/inbox/${dmLink}`)
+  }
  
   useEffect(() => {
     fetchUser()
@@ -224,132 +229,133 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
   }
  
   return (
-
     // <main className="h-full w-full shrink-0 justify-center sm:mr-4 sm:w-[540px] lg:w-[680px]">
     // <div className="h-full min-h-screen">
     //   <div className="sticky dark:bg-zinc-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-14 sm:h-28 p-2">
 
-      <main className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
-        <div className="h-full min-h-screen">
-        <CastHeader title={`@${user?.user?.username ?? ''}`} hasBackButton={true} />
-       {/* Profile */}
-    {!user?.user?.fid && <SimpleLoader />}
-    {user?.user?.fid && (
-    <><div className="px-4 pt-4">
-                      <div className="max-w-2xl mx-auto">
-                          <div className="flex items-center justify-between mb-4">
-                              
-                          <div className="flex items-center space-x-3 mb-2">
-                          <Image
-                                      src={user?.user?.pfp?.url ?? "/placeholder.svg"}
-                                      alt="Profile picture"
-                                      width={64}
-                                      height={64}
-                                      className="rounded-full w-16 h-16 object-fill" />
-              <div>
-                <h1 className="text-xl font-bold items-center inline-block">
-                {user?.user?.displayName}
-                </h1>                  
-                {isFollowingYou && <span className="text-neutral-400 text-sm ml-2 inline-block">Follows you</span>}
-
-                <p className="text-neutral-400">@{user?.user?.username}</p>
-                </div>
-            </div>
+    (<main className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
+      <div className="h-full min-h-screen">
+      <CastHeader title={`@${user?.user?.username ?? ''}`} hasBackButton={true} />
+     {/* Profile */}
+  {!user?.user?.fid && <SimpleLoader />}
+  {user?.user?.fid && (
+  <><div className="px-4 pt-4">
+                    <div className="max-w-2xl mx-auto">
+                        <div className="flex items-center justify-between mb-4">
                             
-                              <div className="flex space-x-2">
-                              {isOwnProfile && (
-                                  <Button variant="outline" className="text-red-500 border-red-500" onClick={() => navigate('/~/settings')}>
-                                      Edit Profile
-                                  </Button>
-                              )}
-                              {!isOwnProfile && (
-                                        <>
-                                        <Button variant="ghost" size="icon">
-                                            <Mail className="h-5 w-5" />
-                                          </Button>
-                                          <Button variant="ghost" size="icon">
-                                            <Bell className="h-5 w-5" />
-                                          </Button>
-                                        </>
-                                )}
+                        <div className="flex items-center space-x-3 mb-2">
+                        <Image
+                                    src={user?.user?.pfp?.url ?? "/placeholder.svg"}
+                                    alt="Profile picture"
+                                    width={64}
+                                    height={64}
+                                    className="rounded-full w-16 h-16 object-cover" />
+            <div>
+              <h1 className="text-xl font-bold items-center inline-block">
+              {user?.user?.displayName}
+              </h1>                  
+              {isFollowingYou && <span className="text-neutral-400 text-sm ml-2 inline-block">Follows you</span>}
 
-                                  <Button variant="ghost" size="icon">
-                                      <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                              </div>
-                          </div>
-                             
-
-                          <p className="mb-2 break-words dark:text-neutral-300 text-neutral-600">
-                              {user?.user?.profile?.bio?.text}
-                          </p>
-
-                          <div className="flex space-x-4 mb-4">
-                              <span><strong>{formatNumber(Number(user?.user?.followingCount), 0)}</strong> Following</span>
-                              <span><strong>{formatNumber(Number(user?.user?.followerCount), 0)}</strong> Followers</span>
-                          </div>
-
-
-                          <div className="flex space-x-4 mb-4">
-                          {!isOwnProfile && (
-                            <>
-                            { areYouFollowing && <Button variant="outline" onClick={doUnfollow}>Unfollow</Button> }
-                            { !areYouFollowing && <Button variant="outline" onClick={doFollow}>Follow</Button> }
-                            </>
-                          )}
-                        </div>
-                        
-         {isUserLoggedIn && !isOwnProfile && followersYouKnow?.result?.totalCount ? (
-          <>
-         <div className="flex items-center space-x-2 mb-4">
-          <div className="flex -space-x-2">
-            { followersYouKnow.result?.users.map((user, index) => (
-              <Image
-                key={index}
-                src={user.pfp?.url ?? "/placeholder.svg"}
-                alt={`User ${index + 1}`}
-                className="rounded-full border-2 border-[#1c1c24] w-10 h-10 object-cover"
-              />
-            ))}
+              <p className="text-neutral-400">@{user?.user?.username}</p>
+              </div>
           </div>
-          <p className="text-sm text-neutral-400">
-            Followed by&nbsp;
-            {followersYouKnow.result?.users.map((user, index) => (
-              <>
-              <span className='font-bold cursor-pointer hover:underline' key={index} aria-disabled="true" onClick={() => navigate(`/~${user.username}`)} role='button' onKeyDown={() => {}}>
-                {user.username}
-              </span>
-              <span>&nbsp;</span>
-              </>
-            ))}
-             and {followersYouKnow?.result?.totalCount} others you know
-          </p>
+                          
+                            <div className="flex space-x-2">
+                            {isOwnProfile && (
+                                <Button variant="outline" className="text-red-500 border-red-500" onClick={() => navigate('/~/settings')}>
+                                    Edit Profile
+                                </Button>
+                            )}
+                            {!isOwnProfile && (
+                                      <>
+                                       <Button onClick={dmUser} variant="ghost" size="icon">
+                                          <Mail className="h-5 w-5" />
+                                        </Button>
+                                        {/*
+                                        // implement later
+                                        <Button variant="ghost" size="icon">
+                                          <Bell className="h-5 w-5" />
+                                        </Button> */}
+                                      </>
+                              )}
+
+                                <Button variant="ghost" size="icon">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                           
+
+                        <p className="mb-2 break-words dark:text-neutral-300 text-neutral-600">
+                            {user?.user?.profile?.bio?.text}
+                        </p>
+
+                        <div className="flex space-x-4 mb-4">
+                            <span><strong>{formatNumber(Number(user?.user?.followingCount), 0)}</strong> Following</span>
+                            <span><strong>{formatNumber(Number(user?.user?.followerCount), 0)}</strong> Followers</span>
+                        </div>
+
+
+                        <div className="flex space-x-4 mb-4">
+                        {!isOwnProfile && (
+                          <>
+                          { areYouFollowing && <Button variant="outline" onClick={doUnfollow}>Unfollow</Button> }
+                          { !areYouFollowing && <Button variant="outline" onClick={doFollow}>Follow</Button> }
+                          </>
+                        )}
+                      </div>
+                      
+       {isUserLoggedIn && !isOwnProfile && followersYouKnow?.result?.totalCount ? (
+        <>
+       <div className="flex items-center space-x-2 mb-4">
+        <div className="flex -space-x-2">
+          { followersYouKnow.result?.users.map((user, index) => (
+            <Image
+              key={index}
+              src={user.pfp?.url ?? "/placeholder.svg"}
+              alt={`User ${index + 1}`}
+              className="rounded-full border-2 border-[#1c1c24] w-10 h-10 object-cover"
+            />
+          ))}
         </div>
+        <p className="text-sm text-neutral-400">
+          Followed by&nbsp;
+          {followersYouKnow.result?.users.map((user, index) => (
+            <>
+            <span className='font-bold cursor-pointer hover:underline' key={index} aria-disabled="true" onClick={() => navigate(`/~${user.username}`)} role='button' onKeyDown={() => {}}>
+              {user.username}
+            </span>
+            <span>&nbsp;</span>
+            </>
+          ))}
+           and {followersYouKnow?.result?.totalCount} others you know
+        </p>
+      </div>
+      </>
+      ): null}
+
+      <div className="flex space-x-4 mb-6 border-b pb-2 border-neutral-700">
+        <Button variant="ghost" className={`text-neutral-400 ${selectedFeed === 'casts' ? 'bg-accent text-accent-foreground' : ''}`} onClick={() => handleFeedChange('casts')}>Casts</Button>
+        <Button variant="ghost" className={`text-neutral-400 ${selectedFeed === 'casts-and-replies' ? 'bg-accent text-accent-foreground' : ''}`} onClick={() => handleFeedChange('casts-and-replies')}>Casts + Replies</Button>
+        {isUserLoggedIn ?
+        <>
+        <Button variant="ghost" className={`text-neutral-400 ${selectedFeed === 'likes' ? 'bg-accent text-accent-foreground' : ''}`} onClick={() => handleFeedChange('likes')}>Likes</Button>
+        {/* <Button variant="ghost" className={`text-neutral-400 ${selectedFeed === 'channels' ? 'bg-accent text-accent-foreground' : ''}`} onClick={() => handleFeedChange('channels')}>Channels</Button> */}
+        </> : null}
+      </div>
+
+
+        </div> 
+                
+                
+         </div> 
+
         </>
-        ): null}
-
-        <div className="flex space-x-4 mb-6 border-b pb-2 border-neutral-700">
-          <Button variant="ghost" className={`text-neutral-400 ${selectedFeed === 'casts' ? 'bg-accent text-accent-foreground' : ''}`} onClick={() => handleFeedChange('casts')}>Casts</Button>
-          <Button variant="ghost" className={`text-neutral-400 ${selectedFeed === 'casts-and-replies' ? 'bg-accent text-accent-foreground' : ''}`} onClick={() => handleFeedChange('casts-and-replies')}>Casts + Replies</Button>
-          {isUserLoggedIn ?
-          <>
-          <Button variant="ghost" className={`text-neutral-400 ${selectedFeed === 'likes' ? 'bg-accent text-accent-foreground' : ''}`} onClick={() => handleFeedChange('likes')}>Likes</Button>
-          {/* <Button variant="ghost" className={`text-neutral-400 ${selectedFeed === 'channels' ? 'bg-accent text-accent-foreground' : ''}`} onClick={() => handleFeedChange('channels')}>Channels</Button> */}
-          </> : null}
-        </div>
-
- 
-          </div> 
-                  
-                  
-           </div> 
- 
-          </>
-        )}
-    
+      )}
+  
 {isNoContent && <div className="flex items-center justify-center h-full mt-8">
-    <h2 className="text-lg font-semibold">Nothing to see here. 🌳</h2>
-  </div>}
+  <h2 className="text-lg font-semibold">Nothing to see here. 🌳</h2>
+</div>}
 
 {feedLoading && <SimpleLoader />}
 
@@ -357,63 +363,61 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
 {isFeed(selectedFeed)  &&  <div className={`${feedLoading ? 'opacity-50' : ''}`}>
 
 {[...(feed?.result?.casts ?? [])].map((item, i) => (
-          <Post key={i} item={{cast: item}} />
-        ))}
+        <Post key={i} item={{cast: item}} />
+      ))}
 
-  <InfiniteScroll hasMore={hasMore} isLoading={feedLoading} next={loadMore} threshold={1}>
-  {isInitialLoad && hasMore && <div className='my-2'><SimpleLoader /></div>}
-  </InfiniteScroll>
- 
-  </div>
+<InfiniteScroll hasMore={hasMore} isLoading={feedLoading} next={loadMore} threshold={0.3}>
+{isInitialLoad && hasMore && <div className='my-2'><SimpleLoader /></div>}
+</InfiniteScroll>
+
+</div>
 }
 
-          {/* TEST Feed */}
-          {/* <div>
-      {[...(testFeed?.result?.items ?? [])].map((item, i) => (
-                <Post key={i} item={item} />
-              ))}
+        {/* TEST Feed */}
+        {/* <div>
+    {[...(testFeed?.result?.items ?? [])].map((item, i) => (
+              <Post key={i} item={item} />
+            ))}
 
-        {!isInitialLoad && !isNoContent && <SimpleLoader />}
+      {!isInitialLoad && !isNoContent && <SimpleLoader />}
 
-        <InfiniteScroll hasMore={hasMore} isLoading={feedLoading} next={loadMore} threshold={1}>
-        {isInitialLoad && hasMore && <div className='my-2'><SimpleLoader /></div>}
-        </InfiniteScroll>
-        </div> */}
+      <InfiniteScroll hasMore={hasMore} isLoading={feedLoading} next={loadMore} threshold={0.3}>
+      {isInitialLoad && hasMore && <div className='my-2'><SimpleLoader /></div>}
+      </InfiniteScroll>
+      </div> */}
 
-  {selectedFeed === 'channels' && <div className="flex space-x-4 mb-6">
+{selectedFeed === 'channels' && <div className="flex space-x-4 mb-6">
 
-    <ul className="divide-y dark:divide-neutral-800 divide-neutral-300">
-    {channels?.result?.channels.map((channel) => (
-      <li key={channel.key} className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="flex items-start space-x-4">
-            <Avatar className="w-12 h-12">
-              <AvatarImage src={channel.fastImageUrl ?? channel.imageUrl} alt={channel.name} className="w-12 h-12 object-fill" />
-              <AvatarFallback>{channel.name}</AvatarFallback>
-            </Avatar>
-            <div>
-              <h2 className="text-lg font-semibold">{channel.name}</h2>
-              <p className="text-sm text-neutral-400">/{channel.key} · 👥 {channel.memberCount}</p>
-              <p className="mt-1 text-sm text-neutral-300">{channel.description}</p>
-            </div>
+  <ul className="divide-y dark:divide-neutral-800 divide-neutral-300">
+  {channels?.result?.channels.map((channel) => (
+    <li key={channel.key} className="p-4">
+      <div className="flex items-start justify-between">
+        <div className="flex items-start space-x-4">
+          <Avatar className="w-12 h-12">
+            <AvatarImage src={channel.fastImageUrl ?? channel.imageUrl} alt={channel.name} className="w-12 h-12 object-fill" />
+            <AvatarFallback>{channel.name}</AvatarFallback>
+          </Avatar>
+          <div>
+            <h2 className="text-lg font-semibold">{channel.name}</h2>
+            <p className="text-sm text-neutral-400">/{channel.key} · 👥 {channel.memberCount}</p>
+            <p className="mt-1 text-sm text-neutral-300">{channel.description}</p>
           </div>
-          <Button variant="outline" size="sm" className="mt-1">
-            Following
-          </Button>
         </div>
-      </li>
-    ))}
-  </ul>
+        <Button variant="outline" size="sm" className="mt-1">
+          Following
+        </Button>
+      </div>
+    </li>
+  ))}
+</ul>
 
-    </div>}
+  </div>}
 
 
 
-        </div>
-      </main>
-
-      
-  )
+      </div>
+    </main>)
+  );
 }
 
 export default ProfilePage

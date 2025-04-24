@@ -53,7 +53,6 @@ export type MainState = {
     newDmsCount: number
     lightBoxSrc: string
     lightBoxOpen: boolean
-    isRightSidebarVisible: boolean
     isComposeModalOpen: boolean
     composeModalData: T_MODAL_DATA | null
     isDcModalOpen: boolean
@@ -73,7 +72,6 @@ export type MainState = {
     setLightBoxSrc: (a: string) => void
     setLightBoxOpen: (a: boolean) => void
     setNavigate: (a: (_a: string | number) => void) => void
-    setRightSidebarVisible: (a: boolean) => void
     setComposeModalOpen: (a: boolean) => void
     setComposeModalData: (data: T_MODAL_DATA) => void
     setDcModalOpen: (a: boolean) => void

@@ -15,7 +15,6 @@ export const useMainStore = create<MainState>()(subscribeWithSelector((set) => (
     newDmsCount: 0,
     lightBoxSrc: '',
     lightBoxOpen: false,
-    isRightSidebarVisible: true,
     isComposeModalOpen: false,
     composeModalData: null,
     isDcModalOpen: false,
@@ -35,7 +34,6 @@ export const useMainStore = create<MainState>()(subscribeWithSelector((set) => (
     setLightBoxSrc: (a) => set(() => ({ lightBoxSrc: a })),
     setLightBoxOpen: (a) => set(() => ({ lightBoxOpen: a })),
     setNavigate: (a) => set(() => ({ navigate: a })),
-    setRightSidebarVisible: (a) => set(() => ({ isRightSidebarVisible: a })),
     setComposeModalOpen: (a) => set(() => {
         if(a === false) return {
             composeModalData: null,

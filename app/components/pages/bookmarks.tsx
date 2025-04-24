@@ -43,6 +43,7 @@ export function BookmarkPages({className = ''}: {className?: string}) {
 
 
   const loadMore = async () => {
+    console.log('load more')
     setFeedLoading(true)
     const cursor = feed?.next?.cursor
     if (!cursor) {
@@ -72,7 +73,7 @@ export function BookmarkPages({className = ''}: {className?: string}) {
     // <div className="h-full min-h-screen">
     //   <div className="sticky dark:bg-zinc-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-14 sm:h-28 p-2">
 
-      <main className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
+      <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
         <div className="h-full min-h-screen">
         <CastHeader title='Bookmarks' hasBackButton={true} />
   
@@ -80,13 +81,13 @@ export function BookmarkPages({className = ''}: {className?: string}) {
       
                 {/* Feed */}
           <div className={`space-y-4 ${feedLoading ? 'opacity-50' : ''}`}>
-          {feedLoading && <div className='my-2'><SimpleLoader /></div>}
+          {/* {feedLoading && <div className='my-2'><SimpleLoader /></div>} */}
 
           {[...(feed?.result?.bookmarks?.map(i => ({ cast: i})) ?? [])].map((item, i) => (
                 <Post key={i} item={item} />
               ))}
 
-        <InfiniteScroll hasMore={hasMore} isLoading={feedLoading} next={loadMore} threshold={1}>
+        <InfiniteScroll hasMore={hasMore} isLoading={feedLoading} next={loadMore} threshold={0.3}>
         {isInitialLoad && hasMore && <div className='my-2'><SimpleLoader /></div>}
         </InfiniteScroll>
         </div>
@@ -101,7 +102,7 @@ export function BookmarkPages({className = ''}: {className?: string}) {
 
 
 
-      </main>
+      </div>
 
       
   )

@@ -1,15 +1,10 @@
-import {
-  Links,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-} from "@remix-run/react";
+import { Links, Meta, Scripts,  } from "react-router";
 import "./tailwind.css";
 import '~/assets/global.css'
 import '@radix-ui/themes/styles.css';
 import { HydrateFallback } from "~/components/atomic/hydratation-fallback";
 import { Toaster } from "~/components/ui/toaster"
+import Index  from "./routes/main";
 
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -26,16 +21,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <div id="app" className="mx-auto">
         {children}
         </div>
-        <ScrollRestoration />
-        <Scripts />
         <Toaster />
+        <Scripts />
       </body>
     </html>
   );
 }
 
 export default function App() {
-  return <Outlet  />;
+  return <Index  />;
 }
 
 // width: 45px;

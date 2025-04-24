@@ -1,16 +1,12 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
-import { PenSquare } from "lucide-react"
+import { useEffect, useState, useCallback } from 'react'
 import { Button } from "~/components/ui/button"
-import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import { useMainStore } from "~/store/main"
 import { getCastThread } from "~/lib/api"
 import type { TWcUserThreadItems } from "~/types/wc-user-thread-casts"
 import  InfiniteScroll from "~/components/ui/extension/infinte-scroll"
-import { ComposeModal } from "~/components/functional/modals/compose-cast"
 import { Post } from "~/components/blocks/post"
 import { SimpleLoader } from '../atomic/simple-loader'
 import { CastHeader } from '../blocks/header/cast-header'
-import { useImmer } from "use-immer"
 import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar"
 import { UserIcon } from '~/components/icons/user'
 import { Item } from '~/types/wc-feed-items'
@@ -24,13 +20,12 @@ export function ConversationPage({ hash, username, className = '' }: { hash: str
   const [feedLoading, setFeedLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const [isInitialLoad, setIsInitialLoad] = useState(false)
-  const [currentFeed, setCurrentFeed] = useState('')
-
 
   const acctionClasses = ['action']
 
 
   const fetchData = useCallback(async (castHash: string, user: string) => {
+    if(!castHash || !user) return
     setFeedLoading(true)
     const feed = await getCastThread({ castHash, username: user})
     
@@ -110,7 +105,7 @@ export function ConversationPage({ hash, username, className = '' }: { hash: str
 
   return (
 
-      <main className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
+      <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
         <div className="h-full min-h-screen">
         <div className="sticky bg-white dark:bg-neutral-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-26 p-2">
         <CastHeader title="Conversation" />
@@ -139,7 +134,7 @@ export function ConversationPage({ hash, username, className = '' }: { hash: str
                 <Post key={i} item={item} />
               )) : null}
  
-        <InfiniteScroll hasMore={hasMore} isLoading={feedLoading} next={() => {}} threshold={1}>
+        <InfiniteScroll hasMore={hasMore} isLoading={feedLoading} next={() => {}} threshold={0.3}>
         {isInitialLoad && hasMore && <div className='my-2'><SimpleLoader /></div>}
         </InfiniteScroll>
         </div>
@@ -150,7 +145,7 @@ export function ConversationPage({ hash, username, className = '' }: { hash: str
           
  
         </div>
-      </main>
+      </div>
 
       
   )

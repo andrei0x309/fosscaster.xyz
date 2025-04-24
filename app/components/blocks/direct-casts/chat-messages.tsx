@@ -7,7 +7,7 @@ import { useMainStore } from "~/store/main"
 import { timeAgo } from "~/lib/misc"
 import { Conversation } from "~/types/wc-dc-inbox"
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
-import { Link } from "@remix-run/react"
+import { Link } from "react-router";
 import { Img as Image } from 'react-image'
 
 
@@ -153,13 +153,25 @@ const ChatMessages = forwardRef<HTMLDivElement, ChatMessagesProps>(({ loadMoreMe
         <div className="rounded-[11px] px-2.5 py-1 shadow-sm dark:bg-neutral-700/40 bg-neutral-300/40 mx-auto max-w-fit">
           <div className="line-clamp-2 text-center text-[11px]">
         <span className="flex flex-row gap-x-1 justify-center content-center">
-        <span><Link to={`/${message?.senderContext?.username}`} className="relative hover:underline keychainify-checked">{message?.senderContext?.username}</Link></span> has added
+        <span><Link to={`/${message?.senderContext?.username ?? `!${message?.actionTargetUserContext?.fid}`}`} className="relative hover:underline keychainify-checked">{message?.senderContext?.username}</Link></span> has added
         <Link className="relative hover:underline keychainify-checked" title="" to={`/${message?.message}`}>
-        {message?.message}
+        {message?.actionTargetUserContext?.username ?? `FID: ${message?.actionTargetUserContext?.fid}`}
         </Link></span>
       </div></div></div>
     )}
-    { message?.type !== "group_membership_addition" && 
+
+    { message?.type === "group_membership_removal" && (
+      <div className="mb-2 mx-auto">
+        <div className="rounded-[11px] px-2.5 py-1 shadow-sm dark:bg-neutral-700/40 bg-neutral-300/40 mx-auto max-w-fit">
+          <div className="line-clamp-2 text-center text-[11px]">
+        <span className="flex flex-row gap-x-1 justify-center content-center">
+        <span><Link to={`/${message?.senderContext?.username ?? `!${message?.actionTargetUserContext?.fid}`}`} className="relative hover:underline keychainify-checked">{message?.senderContext?.username}</Link></span> has left
+        </span>
+      </div></div></div>
+    )}
+
+
+    { message?.type === "text" && 
     <div
           key={message.messageId}
           className={`flex flex-col ${message.senderFid === mainUserData?.fid ? "" : ""} items-start relative max-w-full`}
@@ -186,11 +198,31 @@ const ChatMessages = forwardRef<HTMLDivElement, ChatMessagesProps>(({ loadMoreMe
           <div className="flex items-end">
             {/* Message bubble with fixed width to prevent shifting */}
             <div
-              className={`rounded-lg px-4 py-2 break-words rounded-tl-none ${
-                message.senderFid === mainUserData?.fid ? "dark:bg-indigo-800 dark:text-white bg-indigo-300 text-neutral-900" : "dark:bg-neutral-800 dark:text-white text-neutral-900 bg-neutral-200"
+              className={`rounded-lg px-4 py-2 break-words break-all rounded-tl-none ${
+                message.senderFid === mainUserData?.fid ? "dark:bg-indigo-800 dark:text-white bg-indigo-300 text-neutral-900" : "dark:bg-neutral-800 dark:text-white text-neutral-900 bg-neutral-200 border-neutral-400/40 border-[1px]"
               }`}
               style={{ maxWidth: "calc(100vw - 50px)" }} // Reserve space for icons
             >
+              
+              {message?.inReplyTo && <div className="relative mb-2 flex w-full flex-row rounded-md cursor-pointer bg-reply-direct-cast dark:bg-neutral-900 bg-neutral-100 border-neutral-400/40 border-[1px]">
+                <div className="w-2 rounded-l-md bg-reply-direct-cast-left-wrapper bg-reply-direct-cast border-[1px] border-neutral-400/40 dark:bg-indigo-800 bg-indigo-300"></div>
+                <div className="flex w-full flex-col justify-start p-2"><div className="mb-1 flex flex-row gap-x-1 text-xs font-semibold text-default">
+                  <Link className="relative inline-block h-min shrink-0 keychainify-checked" to="/mjc716">
+                  <div className="flex flex-none items-center justify-center rounded-full bg-gradient-to-b from-[#DEAEEB] to-[#6944BA] relative mr-1" 
+                  style={{width: '16px', height: '16px', minWidth: '16px', minHeight: '16px'}}>
+                    
+                    <Avatar className="hover:border-2 h-5 w-5 aspect-square shrink-0 rounded-full object-cover">
+                      <AvatarImage src={message?.inReplyTo?.senderContext?.pfp?.url} alt={`User ${message?.senderContext?.username}`} />
+                      <AvatarFallback>{message?.senderContext?.username.slice(0,2)}</AvatarFallback>
+                </Avatar>
+
+                    </div></Link><div className="opacity-75">{message?.inReplyTo?.senderContext?.username}</div>
+                    <div className="text-xs opacity-75 text-default">·</div><div className="text-xs opacity-75 text-default">{timeAgo(message?.inReplyTo?.serverTimestamp ?? 0)}</div></div>
+                    <div className="line-clamp-2 break-gracefully text-default max-w-[24rem]">
+                {message?.inReplyTo?.message}
+                </div></div></div>
+                  }
+              
               {message.message}
               {(message?.metadata?.medias ?? []).map((media, index) => (
                 <div key={index} className="mt-2">
@@ -204,6 +236,9 @@ const ChatMessages = forwardRef<HTMLDivElement, ChatMessagesProps>(({ loadMoreMe
                   )}
                 </div>
               ))}
+             <div className="text-xs text-neutral-400 mx-auto text-right">
+              {timeAgo(message?.serverTimestamp ?? 0)}
+            </div>
             </div>
 
             {/* Action buttons with fixed width space */}
@@ -225,6 +260,7 @@ const ChatMessages = forwardRef<HTMLDivElement, ChatMessagesProps>(({ loadMoreMe
                 <MoreHorizontal size={16} />
               </button>
             </div>
+            {/* Small time stamp */}
           </div>
 
           {/* Emoji Picker */}
@@ -318,8 +354,8 @@ const ChatMessages = forwardRef<HTMLDivElement, ChatMessagesProps>(({ loadMoreMe
           {message.reactions && message.reactions.length > 0 && (
             <div className="mt-1 flex">
               {message.reactions.map((reaction, index) => (
-                <div key={index} className="flex items-center bg-neutral-800 rounded-full px-2 py-1 text-sm">
-                  <span>{reaction.emoji}</span>
+                <div key={index} className="flex items-center dark:bg-neutral-800 bg-neutral-200 rounded-full px-2 py-1 text-sm">
+                  <span>{reaction.reaction}</span>
                   <span className="ml-1 text-neutral-400">{reaction.count}</span>
                 </div>
               ))}

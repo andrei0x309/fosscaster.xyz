@@ -43,7 +43,7 @@ export default function NotificationsUI({className = '', page = 'priority'}: {cl
   }, [activeTab, handleTabChange, initalLoad])
 
   return (
-    <main className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
+    <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
         <div className="h-full min-h-screen">
 
       <div className="sticky bg-white dark:bg-neutral-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-26 p-2">
@@ -79,6 +79,6 @@ export default function NotificationsUI({className = '', page = 'priority'}: {cl
               <NotificationItem key={index} notification={notification} onInviteResolved={() => handleTabChange(activeTab)} />
             ))}
     </div>
-    </main>
+    </div>
   )
 }

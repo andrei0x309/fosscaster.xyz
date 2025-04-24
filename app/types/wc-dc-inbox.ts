@@ -38,6 +38,12 @@ export interface LastMessage {
     isPinned:        boolean;
     isDeleted:       boolean;
     senderContext:   SenderContext;
+    actionTargetUserContext?: {
+        fid: number;
+        username: string;
+        displayName: string;
+        pfp: Pfp;
+    }
 }
 
 export interface SenderContext {

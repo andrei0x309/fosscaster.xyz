@@ -51,7 +51,7 @@ import { getFnameLastTransfer } from '~/lib/third-party'
 
 export default function SettingsPage({className}: {className?: string}) {
   
-  const { mainUserData, setUserData, isRightSidebarVisible } = useMainStore()
+  const { mainUserData, setUserData } = useMainStore()
   const [activeSection, setActiveSection] = useState('Edit Profile')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -269,10 +269,7 @@ const handleSetProfile = async () => {
 
 
   return (
-    <>
-    { isRightSidebarVisible ? null :
-
-    <div className={`flex h-full w-full shrink-0 justify-center sm:w-[850px] lg:w-[980px] ${className}`}>
+    <div className={`flex h-full w-full shrink-0 justify-center md:w-[850px] lg:w-[1040px] ${className}`}>
       {/* Sidebar */}
       <div className="w-64">
         <div className="border-b-[1px] border-neutral-400/40 border-r-[1px]">
@@ -431,8 +428,5 @@ const handleSetProfile = async () => {
 
       </div>
     </div>
-      }
-      </>
-    
   )
 }

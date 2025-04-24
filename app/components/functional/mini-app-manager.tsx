@@ -102,12 +102,12 @@ export function ModalManager() {
         if(miniAppToOpen?.fetchFrameData) {
           const frameData = (await getFrame({domain: new URL(miniAppToOpen.homeUrl).hostname}))?.result?.frame ?? {}
           miniAppToOpenData = {
-           isInstalled: frameData.viewerContext?.favorited,
+           isInstalled: frameData?.viewerContext?.favorited,
            author: {
             avatarUrl: frameData?.author?.pfp?.url,
             username : frameData?.author?.username,
            },
-           homeUrl: frameData?.homeUrl,
+           homeUrl: frameData?.homeUrl ?? miniAppToOpen.homeUrl,
            iconUrl: frameData?.iconUrl,
            name: frameData?.name,
            splashImageUrl: frameData?.splashImageUrl,

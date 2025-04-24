@@ -2,7 +2,7 @@ import { Img as Image } from 'react-image'
 import { timeAgo } from '~/lib/misc';
 import type { TNotificationItem } from './notification-type'
 import { useMemo } from 'react';
-import { Link } from '@remix-run/react';
+import { Link } from 'react-router';
 
 const acctionClasses = ['action']
 

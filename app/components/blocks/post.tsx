@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
 import { MoreHorizontal, MessageCircle, Repeat2, Heart, MoreVertical, BookmarkIcon, Share2, Delete, ExternalLink } from 'lucide-react';
 import { timeAgo } from '~/lib/misc';
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router';
 import { PopOverMenu, PopOverMenuItem } from "~/components/blocks/drop-menu"
 import { useState, useEffect } from 'react';
 import { useMainStore } from '~/store/main';
@@ -213,9 +213,13 @@ export const Post = (
     try {
     if (isLiked) {
       await deleteLike(cast.hash)
+      cast.reactions.count -= 1
     } else {
       await likeCast(cast.hash)
-    }}
+      cast.reactions.count += 1
+    }
+    setCast(cast)
+    }
     catch (error) {
       console.error(error)
     }
@@ -276,6 +280,8 @@ export const Post = (
     try {
       setIsRecastLoading(true)
       await recast(cast.hash)
+      cast.recasts.count = cast.recasts.count + 1
+      setCast(cast)
       setIsRecasted(true)
       setIsRecastLoading(false)
     }
@@ -285,12 +291,14 @@ export const Post = (
     }
   }
 
-  const doUnRecast = () => {
+  const doUnRecast = async() => {
     if(!checkedLogin()) return
     if (isRecastLoading) return
     try {
       setIsRecastLoading(true)
-      undoRecast(cast.hash)
+      await undoRecast(cast.hash)
+      cast.recasts.count = cast.recasts.count - 1
+      setCast(cast)
       setIsRecasted(false)
       setIsRecastLoading(false)
     }

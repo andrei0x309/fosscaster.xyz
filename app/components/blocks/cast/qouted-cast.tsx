@@ -5,7 +5,7 @@ import { timeAgo } from "~/lib/misc";
 // import { Button } from '~/components/ui/button';
 import { ImageEmbeds} from './images-embeds'
 import { useMainStore } from "~/store/main";
-import { Link, useLocation } from '@remix-run/react'
+import { Link, useLocation } from 'react-router';
 
 const acctionClasses = ['qouted-action']
 

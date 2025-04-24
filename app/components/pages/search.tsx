@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
 import { MoreHorizontal, MessageSquare, Repeat2, Heart, Share2, Grid } from "lucide-react"
 import { searchSummary, searcUsers, searchCasts, searchChannels } from "~/lib/api"
 import { useState,useEffect, useCallback } from "react"
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router';
 import { SearchSidebar } from '~/components/blocks/right-sidebar/search-bar'
 import type { TWCSearchCasts} from '~/types/wc-search-casts'
 import type { TWCSearchUsers} from '~/types/wc-search-users'
@@ -88,7 +88,7 @@ export default function SearchPage({query, searchType = 'top', className = ''}: 
             ...data.result,
             channels: [
               ...(searchChannelsResults?.result?.channels || []),
-              ...data?.result?.channels || [],
+              ...(data?.result?.channels || []),
             ],
           }
         })
@@ -106,7 +106,7 @@ export default function SearchPage({query, searchType = 'top', className = ''}: 
             ...data.result,
             users: [
               ...(searchUsersResults?.result?.users || []),
-              ...data?.result?.users || [],
+              ...(data?.result?.users || []),
             ],
           }
         })
@@ -135,7 +135,7 @@ export default function SearchPage({query, searchType = 'top', className = ''}: 
   }, [query])
  
   return (
-    <main className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
+    <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
       <div className="sticky top-0 z-10 dark:bg-neutral-950 bg-white">
       {/* Search Bar */}
       <div className="flex items-center justify-between px-4 py-2">
@@ -216,7 +216,7 @@ export default function SearchPage({query, searchType = 'top', className = ''}: 
             ))}
 
          
-      {intitialSearchChannelsLoaded && <InfiniteScroll hasMore={hasMoreChannels} isLoading={loading} threshold={1} next={loadData} >
+      {intitialSearchChannelsLoaded && <InfiniteScroll hasMore={hasMoreChannels} isLoading={loading} threshold={0.3} next={loadData} >
           <div className="my-2"></div>
           </InfiniteScroll>
         }
@@ -240,7 +240,7 @@ export default function SearchPage({query, searchType = 'top', className = ''}: 
                 <UserItem key={index} user={user as T_USER} className={' border-b-[1px] border-neutral-400/40 pb-2 px-4'} />
                 )) }
 
-        {intitialSearchUsersLoaded && <InfiniteScroll hasMore={hasMoreUsers} isLoading={loading} threshold={1} next={loadData} >
+        {intitialSearchUsersLoaded && <InfiniteScroll hasMore={hasMoreUsers} isLoading={loading} threshold={0.3} next={loadData} >
                   <div className="my-2"></div>
                   </InfiniteScroll>
                   }
@@ -256,6 +256,6 @@ export default function SearchPage({query, searchType = 'top', className = ''}: 
           </div>
         )}
 
-    </main>
+    </div>
   )
 }

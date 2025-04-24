@@ -11,7 +11,7 @@ import { clearUserData, clearAllUsersData, persistUserData } from "~/lib/localst
 import { useState, useEffect } from "react"
 import { PopOverMenu, PopOverMenuItem } from "~/components/blocks/drop-menu"
 import { ChannelsList } from "~/components/blocks/sidebar-left/channels-list"
-import { useLocation } from "@remix-run/react"
+import { useLocation } from "react-router";
 import { useNotifBadgeStore } from "~/store/notif-badge-store"
 import { wc } from "~/lib/client"
 import { removeNotificationBadge } from '~/lib/misc'
@@ -25,7 +25,7 @@ export const LeftSidebarContent = (
     setIsUserLoggedIn, setAllUsersData, setUserData, navigate
   } = useMainStore()
 
-  const { newNotificationsCount, newDmsCount, setNewDmsCount, setNewNotificationsCount } = useNotifBadgeStore()
+  const { newNotificationsCount, newDmsCount, setNewNotificationsCount } = useNotifBadgeStore()
 
   const [whatMenuActive, setWhatMenuActive] = useState('')
 
@@ -45,7 +45,6 @@ export const LeftSidebarContent = (
       removeNotificationBadge()
     } else if (location?.pathname?.startsWith('/~/inbox')) {
       setWhatMenuActive('dc')
-      setNewDmsCount(0)
     } else if (location?.pathname?.startsWith('/~/explore')) {
       setWhatMenuActive('explore')
     } else if (location?.pathname?.startsWith('/~/bookmarks')) {

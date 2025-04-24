@@ -1,7 +1,7 @@
 import { UserPlus } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
 import { Button } from "~/components/ui/button"
-import { Link } from "@remix-run/react"
+import { Link } from "react-router";
 import { useState } from "react"
 import { follow } from '~/lib/api'
 
