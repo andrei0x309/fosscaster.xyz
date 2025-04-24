@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "generate-commit": "bun run ./scripts/generate-build-commit.ts",
-    "build": "bun run generate-commit && remix vite:build",
+    "build": "bun run generate-commit && react-router build",
     "dev": "react-router dev",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "preview": "vite preview",
@@ -34,8 +34,8 @@
     "ethers": "^6.13.3",
     "isbot": "^5",
     "lucide-react": "^0.436.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
     "react-image": "^4.1.0",
     "react-router": "^7.0.0",
     "styled-components": "^6.1.13",
@@ -61,9 +61,9 @@
     "eslint-plugin-react-hooks": "^4.6.2",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
-    "typescript": "^5.6.2",
-    "vite": "^5.4.8",
-    "vite-tsconfig-paths": "^4.3.2"
+    "typescript": "5.8.3",
+    "vite": "6.3.3",
+    "vite-tsconfig-paths": "5.1.4"
   },
   "engines": {
     "bun": "0.1.1.22"

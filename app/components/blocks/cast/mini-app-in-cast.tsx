@@ -13,7 +13,7 @@ export const MiniAppInCast = ({app} : { app: FrameEmbedNext}) => {
   }
 
   return (
-    <div className="mt-4 rounded-md overflow-hidden border-neutral-500 border-[1px] cursor-pointer action" onClick={() => doOpenMiniApp()} aria-hidden>
+    <div className="mt-4 rounded-md overflow-hidden border-neutral-500 border-[1px] cursor-pointer action" style={{ maxWidth: '100%' }} onClick={() => doOpenMiniApp()} aria-hidden>
       <div className="bg-neutral-700/20 p-2 flex items-center justify-center">
       <img loading="lazy" src={app?.frameEmbed?.imageUrl} 
       alt="mini app" className="w-full opacity-100" 

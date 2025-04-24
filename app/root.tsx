@@ -5,6 +5,7 @@ import '@radix-ui/themes/styles.css';
 import { HydrateFallback } from "~/components/atomic/hydratation-fallback";
 import { Toaster } from "~/components/ui/toaster"
 import Index  from "./routes/main";
+import { generateURLFCFrameEmbed } from '~/lib/mini-app'
 
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -14,6 +15,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <link rel="shortcut ico" href="/favicon.png" />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="fc:frame" content={generateURLFCFrameEmbed(
+          {
+            url: 'https://fosscaster.xyz',
+            featureImage: "https://fosscaster.xyz/hotlink-ok/og/default.webp"
+          }
+        )} />
         <Meta />
         <Links />
       </head>

@@ -46,9 +46,9 @@ export default function AboutPage({className}: {className?: string}) {
             <li>All manual and AI actions that derank, boost, shadowban, or exclude content will be applied to this UI as well.</li>
         </ul>
         { /* Subtitle for More Details */}
-        <h2 className="text-2xl font-bold">More Details</h2>
+        {/* <h2 className="text-2xl font-bold">More Details</h2> */}
         { /* More Details */}
-        <p>I&apos;ve been on farcaster since its beginning (
+        {/* <p>I&apos;ve been on farcaster since its beginning (
           <span className="text-red-500 font-bold cursor-pointer hover:text-red-700" onClick={() => navigate('/andrei0x309')} role='button' aria-label='Go to Andrei0x309 profile' onKeyDown={() => {}} tabIndex={0}>
           FID: 1791
           </span>
@@ -56,7 +56,7 @@ export default function AboutPage({className}: {className?: string}) {
         <Button className='w-full mx-auto max-w-[26rem] bg-red-600 hover:bg-red-700 text-white text-[0.77rem] flex' onClick={ () => window.open('https://blog.flashsoft.eu/farcaster-good-bad-ugly-three-years')}>
             <ArrowRightIcon className="h-4 w-4 mr-2" />
             <span>Farcaster & Warpcast The Good The Bad The Ugly after ~3 years</span>
-        </Button>
+        </Button> */}
     </div>
     </div>
   </div>

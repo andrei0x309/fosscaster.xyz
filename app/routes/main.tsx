@@ -251,16 +251,20 @@ export default function Index() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location?.pathname, location, page, feedInitial, setRightSidebarVisible, isUserLoggedIn, checkUserLooggedIn]);
 
+
   useEffect(() => {
     import('@farcaster/frame-sdk').then(async (module) => {
       const sdk = module.default
       await sdk.context;
       sdk.actions.ready();
+      // setIsMiniApp(true);
     });
   }, []);
-  
- 
+
   return (
+    <>
+
+
     <Shell>
       <Suspense fallback={<HydrateFallback />}>
       {/* <main> */}
@@ -284,5 +288,6 @@ export default function Index() {
       </Suspense>
       <ComposeModal />
     </Shell>
+    </>
   );
 }

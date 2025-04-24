@@ -337,7 +337,7 @@ export const Post = (
                     </div>
                   }
                   
-                  <div className="flex space-x-4 relative">
+                  <div className="flex space-x-4 relative flex-wrap">
                   { isComposeReply && <div className="absolute w-0.5 dark:bg-neutral-800 bg-neutral-300 left-[19px] top-10 bottom-[0%]"></div> }
                     <Avatar className={`hover:border-2 ${isComposeReply? '!m-0': ''}`}>
                       <Link to={`/${cast.author.username}`}>
@@ -397,7 +397,7 @@ export const Post = (
                       
                       {cast.embeds?.videos?.map((video, i) => 
 
-                      <div key={`${i}${video?.duration ?? ''}${video?.sourceUrl?.slice(6)}`} className='post-video flex mx-auto my-4 max-h-[500px]'>
+                      <div key={`${i}${video?.duration ?? ''}${video?.sourceUrl?.slice(6)}`} className='post-video flex mx-auto my-4 max-h-[500px]' style={{ maxWidth: '100%' }}>
                         <VideoJS  options={getVideoJsOptions({ source: video?.sourceUrl})} />
                         </div>
                       )}

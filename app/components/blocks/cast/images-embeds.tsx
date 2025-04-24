@@ -12,7 +12,7 @@ export const ImageEmbeds = ({ images = [] as Image[]}: { images: Image[]}) => {
   }
 
     return (
-        (images?.length > 0) ? (<div className="flex flex-wrap relative min-w-0 max-w-full border-default w-full justify-between rounded-lg mt-1">
+        (images?.length > 0) ? (<div className="flex flex-wrap relative min-w-0 max-w-full border-default w-full justify-between rounded-lg mt-1" style={{ maxWidth: '100%' }}>
         { images?.map((img, i: number) =>
           <img key={`${i}${img.url.slice(-1. -10)}`} 
           src={img.url as string} 

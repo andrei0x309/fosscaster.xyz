@@ -19,6 +19,7 @@ export const useMainStore = create<MainState>()(subscribeWithSelector((set) => (
     composeModalData: null,
     isDcModalOpen: false,
     dcModalPage: '',
+    isMiniApp: false,
     miniAppToOpen: null,
     navigate: () => {},
     toggleDarkMode: () => set((state) => ({ isDarkMode: !state.isDarkMode })),
@@ -47,6 +48,7 @@ export const useMainStore = create<MainState>()(subscribeWithSelector((set) => (
     setDcModalOpen: (a) => set(() => ({ isDcModalOpen: a})),
     setDcModalPage: (a) => set(() => ({ dcModalPage: a })),
     openMiniApp:(a) => set(() => ({ miniAppToOpen: a })),
+    setIsMiniApp: (a) => set(() => ({ isMiniApp: a })),
 })))
 
 export const setInitialState = () => {

@@ -34,7 +34,7 @@ export const LeftSidebar = memo(function LeftSidebar (
 
       <Sheet>
         <SheetTrigger asChild>
-          <Button className="mt-4 absolute -top-1 left-3 z-[11] md:hidden" variant="outline" size="icon">
+          <Button className="mt-6 fixed -top-1 left-3 z-[11] md:hidden" variant="outline" size="icon">
             <Menu className="h-4 w-4" />
           </Button>
         </SheetTrigger>

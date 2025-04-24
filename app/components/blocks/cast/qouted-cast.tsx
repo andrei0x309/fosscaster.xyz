@@ -35,7 +35,7 @@ export const QoutedCast = ({cast, noNavigation = false} : { cast: ItemCast, noNa
   }
 
   return (
-    <div className="w-full mt-2 max-w-xl dark:bg-neutral-800 dark:text-white bg-neutral-200 rounded-lg overflow-hidden action" onClick={goToQoutedCast} aria-hidden>
+    <div className="w-full mt-2 max-w-xl dark:bg-neutral-800 dark:text-white bg-neutral-200 rounded-lg overflow-hidden action" style={{ maxWidth: '100%' }} onClick={goToQoutedCast} aria-hidden>
        <div className="p-4">
         <div className="flex justify-between">
           <div className="flex items-center gap-2">

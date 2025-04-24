@@ -57,6 +57,7 @@ export type MainState = {
     composeModalData: T_MODAL_DATA | null
     isDcModalOpen: boolean
     dcModalPage: string
+    isMiniApp: boolean
     miniAppToOpen: null  | T_MINI_APP_DATA
     navigate: (_a: string | number) => void
     toggleDarkMode: () => void
@@ -77,6 +78,7 @@ export type MainState = {
     setDcModalOpen: (a: boolean) => void
     setDcModalPage: (a: string) => void
     openMiniApp:(a: null | T_MINI_APP_DATA) => void
+    setIsMiniApp: (a: boolean) => void
 }
 
 export type T_META_DATA = { title: string; description: string; keywords: string }
