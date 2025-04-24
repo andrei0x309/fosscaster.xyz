@@ -10,14 +10,7 @@ import { CastHeader } from '../blocks/header/cast-header'
 import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar"
 import { UserIcon } from '~/components/icons/user'
 import { Item } from '~/types/wc-feed-items'
-import type { MetaFunction } from 'react-router'
-
-export const meta: MetaFunction = ({ matches }) => {
-    const parentMeta = matches.flatMap(
-      (match) => match.meta ?? []
-    );
-    return [...parentMeta, { title: "Fosscaster.xyz - Conversation" }];
-};
+import { Helmet } from 'react-helmet'
 
 export function ConversationPage({ hash, username, className = '' }: { hash: string, username: string, className?: string }) {
   const { isUserLoggedIn, setConnectModalOpen, navigate, mainUserData, setComposeModalData, setComposeModalOpen  } = useMainStore()
@@ -87,7 +80,7 @@ export function ConversationPage({ hash, username, className = '' }: { hash: str
 //     navigate(`/~/${feed}`)
 //   }
 
- const doReply = (e: Event) => {
+ const doReply = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     if(!isUserLoggedIn) {
       setConnectModalOpen(true)
       return
@@ -111,7 +104,11 @@ export function ConversationPage({ hash, username, className = '' }: { hash: str
  }
 
   return (
-
+      <>
+        <Helmet>
+          <title>Fosscaster.xyz - Conversation</title>
+          <meta name="description" content="Conversation - Fosscaster.xyz" />
+        </Helmet>
       <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
         <div className="h-full min-h-screen">
         <div className="sticky bg-white dark:bg-neutral-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-26 p-2">
@@ -154,7 +151,7 @@ export function ConversationPage({ hash, username, className = '' }: { hash: str
         </div>
       </div>
 
-      
+      </>
   )
 }
 

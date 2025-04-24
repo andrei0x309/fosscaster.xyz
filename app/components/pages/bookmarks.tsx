@@ -2,21 +2,15 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { getBookmarkedCasts } from "~/lib/api"
-import type {TBookmarkedCasts } from "~/types/wc-bookmarked-casts"
+import type { TBookmarkedCasts } from "~/types/wc-bookmarked-casts"
 import { Post } from "~/components/blocks/post"
 import { SimpleLoader } from "~/components/atomic/simple-loader"
-import  InfiniteScroll from "~/components/ui/extension/infinte-scroll"
+import InfiniteScroll from "~/components/ui/extension/infinte-scroll"
 import { CastHeader } from "~/components/blocks/header/cast-header"
-import type { MetaFunction } from 'react-router'
+import { Helmet } from 'react-helmet'
 
-export const meta: MetaFunction = ({ matches }) => {
-    const parentMeta = matches.flatMap(
-      (match) => match.meta ?? []
-    );
-    return [...parentMeta, { title: "Fosscaster.xyz - Bookmarks" }];
-};
 
-export function BookmarkPages({className = ''}: {className?: string}) {
+export function BookmarkPages ({ className = '' }: { className?: string }) {
 
   const [feed, setFeed] = useState({} as TBookmarkedCasts)
   const [feedLoading, setFeedLoading] = useState(false)
@@ -26,7 +20,7 @@ export function BookmarkPages({className = ''}: {className?: string}) {
 
   const fetchFeed = useCallback(async () => {
     setFeedLoading(true)
-    setIsNoContent(false)  
+    setIsNoContent(false)
     const newFeed = await getBookmarkedCasts()
     if (!newFeed?.result?.bookmarks.length) {
       setIsNoContent(true)
@@ -39,10 +33,10 @@ export function BookmarkPages({className = ''}: {className?: string}) {
     setFeed(newFeed)
     setFeedLoading(false)
     setIsInitialLoad(true)
-  
+
   }, [])
 
- 
+
   useEffect(() => {
     fetchFeed()
   }, [fetchFeed])
@@ -58,7 +52,7 @@ export function BookmarkPages({className = ''}: {className?: string}) {
       setFeedLoading(false)
       return
     }
-    const newFeed = await getBookmarkedCasts({cursor})
+    const newFeed = await getBookmarkedCasts({ cursor })
     if (!newFeed?.result?.bookmarks.length) {
       setHasMore(false)
       setFeedLoading(false)
@@ -79,40 +73,39 @@ export function BookmarkPages({className = ''}: {className?: string}) {
     // <main className="h-full w-full shrink-0 justify-center sm:mr-4 sm:w-[540px] lg:w-[680px]">
     // <div className="h-full min-h-screen">
     //   <div className="sticky dark:bg-zinc-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-14 sm:h-28 p-2">
-
+    <>
+      <Helmet>
+        <title>Fosscaster.xyz - Bookmarks</title>
+        <meta name="description" content="Bookmarks - Fosscaster.xyz" />
+      </Helmet>
       <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
         <div className="h-full min-h-screen">
-        <CastHeader title='Bookmarks' hasBackButton={true} />
-  
+          <CastHeader title='Bookmarks' hasBackButton={true} />
 
-      
-                {/* Feed */}
+          {/* Feed */}
           <div className={`space-y-4 ${feedLoading ? 'opacity-50' : ''}`}>
-          {/* {feedLoading && <div className='my-2'><SimpleLoader /></div>} */}
+            {/* {feedLoading && <div className='my-2'><SimpleLoader /></div>} */}
 
-          {[...(feed?.result?.bookmarks?.map(i => ({ cast: i})) ?? [])].map((item, i) => (
-                <Post key={i} item={item} />
-              ))}
+            {[...(feed?.result?.bookmarks?.map(i => ({ cast: i })) ?? [])].map((item, i) => (
+              <Post key={i} item={item} />
+            ))}
 
-        <InfiniteScroll hasMore={hasMore} isLoading={feedLoading} next={loadMore} threshold={0.3}>
-        {isInitialLoad && hasMore && <div className='my-2'><SimpleLoader /></div>}
-        </InfiniteScroll>
+            <InfiniteScroll hasMore={hasMore} isLoading={feedLoading} next={loadMore} threshold={0.3}>
+              {isInitialLoad && hasMore && <div className='my-2'><SimpleLoader /></div>}
+            </InfiniteScroll>
+          </div>
+
+          {isNoContent && <div className="flex items-center justify-center h-full mt-8">
+            <h2 className="text-lg font-semibold">Nothing to see here. 🌳</h2>
+          </div>}
+
+
         </div>
-
-        {isNoContent && <div className="flex items-center justify-center h-full mt-8">
-          <h2 className="text-lg font-semibold">Nothing to see here. 🌳</h2>
-        </div>}
- 
-
-        </div>
-        
-
-
 
       </div>
 
-      
+    </>
   )
 }
 
- export default BookmarkPages
+export default BookmarkPages

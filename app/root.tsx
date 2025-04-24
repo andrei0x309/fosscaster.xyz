@@ -1,12 +1,12 @@
-import { Links, Meta, Scripts,  } from "react-router";
 import "./tailwind.css";
 import '~/assets/global.css'
 import '@radix-ui/themes/styles.css';
+import { Links, Scripts,  } from "react-router";
 import { HydrateFallback } from "~/components/atomic/hydratation-fallback";
 import { Toaster } from "~/components/ui/toaster"
-import Index  from "./routes/main";
+import Index from "./routes/main";
 import { generateURLFCFrameEmbed } from '~/lib/mini-app'
-
+import { Helmet } from "react-helmet";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -21,7 +21,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
             featureImage: "https://fosscaster.xyz/hotlink-ok/og/default.webp"
           }
         )} />
-        <Meta />
+      <Helmet>
+      <title>Fosscaster.xyz</title>
+      <meta name="description" content="Fosscaster.xyz" />
+      <meta property="og:title" content="Fosscaster.xyz" />
+      <meta property="og:description" content="Fosscaster.xyz" />
+      <meta property="og:image" content="https://fosscaster.xyz/hotlink-ok/og/default.webp" />
+      <meta property="og:url" content="https://fosscaster.xyz" />
+      <meta property="og:type" content="website" />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content="Fosscaster.xyz" />
+      <meta name="twitter:description" content="Fosscaster.xyz" />
+      <meta name="twitter:image" content="https://fosscaster.xyz/hotlink-ok/og/default.webp" />
+      </Helmet>
+ 
         <Links />
       </head>
       <body className="dark:bg-neutral-950 bg-white">
@@ -38,14 +51,5 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return <Index  />;
 }
-
-// width: 45px;
-// height: 40px;
-// background: linear-gradient(#0000 calc(1*100%/6),#fff 0 calc(3*100%/6),#0000 0),
-//           linear-gradient(#0000 calc(2*100%/6),#fff 0 calc(4*100%/6),#0000 0),
-//           linear-gradient(#0000 calc(3*100%/6),#fff 0 calc(5*100%/6),#0000 0);
-// background-size: 10px 400%;
-// background-repeat: no-repeat;
-// animation: matrix 1s infinite linear;
 
 export { HydrateFallback }

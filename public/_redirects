@@ -1,1 +1,2 @@
 /api/* https://api.warpcast.com/:splat 200
+/* /index.html   200
