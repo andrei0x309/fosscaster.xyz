@@ -7,7 +7,14 @@ import { Post } from "~/components/blocks/post"
 import { SimpleLoader } from "~/components/atomic/simple-loader"
 import  InfiniteScroll from "~/components/ui/extension/infinte-scroll"
 import { CastHeader } from "~/components/blocks/header/cast-header"
+import type { MetaFunction } from 'react-router'
 
+export const meta: MetaFunction = ({ matches }) => {
+    const parentMeta = matches.flatMap(
+      (match) => match.meta ?? []
+    );
+    return [...parentMeta, { title: "Fosscaster.xyz - Bookmarks" }];
+};
 
 export function BookmarkPages({className = ''}: {className?: string}) {
 

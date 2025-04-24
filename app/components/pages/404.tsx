@@ -1,5 +1,13 @@
 import { Button } from "~/components/ui/button"
 import { useMainStore } from "~/store/main"
+import type { MetaFunction } from 'react-router'
+
+export const meta: MetaFunction = ({ matches }) => {
+    const parentMeta = matches.flatMap(
+      (match) => match.meta ?? []
+    );
+    return [...parentMeta, { title: "Fosscaster.xyz - 404" }];
+};
 
 export const NotFoundPage = () => {
     const { navigate } = useMainStore()

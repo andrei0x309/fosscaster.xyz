@@ -23,7 +23,14 @@ import { formatNumber } from "~/lib/misc"
 import type { TWcFeedItems } from "~/types/wc-feed-items"
 import type { TWCChannelInfo } from "~/types/wc-channel-info"
 import type { TWCCNFollowersYouKnow } from "~/types/wc-channel-followers-you-know"
+import type { MetaFunction } from 'react-router'
 
+export const meta: MetaFunction = ({ matches }) => {
+    const parentMeta = matches.flatMap(
+      (match) => match.meta ?? []
+    );
+    return [...parentMeta, { title: "Fosscaster.xyz - Channel" }];
+};
 
 
 export default function ChannelPage({

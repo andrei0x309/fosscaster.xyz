@@ -5,6 +5,14 @@ import { ChannelItem } from "~/components/blocks/explore/channel"
 import { UserItem } from "~/components/blocks/explore/user"
 import InfiniteScroll from "~/components/ui/extension/infinte-scroll"
 import { SimpleLoader } from "~/components/atomic/simple-loader"
+import type { MetaFunction } from 'react-router'
+
+export const meta: MetaFunction = ({ matches }) => {
+    const parentMeta = matches.flatMap(
+      (match) => match.meta ?? []
+    );
+    return [...parentMeta, { title: "Fosscaster.xyz - Explore" }];
+};
 
 export default function ExplorePage ({ className, page = 'users' }: { className?: string, page?: 'users' | 'channels' }) {
   const [activeTab, setActiveTab] = useState(page)

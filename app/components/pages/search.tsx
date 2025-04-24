@@ -16,6 +16,14 @@ import { ChannelItem } from '~/components/blocks/explore/channel'
 import { Post } from "~/components/blocks/post"
 import { SimpleLoader } from "~/components/atomic/simple-loader"
 import InfiniteScroll from "../ui/extension/infinte-scroll"
+import type { MetaFunction } from 'react-router'
+
+export const meta: MetaFunction = ({ matches }) => {
+    const parentMeta = matches.flatMap(
+      (match) => match.meta ?? []
+    );
+    return [...parentMeta, { title: "Fosscaster.xyz - Search" }];
+};
 
 // export const NotFoundPage = () => {
 //     const { navigate } = useMainStore()

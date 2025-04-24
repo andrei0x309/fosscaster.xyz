@@ -2,7 +2,14 @@ import { Button } from '~/components/ui/button'
 import { GhButton } from '~/components/atomic/gh-button'
 import { ArrowRightIcon } from 'lucide-react'
 import { useMainStore } from '~/store/main'
+import type { MetaFunction } from 'react-router'
 
+export const meta: MetaFunction = ({ matches }) => {
+    const parentMeta = matches.flatMap(
+      (match) => match.meta ?? []
+    );
+    return [...parentMeta, { title: "Fosscaster.xyz - About" }];
+};
 
 export default function AboutPage({className}: {className?: string}) {
 
@@ -16,7 +23,7 @@ export default function AboutPage({className}: {className?: string}) {
       { /* SubTitle */}
     { /* Shor desc */}
     <p className="text-left" style={{ display: 'ruby'}}>This is an  open-source ( <GhButton onClick={
-            () => window.open('https://https://github.com/andrei0x309/fc-app.pages.dev')
+            () => window.open('https://https://github.com/andrei0x309/fosscaster.xyz')
  }/> ) UI implementation of Warpcast, that uses Warpcast API to operate.</p>
     { /* Subtitle for FAQ */}
     <h2 className="text-2xl font-bold mt-8">FAQ</h2>

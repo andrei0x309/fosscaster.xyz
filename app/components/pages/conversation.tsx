@@ -10,7 +10,14 @@ import { CastHeader } from '../blocks/header/cast-header'
 import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar"
 import { UserIcon } from '~/components/icons/user'
 import { Item } from '~/types/wc-feed-items'
+import type { MetaFunction } from 'react-router'
 
+export const meta: MetaFunction = ({ matches }) => {
+    const parentMeta = matches.flatMap(
+      (match) => match.meta ?? []
+    );
+    return [...parentMeta, { title: "Fosscaster.xyz - Conversation" }];
+};
 
 export function ConversationPage({ hash, username, className = '' }: { hash: string, username: string, className?: string }) {
   const { isUserLoggedIn, setConnectModalOpen, navigate, mainUserData, setComposeModalData, setComposeModalOpen  } = useMainStore()

@@ -9,7 +9,7 @@
       "name": "fosscaster.xyz",
       "homeUrl": "https://fosscaster.xyz/",
       "iconUrl": "https://fosscaster.xyz/hotlink-ok/favicon.png",
-      "imageUrl": "https://fosscaster.xyz/hotlink-ok/og/default.png",
+      "imageUrl": "https://fosscaster.xyz/hotlink-ok/og/default.webp",
       "buttonTitle": "Open Frame",
       "splashImageUrl": "https://fosscaster.xyz/hotlink-ok/favicon.png",
       "splashBackgroundColor": "#35303f",
@@ -30,21 +30,21 @@
     "subtitle": "fosscaster.xyz",
     "description": "Open source implementation of web farcaster client",
     "screenshotUrls": [
-      "https://fosscaster.xyz/hotlink-ok/screenshots/screenshot-1.png",
-      "https://fosscaster.xyz/hotlink-ok/screenshots/screenshot-2.png"
+      "https://fosscaster.xyz/hotlink-ok/screenshots/screenshot-1.webp",
+      "https://fosscaster.xyz/hotlink-ok/screenshots/screenshot-2.webp"
     ],
-    "primaryCategory": "developer-tools",
+    "primaryCategory": "client",
     "tags": [
-      "sveltekit",
-      "svelte",
-      "starter",
-      "sveltekit miniapp",
-      "developer"
+      "foss",
+      "farcaster",
+      "client",
+      "web",
+      "web-wallet"
     ],
-    "heroImageUrl": "https://fosscaster.xyz/hotlink-ok/og/default.png",
+    "heroImageUrl": "https://fosscaster.xyz/hotlink-ok/og/default.webp",
     "tagline": "Open source implementation of web farcaster client",
     "ogTitle": "fosscaster.xyz",
     "ogDescription": "Open source implementation of web farcaster client",
-    "ogImageUrl": "https://fosscaster.xyz/hotlink-ok/og/default.png"
+    "ogImageUrl": "https://fosscaster.xyz/hotlink-ok/og/default.webp"
   }
   

@@ -7,6 +7,14 @@ import type { TWCFavoriteFrames } from "~/types/wc-favorite-frames"
 import type { TWCTopFrames } from "~/types/wc-top-frames"
 import { getFavoriteFrames, getTopFrames } from '~/lib/api'
 import { useMainStore } from '~/store/main'
+import type { MetaFunction } from 'react-router'
+
+export const meta: MetaFunction = ({ matches }) => {
+    const parentMeta = matches.flatMap(
+      (match) => match.meta ?? []
+    );
+    return [...parentMeta, { title: "Fosscaster.xyz - Mini apps" }];
+};
 
 type TFrame = TWCFavoriteFrames['result']['frames'][number]
 

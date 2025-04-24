@@ -30,7 +30,14 @@ import {
 } from "~/lib/api"
 import { useLocation } from "react-router";
 import { CastHeader } from '~/components/blocks/header/cast-header'
+import type { MetaFunction } from 'react-router'
 
+export const meta: MetaFunction = ({ matches }) => {
+    const parentMeta = matches.flatMap(
+      (match) => match.meta ?? []
+    );
+    return [...parentMeta, { title: "Fosscaster.xyz - Profile" }];
+};
 
 
 const allowdFeedsLoggedIn = ['casts', 'likes', 'casts-and-replies', 'channels']

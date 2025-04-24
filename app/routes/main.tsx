@@ -12,6 +12,7 @@ import { ComposeModal } from "~/components/functional/modals/compose-cast"
 import { type scrollPageKey, useStoreScroll } from '~/store/scroll-restore'
 import { LeftSidebar } from "~/components/template/left-sidebar"
 import { RightSidebar } from "~/components/template/right-sidebar"
+import { generateURLFCFrameEmbed } from '~/lib/mini-app'
 
 
 const ProfilePage = lazy(() => import('~/components/pages/profile'))
@@ -31,12 +32,32 @@ const MiniAppsPage = lazy(() => import('~/components/pages/mini-apps'))
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "FC App - Warpcast SPA clone" },
-    { name: "description", content: "Welcome to Remix (SPA Mode)!" },
+    { title: "Fosscaster.xyz - Farcaster Social Network" },
+    { name: "description", content: "Farcaster Social Network FOSS Web client" },
     {
       property: "og:title",
-      content: "FC App - Warpcast SPA clone",
+      content: "Fosscaster.xyz - Farcaster Social Network",
     },
+    {
+      property: "og:description",
+      content: "Farcaster Social Network FOSS Web client",
+    },
+    {
+      property: "og:image",
+      content: "https://fosscaster.xyz/hotlink-ok/og/default.webp",
+    },
+    {
+      property: "og:url",
+      content: window.location.href,
+    },
+    {
+      property: "fc:frame",
+      content: generateURLFCFrameEmbed({
+        url: window.location.href,
+        featureImage: "https://fosscaster.xyz/hotlink-ok/og/default.webp"
+      })
+    }
+
   ]; 
 };
 
@@ -230,6 +251,14 @@ export default function Index() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location?.pathname, location, page, feedInitial, setRightSidebarVisible, isUserLoggedIn, checkUserLooggedIn]);
 
+  useEffect(() => {
+    import('@farcaster/frame-sdk').then(async (module) => {
+      const sdk = module.default
+      await sdk.context;
+      sdk.actions.ready();
+    });
+  }, []);
+  
  
   return (
     <Shell>
