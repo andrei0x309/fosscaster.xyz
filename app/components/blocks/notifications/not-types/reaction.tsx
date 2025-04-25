@@ -20,7 +20,7 @@ return (
       <Repeat2 className="w-5 h-5 text-green-600" fill="currentColor" />
     </div>
     }
-    {notification.previewItems.map((item, index) => (
+    {notification.previewItems.slice(0, 6).map((item, index) => (
     <Avatar className={`w-7 h-7`} style={index > 0 ? { marginLeft: '-0.5rem' }: {}} key={index}>
     <AvatarImage src={`${item?.actor.pfp?.url ?? '/placeholder.svg?height=40&width=40'}`} alt={notification.previewItems[0].actor.username} />
     <AvatarFallback>{item?.actor.username.slice(0,2)}</AvatarFallback>

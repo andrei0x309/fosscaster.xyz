@@ -26,7 +26,7 @@ export const StorageCard = () => {
   return (
     <>
     <StyledWrapper>
-      <div className="container bg-neutral-100 dark:dark:bg-zinc-900 rounded-lg p-4 mb-4">
+      <div className="container-storage bg-neutral-100 dark:dark:bg-zinc-900 rounded-lg p-4 mb-4">
       <h2 className="font-semibold mb-2">Storage {!isUserLoggedIn ? <span className="text-[.7rem] font-normal">(login to see your storage)</span> : null}</h2>
         <div className={`storage-box ${!isUserLoggedIn ? 'opacity-40' : ''}`}>
           <div className={`storage-bar`} >
@@ -84,13 +84,13 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 const StyledWrapper = styled.div`
-  .container {
+  .container-storage {
   position: relative;
   width: 100%;
   border-radius: 7px;
 }
 
-.container .storage-box {
+.container-storage .storage-box {
   width: 100%;
   margin-top: 2.2rem;
 }

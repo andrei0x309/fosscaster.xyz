@@ -5,7 +5,7 @@ export const CheckBox = (
     {onClick?: () => void,  className?: string, disabled?: boolean, isChecked?: boolean}) => {
   return (
     <StyledWrapper className='' >
-    <label className={`container ${className} ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`} htmlFor="checkboxInput">
+    <label className={`container-checkbox ${className} ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`} htmlFor="checkboxInput">
     <input className={`${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`} checked={isChecked} type="checkbox" onClick={onClick} disabled={disabled} id="checkboxInput"/>
     <div className="checkmark"></div>
     </label>
@@ -15,14 +15,14 @@ export const CheckBox = (
 
 const StyledWrapper = styledComponents.div`
   /* Hide the default checkbox */
-.container input {
+.container-checkbox input {
   position: absolute;
   opacity: 0;
   height: 0;
   width: 0;
 }
 
-.container {
+.container-checkbox {
   display: flex;
   gap: 10px;
 }
@@ -49,7 +49,7 @@ const StyledWrapper = styledComponents.div`
   background-color: rgba(16, 16, 16, 0.5);
 }
 
-.container input:checked ~ .checkmark {
+.container-checkbox input:checked ~ .checkmark {
   box-shadow: rgb(255, 84, 0) 0px 0px 0px 2px;
   height: 20px;
   width: 20px;
@@ -70,12 +70,12 @@ const StyledWrapper = styledComponents.div`
   display: none;
 }
 
-.container input:checked ~ .checkmark:after {
+.container-checkbox input:checked ~ .checkmark:after {
   display: block;
 }
 
 /* Style the checkmark/indicator */
-.container .checkmark:after {
+.container-checkbox .checkmark:after {
   left: 0.45em;
   top: 0.25em;
   width: 0.25em;

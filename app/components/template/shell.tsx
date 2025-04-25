@@ -53,7 +53,7 @@ export const Shell = React.memo(function Shell ({ children = false}:
  
  
     return (
-        <div className="container mx-auto min-h-full flex">
+        <div className="container mx-auto min-h-full flex md:px-4">
         <SignInOrSignUpModal />
         <LightBoxModal />
         <ModalManager />

@@ -1,98 +1,56 @@
-"use client"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd"
-import { ChevronRight } from "lucide-react"
+import { ChevronRight, Loader2 } from "lucide-react"
+import { getFavoriteFrames } from '~/lib/api'
+import { Img as Image } from 'react-image'
 
-type MiniApp = {
-  id: string
-  name: string
-  developer: string
-  icon: string
-  iconBg: string
-}
+import type { TWCFavoriteFrames } from "~/types/wc-favorite-frames"
 
-const initialApps: MiniApp[] = [
-  {
-    id: "amps",
-    name: "Amps",
-    developer: "by ampsfun",
-    icon: "⚡",
-    iconBg: "#8b5cf6",
-  },
-  {
-    id: "scout-game",
-    name: "Scout Game",
-    developer: "by scoutgamexyz",
-    icon: "🚲",
-    iconBg: "#3b82f6",
-  },
-  {
-    id: "rewards",
-    name: "Rewards",
-    developer: "by warpcast",
-    icon: "⚙️",
-    iconBg: "#8b5cf6",
-  },
-  {
-    id: "warpslot",
-    name: "Warpslot",
-    developer: "by warpslot",
-    icon: "🎰",
-    iconBg: "#f59e0b",
-  },
-  {
-    id: "farcademy",
-    name: "Farcademy",
-    developer: "by metopia",
-    icon: "📚",
-    iconBg: "#8b5cf6",
-  },
-  {
-    id: "eggs",
-    name: "$EGGS",
-    developer: "by warpcastadmin.eth",
-    icon: "🥚",
-    iconBg: "#ec4899",
-  },
-  {
-    id: "blog",
-    name: "blog.flashsoft.eu",
-    developer: "by andrei0x309",
-    icon: "📝",
-    iconBg: "#10b981",
-  },
-  {
-    id: "sveltekit",
-    name: "SveleteKit Starter Mini-App",
-    developer: "by andrei0x309",
-    icon: "🔥",
-    iconBg: "#f97316",
-  },
-  {
-    id: "labels",
-    name: "Warpcast Labels",
-    developer: "by compez.eth",
-    icon: "🏷️",
-    iconBg: "#6366f1",
-  },
-]
+type MiniApp = TWCFavoriteFrames['result']['frames'][number]
 
 export function DraggableMiniApps() {
-  const [apps, setApps] = useState(initialApps)
+  const [apps, setApps] = useState({} as TWCFavoriteFrames)
+  const [activeApp, setActiveApp] = useState< MiniApp | null>(null)
 
   const handleDragEnd = (result: any) => {
     if (!result.destination) return
 
-    const items = Array.from(apps)
+    const items = Array.from(apps?.result?.frames || [])
     const [reorderedItem] = items.splice(result.source.index, 1)
     items.splice(result.destination.index, 0, reorderedItem)
 
-    setApps(items)
+    setApps({
+      ...apps,
+      result: {
+        ...apps.result,
+        frames: items,
+      },
+    })
+  }
+
+  useEffect(() => {
+    const fetchApps = async () => {
+      try {
+        const apps = await getFavoriteFrames({ limit: 100})
+        setApps(apps)
+      } catch (error) {
+        console.error('Failed to fetch frames', error)
+      }
+    }
+    fetchApps()
+  }, [])
+
+  const openMiniAppSettings = (app: MiniApp) => {
+    setActiveApp(app)
+  }
+
+  const closeMiniAppSettings = () => {
+    setActiveApp(null)
   }
 
   return (
-    <div className="max-w-2xl">
+    <>
+    { !activeApp?.homeUrl ? <div className="max-w-2xl">
       <p className="text-[#a0a0c0] mb-6">
         Drag and drop to rearrange the order of your mini apps.
         <br />
@@ -104,8 +62,8 @@ export function DraggableMiniApps() {
           <Droppable droppableId="mini-apps">
             {(provided) => (
               <div {...provided.droppableProps} ref={provided.innerRef}>
-                {apps.map((app, index) => (
-                  <Draggable key={app.id} draggableId={app.id} index={index}>
+                {apps?.result?.frames?.map((app, index) => (
+                  <Draggable key={app.domain} draggableId={app.domain} index={index}>
                     {(provided) => (
                       <div
                         ref={provided.innerRef}
@@ -131,15 +89,15 @@ export function DraggableMiniApps() {
                           </div>
                           <div
                             className="w-10 h-10 rounded-lg flex items-center justify-center mr-3 text-lg"
-                            style={{ backgroundColor: app.iconBg }}
+                            style={{ backgroundColor: app.splashBackgroundColor }}
                           >
-                            {app.icon}
+                            <Image src={[app?.splashImageUrl ?? '/placeholder.svg']} alt={app.name} loader={<Loader2 className="h-5 w-5 text-red-500 animate-spin" />} className="w-full h-full object-cover rounded-lg" />
                           </div>
                           <div className="flex-1">
                             <div className="font-medium">{app.name}</div>
-                            <div className="text-sm text-gray-400">{app.developer}</div>
+                            <div className="text-sm text-gray-400">{app?.author?.username}</div>
                           </div>
-                          <ChevronRight className="text-gray-400" size={20} />
+                          <ChevronRight className="text-gray-400 cursor-pointer" size={20} onClick={() => openMiniAppSettings(app)} />
                         </div>
                       </div>
                     )}
@@ -152,5 +110,33 @@ export function DraggableMiniApps() {
         </DragDropContext>
       </div>
     </div>
-  )
+  :
+  
+  <div className="flex flex-col">
+   <button onClick={closeMiniAppSettings} className="rounded-lg text-action-purple disabled:opacity-50 px-4 py-2 text-sm mb-2 flex items-center !p-0 font-normal text-link hover:text-default">
+      <svg aria-hidden="true" focusable="false" role="img" className="mr-1" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" style={{"display":"inline-block","userSelect":"none","verticalAlign":"text-bottom","overflow":"visible"}}>
+         <path d="M7.78 12.53a.75.75 0 0 1-1.06 0L2.47 8.28a.75.75 0 0 1 0-1.06l4.25-4.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042L4.81 7h7.44a.75.75 0 0 1 0 1.5H4.81l2.97 2.97a.75.75 0 0 1 0 1.06Z"></path>
+      </svg>
+      Return to list
+   </button>
+   <div className="flex flex-col space-y-2.5">
+      <div className="flex items-center space-x-3">
+         <div className="border-hairline size-14 overflow-hidden rounded-lg border border-faint">
+          <img loading="lazy" src="https://proxy.wrpcd.net/?url=https%3A%2F%2Frewards.warpcast.com%2Fapp.png&amp;s=fb6f1c859aaccaabdd7eed6d0d4af051c49b445270053495c32c1c08fa8ff77e" alt="Rewards" className="size-full object-cover" /></div>
+         <div className="shrink">
+            <div className="font-semibold">{activeApp?.name}</div>
+            <div className="text-sm text-muted">Built by {activeApp?.author?.username}</div>
+            <div className="truncate text-xs text-muted">{activeApp?.domain}</div>
+         </div>
+      </div>
+      <div className="rounded-xl p-3 bg-overlay-faint">
+         <div className="flex w-full items-center justify-between gap-2"><span className="flex grow flex-col"><span className="font-semibold text-default" id="headlessui-label-:r18e:">Notifications</span><span className="text-sm text-muted" id="headlessui-description-:r18f:"></span></span>
+         <button className="bg-action-purple relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent ring-0 transition-colors duration-200 ease-in-out focus:outline-none" id="headlessui-switch-:r18g:" role="switch" type="button" aria-checked="true" data-headlessui-state="checked" aria-labelledby="headlessui-label-:r18e:" aria-describedby="headlessui-description-:r18f:"><span aria-hidden="true" className="translate-x-5 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span></button></div>
+      </div>
+      <button className="rounded-lg font-semibold bg-action-danger text-light disabled:opacity-50 px-4 py-2 text-sm w-full">Remove</button>
+   </div>
+</div>
+          }
+          </>
+      )
 }

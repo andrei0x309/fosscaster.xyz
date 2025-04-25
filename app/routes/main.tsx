@@ -81,7 +81,7 @@ export default function Index() {
   const [additionalPageData, setAdditionalPageData] = useState('')
   const [profileUser, setProfileUser] = useState('')
   const [is404, setIs404] = useState(false)
-  const { isUserLoggedIn } = useMainStore()
+  const { isUserLoggedIn, setIsMiniApp } = useMainStore()
   const [rightSidebarVisible, setRightSidebarVisible] = useState(false)
 
   const { setNewDmsCount, setNewNotificationsCount, newDmsCount } = useNotifBadgeStore()
@@ -283,10 +283,13 @@ export default function Index() {
   useEffect(() => {
     import('@farcaster/frame-sdk').then(async (module) => {
       const sdk = module.default
-      await sdk.context;
+      const context = await sdk.context;
       sdk.actions.ready();
-      // setIsMiniApp(true);
+      if(context?.client?.clientFid) {
+        setIsMiniApp(true)
+      }
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

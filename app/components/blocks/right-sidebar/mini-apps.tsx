@@ -38,7 +38,7 @@ export const MiniAppsSidebar = () => {
 
 
     return (
-        <div className="container bg-neutral-100 dark:dark:bg-zinc-900 rounded-lg p-4 mb-4">
+        <div className="bg-neutral-100 dark:dark:bg-zinc-900 rounded-lg p-4 mb-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold">Mini Apps</h2>
             <div className="flex space-x-2">

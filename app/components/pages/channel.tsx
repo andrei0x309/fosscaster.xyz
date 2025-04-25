@@ -117,11 +117,7 @@ export default function ChannelPage ({
   return (
       <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
         <div className="h-full min-h-screen">
-          <div className="sticky bg-white dark:bg-neutral-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-26 p-2">
-
-          </div>
-
-          {/* Profile Section    style={{ backgroundImage: `url('${channelInfo?.result?.channel?.headerImageUrl}')`}} */}
+          <CastHeader title={'Channel - ' + channelInfo?.result?.channel?.name} channelKey={channelId} />
           <div className="relative">
             <div className={`h-52 bg-contain dark:from-neutral-800 dark:to-neutral-900 bg-gradient-to-b from-neutral-200 to-neutral-400`}>
               {channelInfo?.result?.channel?.headerImageUrl ? <img loading="lazy" src={channelInfo?.result?.channel?.headerImageUrl} alt={channelInfo?.result?.channel?.name} className="aspect-[3/1] h-full w-full object-cover object-center" /> : null}

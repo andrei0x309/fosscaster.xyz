@@ -29,7 +29,7 @@ export const SuggestedChannels = () => {
 
 
     return (
-        <div className="container bg-neutral-100 dark:dark:bg-zinc-900 rounded-lg p-4 mb-4">
+        <div className="bg-neutral-100 dark:dark:bg-zinc-900 rounded-lg p-4 mb-4">
         <h2 className="font-semibold mb-2">Suggested Channels</h2>
 
         {loading ? (
