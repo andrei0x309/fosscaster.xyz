@@ -1,17 +1,10 @@
 import { Button } from "~/components/ui/button"
 import { useMainStore } from "~/store/main"
-import { Helmet } from "react-helmet";
-
 
 export const NotFoundPage = () => {
     const { navigate } = useMainStore()
 
     return (
-        <>    
-        <Helmet>
-            <title>Fosscaster.xyz - About</title>
-            <meta name="description" content="Error 404: Page not found - Fosscaster.xyz" />
-        </Helmet>
             <section >
                 <div className="h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] py-8 mt-8 px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-6">
                     <div className="mx-auto max-w-screen-sm text-center">
@@ -22,7 +15,6 @@ export const NotFoundPage = () => {
                     </div>
                 </div>
             </section>
-        </>
     );
 }
 

@@ -13,6 +13,8 @@ import { type scrollPageKey, useStoreScroll } from '~/store/scroll-restore'
 import { LeftSidebar } from "~/components/template/left-sidebar"
 import { RightSidebar } from "~/components/template/right-sidebar"
 import { generateURLFCFrameEmbed } from '~/lib/mini-app'
+import { Helmet } from "react-helmet";
+import { useMetaStore } from "~/store/meta"
 
 
 const ProfilePage = lazy(() => import('~/components/pages/profile'))
@@ -63,6 +65,10 @@ export const meta: MetaFunction = () => {
 
 const pagesToPreserveScroll = ['home', 'channel', 'conversations', 'profile', "bookmark", ] as scrollPageKey[]
 
+const defaultMeta = {
+  title: 'Fosscaster.xyz - Farcaster Social Network',
+  description: 'Farcaster Social Network FOSS Web client',
+}
 
 export default function Index() {
   
@@ -79,6 +85,8 @@ export default function Index() {
   const [rightSidebarVisible, setRightSidebarVisible] = useState(false)
 
   const { setNewDmsCount, setNewNotificationsCount, newDmsCount } = useNotifBadgeStore()
+
+  const { setMeta, description, title } = useMetaStore()
 
   const notificationInterval = useRef<NodeJS.Timeout | null>(null)
   
@@ -154,6 +162,8 @@ export default function Index() {
       let currentIs404 = false;
       let currentRightSidebarVisible = true;
 
+      setMeta(defaultMeta)
+
     if (location?.pathname === '/' || ['/~/trending', '/~/following', '/~/fc-oss', '/~/politics', '/~/cryptoleft', '/home'].includes(location?.pathname)) {
       currentPage = 'home'
       if(location?.pathname?.includes('~')) {
@@ -180,11 +190,19 @@ export default function Index() {
         } else {
           currentIs404 = true
         }
+        setMeta({
+          title: `Profile ${currentProfileUser} - Fosscaster.xyz`,
+          description: `View farcaster profile ${currentProfileUser} on Fosscaster.xyz`,
+        })
     } else if (location?.pathname?.startsWith('/~/channel/')) {
       currentPage = 'channel'
       const splits = location?.pathname?.split('/')
       const channelId = splits[3]
       currentPageData = channelId
+      setMeta({
+        title: `Channel ${channelId} - Fosscaster.xyz`,
+        description: `View channel ${channelId} on Fosscaster.xyz`,
+      })
     }else if (location?.pathname?.startsWith('/~/bookmarks')) {
       if(checkUserLooggedIn()) {
         currentPage = 'bookmarks' as scrollPageKey
@@ -195,14 +213,16 @@ export default function Index() {
         currentPage = 'explore' as scrollPageKey
         currentPageData = page
       }
-      setRightSidebarVisible(true)
+      setMeta({
+        title: `Explore - Fosscaster.xyz`,
+        description: `Explore users and channels on Fosscaster.xyz`,
+      })
     } else if (location?.pathname?.startsWith('/~/notifications')) {
        if(checkUserLooggedIn()) {
         currentPage = 'notifications' as scrollPageKey
         const page = location?.pathname?.split('~/notifications/')?.[1]?.replace('/', '') || ''
         currentPageData = page
       }
-      setRightSidebarVisible(true)
     } else if (location?.pathname === '/~/mini-apps') {
       if(checkUserLooggedIn()) {
         currentPage = 'mini-apps' as scrollPageKey
@@ -227,8 +247,16 @@ export default function Index() {
       }
     } else if( location?.pathname === '/~/about') {
       currentPage = 'about' as scrollPageKey
+      setMeta({
+        title: `About - Fosscaster.xyz`,
+        description: `About Fosscaster.xyz`,
+      })
     } else {
       currentIs404 = true
+      setMeta({
+        title: `404 - Fosscaster.xyz`,
+        description: `404 - Fosscaster.xyz`,
+      })
     }
 
     setPage(currentPage);
@@ -263,7 +291,10 @@ export default function Index() {
 
   return (
     <>
-
+    <Helmet>
+      <title>{title}</title>
+      <meta name="description" content={description} />
+    </Helmet>
 
     <Shell>
       <Suspense fallback={<HydrateFallback />}>

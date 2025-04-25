@@ -2,7 +2,6 @@
 import { GhButton } from '~/components/atomic/gh-button'
 // import { ArrowRightIcon } from 'lucide-react'
 // import { useMainStore } from '~/store/main'
-import { Helmet } from "react-helmet";
 
 
 export default function AboutPage ({ className }: { className?: string }) {
@@ -10,11 +9,6 @@ export default function AboutPage ({ className }: { className?: string }) {
   // const { navigate } = useMainStore()
 
   return (
-    <>
-      <Helmet>
-        <title>Fosscaster.xyz - About</title>
-        <meta name="description" content="This is an open-source client UI implementation for faracster, designed for Web3 native." />
-      </Helmet>
       <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] flex flex-col items-center ${className}`}>
         <div className="p-8" >
 
@@ -59,6 +53,5 @@ export default function AboutPage ({ className }: { className?: string }) {
           </div>
         </div>
       </div>
-    </>
   )
 }

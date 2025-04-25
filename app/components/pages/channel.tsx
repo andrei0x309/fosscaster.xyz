@@ -23,8 +23,6 @@ import { formatNumber } from "~/lib/misc"
 import type { TWcFeedItems } from "~/types/wc-feed-items"
 import type { TWCChannelInfo } from "~/types/wc-channel-info"
 import type { TWCCNFollowersYouKnow } from "~/types/wc-channel-followers-you-know"
-import { Helmet } from 'react-helmet'
-
 
 export default function ChannelPage ({
   channelId,
@@ -117,11 +115,6 @@ export default function ChannelPage ({
 
 
   return (
-    <>
-      <Helmet>
-        <title>Fosscaster.xyz - Channel</title>
-        <meta name="description" content="Channel - Fosscaster.xyz" />
-      </Helmet>
       <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
         <div className="h-full min-h-screen">
           <div className="sticky bg-white dark:bg-neutral-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-26 p-2">
@@ -208,6 +201,5 @@ export default function ChannelPage ({
 
         </div>
       </div>
-    </>
   )
 }

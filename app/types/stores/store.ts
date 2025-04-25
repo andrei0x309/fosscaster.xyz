@@ -81,13 +81,12 @@ export type MainState = {
     setIsMiniApp: (a: boolean) => void
 }
 
-export type T_META_DATA = { title: string; description: string; keywords: string }
+export type T_META_DATA = { title: string; description: string}
 export type T_META_TAG = { name: string; content: string }
 
 export type MetaStore = {
     title: string
     description: string
-    keywords: string
     metatags: T_META_TAG[]
     setMeta: (data: T_META_DATA) => void
     setMetatags: (data: T_META_TAG[]) => void

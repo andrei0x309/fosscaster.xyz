@@ -5,7 +5,6 @@ import { ChannelItem } from "~/components/blocks/explore/channel"
 import { UserItem } from "~/components/blocks/explore/user"
 import InfiniteScroll from "~/components/ui/extension/infinte-scroll"
 import { SimpleLoader } from "~/components/atomic/simple-loader"
-import { Helmet } from 'react-helmet'
 
 export default function ExplorePage ({ className, page = 'users' }: { className?: string, page?: 'users' | 'channels' }) {
   const [activeTab, setActiveTab] = useState(page)
@@ -72,11 +71,6 @@ export default function ExplorePage ({ className, page = 'users' }: { className?
 
 
   return (
-    <>
-      <Helmet>
-        <title>Fosscaster.xyz - Channel</title>
-        <meta name="description" content="Explore - Fosscaster.xyz" />
-      </Helmet>
       <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
         <div className={`min-h-screen text-white ${className}`}>
           <div className="h-full min-h-screen">
@@ -139,6 +133,5 @@ export default function ExplorePage ({ className, page = 'users' }: { className?
           </div>
         </div>
       </div>
-    </>
   )
 }

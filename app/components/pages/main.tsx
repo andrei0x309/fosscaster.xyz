@@ -9,8 +9,6 @@ import  InfiniteScroll from "~/components/ui/extension/infinte-scroll"
 import { Post } from "~/components/blocks/post"
 import { SimpleLoader } from '../atomic/simple-loader'
 import { CastHeader } from '../blocks/header/cast-header'
-import { Helmet } from 'react-helmet'
-
 
 export function Main({ initialFeed, className = '' }: { initialFeed?: string, className?: string }) {
   const { isUserLoggedIn  } = useMainStore()
@@ -88,11 +86,6 @@ export function Main({ initialFeed, className = '' }: { initialFeed?: string, cl
 
 
   return (
-      <>
-      <Helmet>
-        <title>Fosscaster.xyz - Feeds</title>
-        <meta name="description" content="Explore - Fosscaster.xyz" />
-      </Helmet>
       <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
         <div className="h-full min-h-screen">
           <div className="sticky bg-white dark:bg-neutral-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-26 p-2">
@@ -131,8 +124,6 @@ export function Main({ initialFeed, className = '' }: { initialFeed?: string, cl
  
         </div>
       </div>
-      </>
-      
   )
 }
 

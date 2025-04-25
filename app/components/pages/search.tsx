@@ -16,7 +16,6 @@ import { ChannelItem } from '~/components/blocks/explore/channel'
 import { Post } from "~/components/blocks/post"
 import { SimpleLoader } from "~/components/atomic/simple-loader"
 import InfiniteScroll from "../ui/extension/infinte-scroll"
-import { Helmet } from 'react-helmet'
 
 // export const NotFoundPage = () => {
 //     const { navigate } = useMainStore()
@@ -136,11 +135,6 @@ export default function SearchPage ({ query, searchType = 'top', className = '' 
   }, [query])
 
   return (
-    <>
-      <Helmet>
-        <title>Fosscaster.xyz - Search</title>
-        <meta name="description" content="Search - Fosscaster.xyz" />
-      </Helmet>
       <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
         <div className="sticky top-0 z-10 dark:bg-neutral-950 bg-white">
           {/* Search Bar */}
@@ -262,6 +256,5 @@ export default function SearchPage ({ query, searchType = 'top', className = '' 
         )}
 
       </div>
-    </>
   )
 }

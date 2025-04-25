@@ -7,7 +7,6 @@ import { Post } from "~/components/blocks/post"
 import { SimpleLoader } from "~/components/atomic/simple-loader"
 import InfiniteScroll from "~/components/ui/extension/infinte-scroll"
 import { CastHeader } from "~/components/blocks/header/cast-header"
-import { Helmet } from 'react-helmet'
 
 
 export function BookmarkPages ({ className = '' }: { className?: string }) {
@@ -73,11 +72,6 @@ export function BookmarkPages ({ className = '' }: { className?: string }) {
     // <main className="h-full w-full shrink-0 justify-center sm:mr-4 sm:w-[540px] lg:w-[680px]">
     // <div className="h-full min-h-screen">
     //   <div className="sticky dark:bg-zinc-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-14 sm:h-28 p-2">
-    <>
-      <Helmet>
-        <title>Fosscaster.xyz - Bookmarks</title>
-        <meta name="description" content="Bookmarks - Fosscaster.xyz" />
-      </Helmet>
       <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
         <div className="h-full min-h-screen">
           <CastHeader title='Bookmarks' hasBackButton={true} />
@@ -103,8 +97,6 @@ export function BookmarkPages ({ className = '' }: { className?: string }) {
         </div>
 
       </div>
-
-    </>
   )
 }
 
