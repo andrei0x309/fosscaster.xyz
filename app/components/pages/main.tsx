@@ -38,6 +38,8 @@ export function Main({ initialFeed, className = '' }: { initialFeed?: string, cl
     const isSetToken = isTokenSet()
     if (initialFeed) {
       setCurrentFeed(initialFeed)
+    } else if(!isUserLoggedIn) {
+      setCurrentFeed('cryptoleft')
     } else if(isUserLoggedIn && !initialFeed && isSetToken) {
       setCurrentFeed(mainUserData?.settings?.isPrimaryFeedFollowing ? 'following' : 'home')
     }
@@ -96,10 +98,7 @@ export function Main({ initialFeed, className = '' }: { initialFeed?: string, cl
                 {isUserLoggedIn && mainUserData?.settings?.isPrimaryFeedFollowing ? <>
                 <TabsTrigger value="following" onClick={() => handleFeedChange('following')}>Following</TabsTrigger>
                 <TabsTrigger value="home" onClick={() => handleFeedChange('home')}>Home</TabsTrigger>
-                </> : <>
-                <TabsTrigger value="home" onClick={() => handleFeedChange('home')}>Home</TabsTrigger>
-                <TabsTrigger value="following" onClick={() => handleFeedChange('following')}>Following</TabsTrigger>
-                </>}
+                </> : null}
                 
                 {!isUserLoggedIn && <TabsTrigger value="cryptoleft" onClick={() => handleFeedChange('cryptoleft')}>CryptoLeft</TabsTrigger> }
                 {!isUserLoggedIn && <TabsTrigger value="politics" onClick={() => handleFeedChange('politics')}>Politics</TabsTrigger> }
