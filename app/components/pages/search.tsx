@@ -22,7 +22,7 @@ import InfiniteScroll from "../ui/extension/infinte-scroll"
 
 //     return (
 // <section >
-//     <div className="h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] py-8 mt-8 px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-6">
+//     <div className="h-full w-full shrink-0 justify-center lg:w-[680px] py-8 mt-8 px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-6">
 //         <div className="mx-auto max-w-screen-sm text-center">
 //             <h1 className="mb-4 text-7xl tracking-tight font-extrabold lg:text-6xl text-primary-600 dark:text-primary-500">404</h1>
 //             <p className="mb-4 text-3xl tracking-tight font-bold text-neutral-900 md:text-4xl dark:text-white">Something&apos;s missing.</p>
@@ -135,7 +135,7 @@ export default function SearchPage ({ query, searchType = 'top', className = '' 
   }, [query])
 
   return (
-      <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
+      <div className={`h-full w-full shrink-0 justify-center lg:w-[680px] ${className}`}>
         <div className="sticky top-0 z-10 dark:bg-neutral-950 bg-white">
           {/* Search Bar */}
           <div className="flex items-center justify-between px-4 py-2">

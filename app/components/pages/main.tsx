@@ -11,7 +11,7 @@ import { SimpleLoader } from '../atomic/simple-loader'
 import { CastHeader } from '../blocks/header/cast-header'
 
 export function Main({ initialFeed, className = '' }: { initialFeed?: string, className?: string }) {
-  const { isUserLoggedIn  } = useMainStore()
+  const { isUserLoggedIn, mainUserData  } = useMainStore()
 
   const [feed, setFeed] = useState({ result: [] as unknown as TWcFeedItems})
   const [feedLoading, setFeedLoading] = useState(false)
@@ -38,12 +38,11 @@ export function Main({ initialFeed, className = '' }: { initialFeed?: string, cl
     const isSetToken = isTokenSet()
     if (initialFeed) {
       setCurrentFeed(initialFeed)
-    } else if(!isUserLoggedIn && !initialFeed) {
-      setCurrentFeed('trending')
     } else if(isUserLoggedIn && !initialFeed && isSetToken) {
-      setCurrentFeed('home')
+      setCurrentFeed(mainUserData?.settings?.isPrimaryFeedFollowing ? 'following' : 'home')
     }
-  }, [isUserLoggedIn, initialFeed])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isUserLoggedIn, initialFeed, mainUserData?.authToken])
 
   useEffect(() => {
     if (currentFeed) {
@@ -56,7 +55,6 @@ export function Main({ initialFeed, className = '' }: { initialFeed?: string, cl
   }, [currentFeed, fetchData, isUserLoggedIn]);
 
   const loadMore = async () => {
-    console.log('load more')
     setFeedLoading(true)
     const excludedIds = feed?.result?.items?.map((item) => item.cast.hash) ?? []
     const newFeed = await getFeed({ feed: currentFeed, excludeItemIdPrefixes: excludedIds, olderThan: feed?.result?.items?.[feed.result.items.length - 1]?.cast?.timestamp })
@@ -86,20 +84,31 @@ export function Main({ initialFeed, className = '' }: { initialFeed?: string, cl
 
 
   return (
-      <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
+      <div className={`h-full w-full shrink-0 justify-center lg:w-[680px] ${className}`}>
         <div className="h-full min-h-screen">
-          <div className="sticky bg-white dark:bg-neutral-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-26 p-2">
+          <div className="sticky bg-white dark:bg-neutral-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-26 lg:p-2">
 
            <CastHeader title='Home' className='mb-2' />
 
             { currentFeed && (<Tabs value={currentFeed} className="w-full">
               <TabsList className="w-full justify-start">
-                {isUserLoggedIn && <TabsTrigger value="home" onClick={() => handleFeedChange('home')}>Home</TabsTrigger>}
-                {isUserLoggedIn && <TabsTrigger value="following" onClick={() => handleFeedChange('following')}>Following</TabsTrigger> }
+                
+                {isUserLoggedIn && mainUserData?.settings?.isPrimaryFeedFollowing ? <>
+                <TabsTrigger value="following" onClick={() => handleFeedChange('following')}>Following</TabsTrigger>
+                <TabsTrigger value="home" onClick={() => handleFeedChange('home')}>Home</TabsTrigger>
+                </> : <>
+                <TabsTrigger value="home" onClick={() => handleFeedChange('home')}>Home</TabsTrigger>
+                <TabsTrigger value="following" onClick={() => handleFeedChange('following')}>Following</TabsTrigger>
+                </>}
+                
+                {!isUserLoggedIn && <TabsTrigger value="cryptoleft" onClick={() => handleFeedChange('cryptoleft')}>CryptoLeft</TabsTrigger> }
                 {!isUserLoggedIn && <TabsTrigger value="politics" onClick={() => handleFeedChange('politics')}>Politics</TabsTrigger> }
                 {!isUserLoggedIn && <TabsTrigger value="fc-oss" onClick={() => handleFeedChange('fc-oss')}>FC FOSS</TabsTrigger> }
-                {!isUserLoggedIn && <TabsTrigger value="cryptoleft" onClick={() => handleFeedChange('cryptoleft')}>CryptoLeft</TabsTrigger> }
-                <TabsTrigger value="trending" onClick={() => handleFeedChange('trending')}>Trending</TabsTrigger>
+                
+                {isUserLoggedIn && !mainUserData?.settings?.isCryptoLeftFeedDisabled && <TabsTrigger value="cryptoleft" onClick={() => handleFeedChange('cryptoleft')}>CryptoLeft</TabsTrigger> }
+                {isUserLoggedIn && !mainUserData?.settings?.isPoliticsFeedDisabled && <TabsTrigger value="politics" onClick={() => handleFeedChange('politics')}>Politics</TabsTrigger> }
+                {isUserLoggedIn && !mainUserData?.settings?.isFCFossFeedDisabled && <TabsTrigger value="fc-oss" onClick={() => handleFeedChange('fc-oss')}>FC FOSS</TabsTrigger> }
+                {isUserLoggedIn && mainUserData?.settings?.isTrendingFeedEnabled && <TabsTrigger value="trending" onClick={() => handleFeedChange('trending')}>Trending</TabsTrigger> }
               </TabsList>
             </Tabs> ) }
           </div>

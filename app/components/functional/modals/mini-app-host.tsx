@@ -85,7 +85,7 @@ export function Modal({
   const frameHostRef = useRef<FrameHost | null>(null)
   const frameEndpoint= useRef<ReturnType<typeof exposeToIframe> | null>(null)
   
-  const { navigate, mainUserData, isUserLoggedIn } = useMainStore()
+  const { navigate, mainUserData, isUserLoggedIn, setMiniAppRefreshCount, miniAppRefreshCount } = useMainStore()
   const { open } = useWeb3Modal()
   const { isConnected } = useWeb3ModalAccount()
   const { toast } = useToast()
@@ -153,7 +153,7 @@ export function Modal({
           console.info('Frame host close')
         },
         openUrl: (url) => {
-          console.info('Frame host openUrl', url)
+          window.open(url, '_blank')
         },
         signIn: async(options: any) => {
           console.info('Frame host signIn', options)
@@ -307,6 +307,7 @@ export function Modal({
       domain: new URL(homeUrl)?.hostname
     })
     setStateIsInstalled(true)
+    setMiniAppRefreshCount(miniAppRefreshCount + 1)
     toast({
       title: 'App added to favorites',
       duration: 3000,
@@ -318,6 +319,7 @@ export function Modal({
       domain: new URL(homeUrl)?.hostname
     })
     setStateIsInstalled(false)
+    setMiniAppRefreshCount(miniAppRefreshCount + 1)
     toast({
       title: 'App removed from favorites',
       duration: 3000,

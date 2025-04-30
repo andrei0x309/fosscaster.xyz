@@ -4,12 +4,10 @@ import { DirectCastModal } from "~/components/functional/modals/direct-cast-moda
 export default function DirectCastInbox({ className = ''}: { className?: string}) {
     
   return (
-   <>
-       <DirectCastModal />
+
        <div className={`flex h-screen overflow-hidden w-full shrink-0 justify-center min-w-9 md:w-[600px] lg:w-[1040px] ${className}`}>
         <ChatInterface/>
+        <DirectCastModal />
       </div>
- 
-   </>
   )
 }

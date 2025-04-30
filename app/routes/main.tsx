@@ -301,8 +301,8 @@ export default function Index() {
 
     <Shell>
       <Suspense fallback={<HydrateFallback />}>
-      {/* <main> */}
        <LeftSidebar key={'left-sidebar'} />
+       <main>
        <Main key={'home'} initialFeed={feedInitial} className={page === 'home' && !is404  ? 'block' :'hidden'}/>
        <ConversationPage key={'conversations'} hash={additionalPageData} username={pageData} className={page === 'conversations' && !is404  ? 'block' :'hidden'} />
        <ProfilePage key={'profile'} profile={profileUser} startFeed={pageData} className={page === 'profile' && !is404 ? 'block' :'hidden'} />
@@ -316,8 +316,8 @@ export default function Index() {
          {page === 'about' && !is404 ? <AboutPage key={'about'} /> : null}
          {page === 'mini-apps' && !is404 ? <MiniAppsPage key={'miniapps'} /> : null}
          {is404 && <NotFoundPage key={'404'} />}
-        {/* </main> */}
-        
+
+        </main>
         {rightSidebarVisible && <RightSidebar key={'right-sidebar'} /> }
       </Suspense>
       <ComposeModal />

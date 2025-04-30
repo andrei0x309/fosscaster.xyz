@@ -12,7 +12,7 @@ import { useState, memo } from "react"
 export const LeftSidebar = memo(function LeftSidebar (
   { className = '' }: { className?: string }
 ) {
-  const { isDarkMode, toggleDarkMode } = useMainStore()
+  const { isDarkMode, toggleDarkMode, isMiniApp } = useMainStore()
   const [isAddAccountModalOpen, setAddAccountModalOpen] = useState(false)
  
   const toggleTheme = () => {
@@ -21,12 +21,12 @@ export const LeftSidebar = memo(function LeftSidebar (
   }
 
   return (
-    <>
+     <aside>
       {/* Add Account Modal */}
       <AddAccountModal isModalOpen={isAddAccountModalOpen} setModalOpen={setAddAccountModalOpen} />
 
       {/* Left Sidebar */}
-      <nav className={`w-64 border-r border-neutral-400/50 flex-col p-4 sticky top-0 h-screen shrink-0 sm:block xl:w-[240px] hidden lg:flex ${className}`}>
+      <nav className={`border-r border-neutral-400/50 flex-col p-4 sticky top-0 h-screen shrink-0 hidden max-w-[17rem] lg:flex ${className}`}>
         <ScrollArea className="flex-1">
           <LeftSidebarContent isDarkMode={isDarkMode} toggleTheme={toggleTheme} setAddAccountModalOpen={setAddAccountModalOpen} />
         </ScrollArea>
@@ -34,7 +34,7 @@ export const LeftSidebar = memo(function LeftSidebar (
 
       <Sheet>
         <SheetTrigger asChild>
-          <Button className="mt-6 fixed -top-1 left-3 z-[11] md:hidden" variant="outline" size="icon">
+          <Button className={`mt-6 fixed ${isMiniApp ? 'top-5' :'-top-3'} left-3 z-[11] lg:hidden`} variant="outline" size="icon">
             <Menu className="h-4 w-4" />
           </Button>
         </SheetTrigger>
@@ -44,8 +44,8 @@ export const LeftSidebar = memo(function LeftSidebar (
           </ScrollArea>
         </SheetContent>
       </Sheet>
-
-    </>)
+    </aside>
+    )
 })
 
 

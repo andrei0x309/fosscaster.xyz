@@ -267,6 +267,18 @@ export const removeMiniAppFromFavs = async ({domain}: {domain: string}) => {
     return await wc.removeMiniAppFromFavs({domain})
 }
 
+export const setMiniAppPosition = async ({domain, position}: {domain: string, position: number}) => {
+    return await wc.setMiniAppPosition({domain, position})
+}
+
+export const disableMiniAppNotifications = async ({domain}: {domain: string}) => {
+    return await wc.disableMiniAppNotifications({domain})
+}
+
+export const enableMiniAppNotifications = async ({domain}: {domain: string}) => {
+    return await wc.enableMiniAppNotifications({domain})
+}
+
 export const getFrame = async ({domain}: {domain: string}) => {
     return await wc.getFrame({domain})
 }

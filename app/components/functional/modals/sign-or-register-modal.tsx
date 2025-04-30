@@ -526,7 +526,6 @@ export function SignInOrSignUpModal() {
 
 
   return (
-      <>
        <Modal isOpen={isConnectModalOpen} setIsOpen={setConnectModalOpen} dialogTitleText={modalTitle} preventClose={loading} >
         <Tabs defaultValue="signIn" className="w-full min-h-[27rem]" onValueChange={(value) => {
             setError('')
@@ -687,6 +686,5 @@ export function SignInOrSignUpModal() {
 
 
       </Modal>
-    </>
   )
 }

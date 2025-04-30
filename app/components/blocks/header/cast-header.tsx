@@ -59,7 +59,7 @@ export const CastHeader = ({
 
 {isMiniApp &&
         // add red banner with a button to open the app fully
-        <div className="-mt-2 mb-1 w-full h-min dark:bg-neutral-700/40 bg-neutral-300/60 dark:text-white flex items-center justify-center text-[0.8rem] border-[1px] rounded-xl border-neutral-700/40">
+        <div className="-mt-1 mb-1 w-full h-min dark:bg-neutral-700/40 bg-neutral-300/60 dark:text-white flex items-center justify-center text-[0.8rem] border-[1px] rounded-xl border-neutral-700/40">
           <div className="flex items-center">
             <div className="mr-2">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -86,7 +86,7 @@ export const CastHeader = ({
     }
 
       <div className="flex items-center justify-between p-4 w-full -my-2">
-        <h1 className={`sm:ml-6 text-lg font-bold -mt-2 ml-2 md:-ml-2 ${headerClassName}`}>
+        <h1 className={`ml-8 text-base lg:text-lg font-bold -mt-2 lg:-ml-2 ${headerClassName}`}>
           {hasBackButton ? <Button variant="ghost" size="icon" className='top-[0.35rem] relative mr-2' >
             <ArrowLeft className="h-6 w-6" onClick={() => navigate(-1)} />
           </Button> : null}

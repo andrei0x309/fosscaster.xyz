@@ -1,4 +1,4 @@
-import { WARPCAST_API_BASE } from './constants';
+import { WARPCAST_API_BASE, WARPCAST_API_DEV_TUNNEL } from '~/lib/constants';
 import type {
     T_RESP_SUGGESTED_USERS,
     T_RESP_USER
@@ -30,7 +30,12 @@ import type { TWCFavoriteFrames } from '../types/wc-favorite-frames'
 import type { TWCTopFrames } from '../types/wc-top-frames'
 import type { TWCFrame } from '../types/wc-frame'
 import type { TWCDCMessages } from '../types/wc-dc-messages'
- 
+
+
+const isDevTun = typeof window !== 'undefined' && window.location.hostname === 'tun-5173.flashsoft.eu'
+const WARPCAST_API = isDevTun ? WARPCAST_API_DEV_TUNNEL : WARPCAST_API_BASE
+
+
 export class WarpCastWebAPI {
     private _version: string;
     private _apiEndpointBase: string;
@@ -52,7 +57,7 @@ export class WarpCastWebAPI {
 
     constructor(token?: string) {
         this._version = "0.0.2";
-        this._apiEndpointBase = WARPCAST_API_BASE;
+        this._apiEndpointBase = WARPCAST_API;
         if (token) {
             this._token = token;
             this.headers["authorization"] = `Bearer ${this._token}`;
@@ -1267,6 +1272,67 @@ export class WarpCastWebAPI {
     }) => {
         const response = await fetch(`${this._apiEndpointBase.replace('v2', 'v1')}/favorite-frames`, {
             method: 'DELETE',
+            headers: this.headers,
+            body: JSON.stringify({
+                "domain": domain
+            })
+        })
+        return await response.json() as {
+            result: {
+                success: boolean
+            }
+        }
+    }
+
+    public setMiniAppPosition = async ({
+        domain,
+        position
+    }: {
+        domain: string,
+        position: number
+    }) => {
+        const response = await fetch(`${this._apiEndpointBase.replace('v2', 'v1')}/favorite-frames`, {
+            method: 'PATCH',
+            headers: this.headers,
+            body: JSON.stringify({
+                "domain": domain,
+                "position": position
+            })
+        })
+        return await response.json() as {
+            result: {
+                success: boolean
+            }
+        }
+    }
+
+    public disableMiniAppNotifications = async ({
+        domain,
+    }: {
+        domain: string,
+    }) => {
+        const response = await fetch(`${this._apiEndpointBase.replace('v2', 'v1')}/favorite-frames`, {
+            method: 'PATCH',
+            headers: this.headers,
+            body: JSON.stringify({
+                "domain": domain,
+                "disableNotifications": true
+            })
+        })
+        return await response.json() as {
+            result: {
+                success: boolean
+            }
+        }
+    }
+
+    public enableMiniAppNotifications = async ({
+        domain,
+    }: {
+        domain: string,
+    }) => {
+        const response = await fetch(`${this._apiEndpointBase.replace('v2', 'v1')}/frame-notifications`, {
+            method: 'PUT',
             headers: this.headers,
             body: JSON.stringify({
                 "domain": domain

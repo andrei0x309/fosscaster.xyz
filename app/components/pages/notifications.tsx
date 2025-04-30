@@ -43,10 +43,10 @@ export default function NotificationsUI({className = '', page = 'priority'}: {cl
   }, [activeTab, handleTabChange, initalLoad])
 
   return (
-    <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
+    <div className={`h-full w-full shrink-0 justify-center lg:w-[680px] ${className}`}>
         <div className="h-full min-h-screen">
 
-      <div className="sticky bg-white dark:bg-neutral-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-26 p-2">
+      <div className="sticky bg-white dark:bg-neutral-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-26 lg:p-2">
       <CastHeader title="Notifications" />
       <Tabs className="w-full" value={activeTab} onValueChange={(e) => handleTabChange(e)}>
           <TabsList className="grid-cols-2 h-fit grid w-full md:grid-cols-6 dark:bg-zinc-800 text-[0.92rem] mt-2 ">

@@ -240,7 +240,7 @@ export function ProfilePage({profile, startFeed, className = '' } : {profile: st
     // <div className="h-full min-h-screen">
     //   <div className="sticky dark:bg-zinc-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-14 sm:h-28 p-2">
 
-    (<main className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
+    (<main className={`h-full w-full shrink-0 justify-center lg:w-[680px] ${className}`}>
       <div className="h-full min-h-screen">
       <CastHeader title={`@${user?.user?.username ?? ''}`} hasBackButton={true} />
      {/* Profile */}

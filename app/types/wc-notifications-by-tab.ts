@@ -97,6 +97,7 @@ export interface Content {
     status:    string;
     description: string;
     platform: string;
+    ticker: string;
 }
  export interface TokenClass {
     name:           string;
@@ -394,4 +395,5 @@ export enum PreviewItemType {
     TrendingToken = "trending-token",
     Generic = "generic",
     ConnectAccount = "connect-account",
+    TipReceived= "tip-received",
 }

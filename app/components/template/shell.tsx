@@ -53,13 +53,14 @@ export const Shell = React.memo(function Shell ({ children = false}:
  
  
     return (
-        <div className="container mx-auto min-h-full flex md:px-4">
+        <div className="mx-auto min-h-full block lg:flex md:px-3 justify-center">
+        <div className={` bg-white dark:bg-neutral-950 min-h-screen block lg:flex`}>
+          {children}
+        </div>
         <SignInOrSignUpModal />
         <LightBoxModal />
         <ModalManager />
-        <div className={` bg-white dark:bg-neutral-950 flex min-h-screen flex-row justify-center`}>
-          {children}
-          </div>
+
         </div>
     )
 })

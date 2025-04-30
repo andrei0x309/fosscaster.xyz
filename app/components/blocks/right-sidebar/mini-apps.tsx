@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Button  } from "~/components/ui/button"
 import { Settings, Grid2x2, SquareArrowRight } from 'lucide-react'
 import type { TWCFavoriteFrames } from "~/types/wc-favorite-frames"
@@ -13,28 +13,35 @@ export const MiniAppsSidebar = () => {
     const [miniApps, setMiniApps] = useState([] as TWCFavoriteFrames['result']['frames'])
     const [userHasApps, setUserHasApps] = useState(true)
     const [loading, setLoading] = useState(true)
-    const { navigate, openMiniApp } = useMainStore()
+    const { navigate, openMiniApp, miniAppRefreshCount } = useMainStore()
 
-    useEffect(() => {
-        const fetchApps = async () => {
-            try {
-                const apps = await getFavoriteFrames({ limit: 12})
-            if (!apps.result?.frames?.length) {
-                setUserHasApps(false)
-                setLoading(false)
-                return
-            }
- 
-            setMiniApps(apps.result?.frames)
-            setLoading(false)
-        } catch (error) {
-            console.error('Failed to fetch frames', error)
+    const fetchApps = useCallback(async () => {
+          try {
+            const apps = await getFavoriteFrames({ limit: 12})
+        if (!apps.result?.frames?.length) {
             setUserHasApps(false)
             setLoading(false)
+            return
         }
+
+        setMiniApps(apps.result?.frames)
+        setLoading(false)
+    } catch (error) {
+        console.error('Failed to fetch frames', error)
+        setUserHasApps(false)
+        setLoading(false)
     }
+  }, [])
+
+    useEffect(() => {
         fetchApps()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    useEffect(() => {
+      fetchApps()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [miniAppRefreshCount])
 
 
     return (

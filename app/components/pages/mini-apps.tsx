@@ -97,7 +97,7 @@ export default function MiniApps({ className}: { className?: string }) {
  
   return (
 
-    <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
+    <div className={`h-full w-full shrink-0 justify-center lg:w-[680px] ${className}`}>
         
         <div className="p-4">
         <CastHeader title="Mini Apps" headerClassName='text-[1.45rem]' hasBackButton={true} hasComposeButton={false} hasOptionalEndContent={true} >

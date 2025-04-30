@@ -337,19 +337,19 @@ export const Post = (
                     </div>
                   }
                   
-                  <div className="flex space-x-4 relative flex-wrap">
+                  <div className="space-x-4 relative block flex-wrap lg:flex">
                   { isComposeReply && <div className="absolute w-0.5 dark:bg-neutral-800 bg-neutral-300 left-[19px] top-10 bottom-[0%]"></div> }
-                    <Avatar className={`hover:border-2 ${isComposeReply? '!m-0': ''}`}>
+                    <Avatar className={`hover:border-2 -left-[0.1rem] top-[0.2rem] absolute lg:relative w-6 h-6 lg:w-10 lg:h-10 ${isComposeReply? '!m-0': ''}`}>
                       <Link to={`/${cast.author.username}`}>
                       <AvatarImage src={cast.author.pfp.url} alt={`User ${cast.author.displayName}`} />
                       <AvatarFallback>{cast.author.displayName.slice(0,2)}</AvatarFallback>
                       </Link>
                     </Avatar>
-                    <div className="flex-1">
+                    <div className="flex-1 text-[0.9rem] lg:text-base">
                       <div className="flex items-center justify-between">
                         <div className="flex flex-col">
                           <div className="flex pace-x-1">
-                          <Link to={`/${cast.author.username}`}>
+                          <Link to={`/${cast.author.username}`} className='hidden lg:block'>
                           <span className="font-semibold">{cast.author.displayName}</span>
                           </Link>
                           <Link to={`/${cast.author.username}`}>
@@ -385,11 +385,11 @@ export const Post = (
                                                   {cast?.tags?.[0]?.id ? 
                         
                         <Badge variant="outline" className="text-neutral-500" onClick={() => navigate(`/~/channel/${cast?.tags?.[0]?.id}`)}>
-                          <Avatar className="w-4 h-4 mr-2">
+                          <Avatar className="w-4 h-4 lg:mr-2">
                             <AvatarImage src={cast?.tags?.[0]?.imageUrl} alt={cast?.tags?.[0]?.name} />
                             <AvatarFallback>{cast?.tags?.[0]?.id}</AvatarFallback>
                           </Avatar>
-                          {cast?.tags?.[0]?.id}
+                          <span className="hidden lg:inline-block">{cast?.tags?.[0]?.id}</span>
                           </Badge> : null}
                         </div>
                       </div>
@@ -451,7 +451,7 @@ export const Post = (
                             <span className="sr-only">Likes</span>
                           </Button>
                         </div>
-                        <div className="flex items-center space-x-4 action">
+                        <div className="hidden lg:flex items-center space-x-4 action">
                           <Button variant="ghost" size="sm" className="text-neutral-500">
                             <MoreVertical className="h-4 w-4" />
                             <span className="sr-only">More actions</span>

@@ -135,21 +135,7 @@ export function ModalManager() {
 
 
   return (
-    <div>
-      {/* Demo Controls */}
-      {/* <div className="fixed top-4 left-4 z-40 flex flex-wrap gap-2 max-w-[600px]">
-        {modals.map((modal) => (
-          <button
-            key={modal.id}
-            onClick={() => handleOpenModal(modal.id)}
-            className="px-3 py-1 bg-[#4a3a6b] text-white rounded-md hover:bg-[#5a4a7b] transition-colors"
-          >
-            Open {modal.title}
-          </button>
-        ))}
-      </div> */}
-
-      {/* Render open modals */}
+      <>
       {openModals.map((modal: ModalProps, index: number) => (
         <Modal
           homeUrl={modal.homeUrl}
@@ -269,6 +255,6 @@ export function ModalManager() {
           </div>
         </div>
       )}
-    </div>
+   </>
   )
 }

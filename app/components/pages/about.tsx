@@ -9,7 +9,7 @@ export default function AboutPage ({ className }: { className?: string }) {
   // const { navigate } = useMainStore()
 
   return (
-      <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] flex flex-col items-center ${className}`}>
+      <div className={`h-full w-full shrink-0 justify-center lg:w-[680px] flex flex-col items-center ${className}`}>
         <div className="p-8" >
 
           <h1 className="text-4xl font-bold mb-4">FC App</h1>

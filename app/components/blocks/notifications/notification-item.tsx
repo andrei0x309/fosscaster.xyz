@@ -12,6 +12,7 @@ import { Post } from "../post";
 import { ChannelRoleInviteNotification } from "./not-types/channel-role-invite";
 import { GenericNotification } from "./not-types/warpcast-generic";
 import { ConnectAccount } from "./not-types/connect-account";
+import { TipNotification } from "./not-types/tip";
 
 export const NotificationItem = ({ notification, onInviteResolved }: { notification: TNotificationItem, onInviteResolved: () => void }) => {
 
@@ -42,6 +43,10 @@ export const NotificationItem = ({ notification, onInviteResolved }: { notificat
 
       {notification.type === 'wallet-activity' ?
       <WalletActivityNotification notification={notification} />
+      : ''}
+
+      {notification.type === 'tip-received' ? 
+      <TipNotification notification={notification} /> 
       : ''}
 
       {notification.type === 'trending-token' ?

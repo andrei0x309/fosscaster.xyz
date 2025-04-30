@@ -71,10 +71,10 @@ export default function ExplorePage ({ className, page = 'users' }: { className?
 
 
   return (
-      <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
+      <div className={`h-full w-full shrink-0 justify-center lg:w-[680px] ${className}`}>
         <div className={`min-h-screen text-white ${className}`}>
           <div className="h-full min-h-screen">
-            <div className="sticky bg-white dark:bg-neutral-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-26 p-2">
+            <div className="sticky bg-white dark:bg-neutral-950 top-0 z-10 flex-col border-b-0 bg-app border-default h-26 lg:p-2">
               <CastHeader title="Explore" hasBackButton={true} />
               <nav className="flex border-b border-t border-neutral-700">
                 <button

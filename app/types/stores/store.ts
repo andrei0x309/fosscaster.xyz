@@ -3,9 +3,12 @@ import { Item, ItemCast } from '../wc-feed-items'
 
 export type T_USER_SETTINGS = {
     isCryptoLeftFeedDisabled?: boolean
+    isPoliticsFeedDisabled?: boolean
+    isFCFossFeedDisabled?: boolean
     isTrendingFeedEnabled?: boolean
     isSaveDraftEnabled?: boolean
-    isPrimaryFeedFollowing?: boolean
+    isPrimaryFeedFollowing?: boolean,
+    isDeveloperModeEnabled?: boolean
 }
 
 export type T_USER_DATA = {
@@ -59,6 +62,7 @@ export type MainState = {
     dcModalPage: string
     isMiniApp: boolean
     miniAppToOpen: null  | T_MINI_APP_DATA
+    miniAppRefreshCount: number
     navigate: (_a: string | number) => void
     toggleDarkMode: () => void
     setIsTablet: (a: boolean) => void
@@ -79,6 +83,7 @@ export type MainState = {
     setDcModalPage: (a: string) => void
     openMiniApp:(a: null | T_MINI_APP_DATA) => void
     setIsMiniApp: (a: boolean) => void
+    setMiniAppRefreshCount: (a: number) => void
 }
 
 export type T_META_DATA = { title: string; description: string}

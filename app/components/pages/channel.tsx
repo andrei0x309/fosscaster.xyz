@@ -115,7 +115,7 @@ export default function ChannelPage ({
 
 
   return (
-      <div className={`h-full w-full shrink-0 justify-center sm:w-[540px] lg:w-[680px] ${className}`}>
+      <div className={`h-full w-full shrink-0 justify-center lg:w-[680px] ${className}`}>
         <div className="h-full min-h-screen">
           <CastHeader title={'Channel - ' + channelInfo?.result?.channel?.name} channelKey={channelId} />
           <div className="relative">

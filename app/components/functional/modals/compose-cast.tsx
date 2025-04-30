@@ -35,11 +35,11 @@ export function ComposeModal() {
 
   const [activeTab, setActiveTab] = useState("compose")
   
-    const [numEmbeds, setNumEmbeds] = useState(0)
     const [castEmbeds, setCastEmbeds] = useState([] as string[])
+    const [imageEmbeds, setImageEmbeds] = useState([] as string[])
     const [mentionSearchUsers, setMentionSearchUsers] = useState<TWCSearchUsers>({} as TWCSearchUsers)
     const [castText, setCastText] = useState('')
-     const [channelSearch, setChannelSearch] = useState("")
+    const [channelSearch, setChannelSearch] = useState("")
     const [lastSearch, setLastSearch] = useState("")
     const [showMentions, setShowMentions] = useState(false)
     const [mentionStartIndex, setMentionStartIndex] = useState(-1)
@@ -51,7 +51,8 @@ export function ComposeModal() {
     const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null)
     const [isChannelListOpen, setIsChannelListOpen] = useState(false)
     const [saveDraftModalOpen, setSaveDraftModalOpen] = useState(false)
-
+    const [isUploadingProgress, setIsUploadingProgress] = useState(false)
+  
     const { toast } = useToast()
 
 
@@ -61,6 +62,7 @@ export function ComposeModal() {
       const channelListRef = useRef<HTMLDivElement>(null)
       const mentionListRef = useRef<HTMLDivElement>(null)
       const channelListRefWarp = useRef<HTMLDivElement>(null)
+      const imageFileInputRef = useRef<HTMLInputElement>(null)
 
 
   const characterCount = getStringByteLength(castText)
@@ -436,6 +438,7 @@ export function ComposeModal() {
     }
 
 
+
     
   // Apply formatting when content changes or mentions change
   useEffect(() => {
@@ -490,12 +493,56 @@ export function ComposeModal() {
     }
   }, [isChannelListOpen, channelListRef]);
 
-  useEffect(() =>  {
-    if (characterCount > 2) {
-      
+
+    const doPicUpload = async () => {
+      imageFileInputRef.current?.click()
     }
-    
-  }, [isComposeModalOpen]);
+ 
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      try {
+      if(isUploadingProgress) return
+      if (castEmbeds.length >= MAX_EMBEDS) {
+        toast({
+          title: 'Maximum embeds reached',
+          description: 'You have reached the maximum number of embeds allowed.',
+          variant: 'destructive',
+          duration: 3000,
+        })
+        return
+      }
+      setIsUploadingProgress(true)
+      const file = e.target.files?.[0]
+      if (file) {
+        const reader = new FileReader()
+        reader.onload = async () => {
+          // setGroupImage(event.target?.result as string)
+          // const imageUrl = event.target?.result as string
+          const uploadUrl = await uploadImage({
+            file,
+            doUploadAvatar: false,
+          })
+          if(uploadUrl) {
+            setCastEmbeds([...castEmbeds, uploadUrl])
+            setImageEmbeds([...imageEmbeds, uploadUrl])
+          }
+          setIsUploadingProgress(false)
+        }
+        reader.readAsDataURL(file)
+      }
+      if(imageFileInputRef.current) imageFileInputRef.current.value = ''
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      setIsUploadingProgress(false)
+    }
+  }
+
+  const handleRemoveImageEmbed = (url: string) => {
+    setImageEmbeds(imageEmbeds.filter((embed) => embed !== url))
+    setCastEmbeds(castEmbeds.filter((embed) => embed !== url))
+    if(imageFileInputRef.current) imageFileInputRef.current.value = ''
+  }
+  
 
 return (
     <>
@@ -571,14 +618,37 @@ return (
           </div>
         </div>
         {composeModalData?.quote && <QoutedCast cast={composeModalData?.quote} noNavigation={true} /> }
+
+
+
+
+<div className="my-2">
+   <div className="my-1 flex w-full flex-row items-start justify-start space-x-2">
+      {!!imageEmbeds.length && (imageEmbeds ?? []).map(url => 
+        <>
+        <div className="relative shrink grow basis-1/2 rounded-md">
+         <div onClick={() => handleRemoveImageEmbed(url)} className="absolute left-0 top-0 z-10 ml-2 mt-2 flex cursor-pointer justify-center rounded-full p-1 bg-neutral-800" aria-hidden>
+            <svg aria-hidden="true" focusable="false" role="img" className="font-semibold text-white" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" style={{display: 'inline-block', userSelect: 'none', verticalAlign: 'text-bottom', overflow: 'visible'}}>
+               <path d="M5.72 5.72a.75.75 0 0 1 1.06 0L12 10.94l5.22-5.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L13.06 12l5.22 5.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L12 13.06l-5.22 5.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L10.94 12 5.72 6.78a.75.75 0 0 1 0-1.06Z"></path>
+            </svg>
+         </div>
+         <Image src={[url]} className="relative max-h-[400px] w-auto cursor-pointer rounded-md border object-cover border-default" alt="Cast embed" style={{aspectRatio: '1.6 / 1'}} />
+      </div>
+        </>
+       )}
+   </div>
+</div>
+
+
         </div>
         <div className="flex justify-between items-center mt-4">
           <div className="flex space-x-2">
 
 
-            <Button variant="ghost" size="icon" className="w-10 h-10">
+            <Button variant="ghost" size="icon" className={`w-10 h-10 ${isUploadingProgress ? 'cursor-not-allowed pulse-with-blur': ''}`} onClick={() => doPicUpload()}>
               <ImageIcon className="h-4 w-4" />
             </Button>
+            <Input ref={imageFileInputRef} onChange={handleFileChange} accept="image/*"  type="file" hidden className='hidden' />
             {/* <Button variant="ghost" size="icon" className="w-10 h-10">
               <SmileIcon className="h-4 w-4" />
             </Button> */}
@@ -607,7 +677,7 @@ return (
       {isChannelListOpen && (
                   <div
                     ref={channelListRefWarp}
-                    className="absolute z-25 mt-1 w-full max-w-[240px] bg-[#1a1a1a] border border-neutral-800 rounded-lg shadow-lg overflow-hidden"
+                    className="absolute z-25 mt-1 w-full max-w-[240px] dark:bg-[#1a1a1a] bg-neutral-100 border border-neutral-800 rounded-lg shadow-lg overflow-hidden"
                   >
                     <div className="p-0 dark:bg-[#1a1a1a] border-neutral-800 dark:text-white">
                 <div className="p-2 border-b border-neutral-800 flex">
@@ -625,7 +695,7 @@ return (
                   {(channelSearch === '' ? initalChannels.result?.channels ?? []: searchChannelsList.result?.channels ?? []).map((channel) => (
                     <button key={channel.key}
                       
-                      className="flex items-center gap-2 w-full px-3 py-2 text-left hover:bg-[#252525] transition-colors"
+                      className="flex items-center gap-2 w-full px-3 py-2 text-left dark:hover:bg-[#252525] hover:bg-neutral-200 transition-colors"
                       onClick={() => selectChannel(channel)}
                     >
                       <Image className="h-4 w-4 text-neutral-400" src={channel.fastImageUrl ?? channel?.imageUrl} alt={channel.name} />

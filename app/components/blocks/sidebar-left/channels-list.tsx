@@ -58,7 +58,8 @@ export const ChannelsList = () =>  {
             setRecentChannels(recentChannels)
         }
         setLoading(false)
-    }, [isUserLoggedIn, mainUserData, wasAuthed])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isUserLoggedIn, mainUserData?.username, wasAuthed])
 
     useEffect(() => {
       loadChannels()
