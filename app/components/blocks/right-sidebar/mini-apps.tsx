@@ -64,12 +64,19 @@ export const MiniAppsSidebar = () => {
                 homeUrl: app.homeUrl,
                 name: app.name,
                 iconUrl: app.iconUrl,
-                isInstalled: app.viewerContext.favorited,
+                viewerContext: {
+                  favorited: app?.viewerContext?.favorited || false,
+                  notificationDetails: {
+                    token: app?.viewerContext?.notificationDetails?.token || '',
+                    url: app?.viewerContext?.notificationDetails?.url || '',
+                  },
+                  notificationsEnabled: app?.viewerContext?.notificationsEnabled || false,
+                },
                 splashImageUrl: app.splashImageUrl,
                 author: {
                   username: app?.author?.username,
                   avatarUrl: app?.author?.pfp?.url,
-                }
+                },
               })
               }
               role="button"

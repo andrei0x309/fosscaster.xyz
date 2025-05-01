@@ -10,8 +10,8 @@ import { Post } from "~/components/blocks/post"
 import { SimpleLoader } from '../atomic/simple-loader'
 import { CastHeader } from '../blocks/header/cast-header'
 
-export function Main({ initialFeed, className = '' }: { initialFeed?: string, className?: string }) {
-  const { isUserLoggedIn, mainUserData  } = useMainStore()
+export function Main({ initialFeed, className = '', compose = undefined }: { initialFeed?: string, className?: string, compose?: { text: string, embeds: string[] } }) {
+  const { isUserLoggedIn, mainUserData, setComposeModalOpen, setComposeModalData, setConnectModalOpen  } = useMainStore()
 
   const [feed, setFeed] = useState({ result: [] as unknown as TWcFeedItems})
   const [feedLoading, setFeedLoading] = useState(false)
@@ -19,6 +19,18 @@ export function Main({ initialFeed, className = '' }: { initialFeed?: string, cl
   const [isInitialLoad, setIsInitialLoad] = useState(false)
   const [currentFeed, setCurrentFeed] = useState(initialFeed)
   const [isNoContent, setIsNoContent] = useState(false)
+
+  useEffect(() => {
+    if(!isUserLoggedIn) {
+      setConnectModalOpen(true)
+      return
+    }
+    if(!compose?.text) return
+    const castText = `${compose?.text} ${compose?.embeds?.map((embed) => `\n${embed}`).join(' ')}`
+    setComposeModalData({ castText })
+    setComposeModalOpen(true)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compose?.text, isUserLoggedIn])
 
   const fetchData = useCallback(async (localCurrentFeed: string) => {
     const feed = await getFeed({ feed: localCurrentFeed })

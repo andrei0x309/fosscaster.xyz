@@ -1,5 +1,5 @@
 import { Item, ItemCast } from '../wc-feed-items'
-
+import { FrameViewerContext } from '../wc-favorite-frames'
 
 export type T_USER_SETTINGS = {
     isCryptoLeftFeedDisabled?: boolean
@@ -22,11 +22,15 @@ export type T_USER_DATA = {
     locationId?: string
     url?: string
     settings?: T_USER_SETTINGS
+    capabilities?: {
+        canUploadVideo?: boolean
+    }
 }
 
 export type T_MODAL_DATA = {
     reply?: Item | null
     quote?: ItemCast | null
+    castText?: string
     channelKey?: string
 }
 
@@ -35,13 +39,13 @@ export type T_MINI_APP_DATA = {
     homeUrl: string
     name?: string
     splashImageUrl?: string
-    isInstalled?: boolean
     iconUrl?: string
     author?: {
         username: string
         avatarUrl: string
     },
     fetchFrameData?: boolean
+    viewerContext?: FrameViewerContext
 }
 
 export type MainState = {

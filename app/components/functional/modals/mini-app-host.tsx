@@ -4,7 +4,7 @@ import type { FrameHost } from '@farcaster/frame-core'
 import {Img as Image } from 'react-image'
 import type React from "react"
 import { useRef, useEffect, useState, useCallback  } from "react"
-import { X, ChevronDown, MoreHorizontal, ExternalLink, RefreshCw, Bell, Plus, Trash } from "lucide-react"
+import { X, ChevronDown, MoreHorizontal, ExternalLink, RefreshCw, Bell, Plus, Trash, BellOff } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/components/ui/dropdown-menu"
 import { cn } from "~/lib/utils"
 import { useMainStore } from '~/store/main'
@@ -14,7 +14,7 @@ import { useWeb3ModalAccount, useWeb3Modal  } from '@web3modal/ethers/react'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
 import { constructWarpcastSWIEMsg } from "~/lib/wc-SIWF"
-import { addMiniAppToFavs, removeMiniAppFromFavs } from '~/lib/api'
+import { addMiniAppToFavs, removeMiniAppFromFavs, enableMiniAppNotifications, disableMiniAppNotifications } from '~/lib/api'
 import { useToast } from '~/hooks/use-toast';
 
 
@@ -41,15 +41,23 @@ export interface ModalProps {
     username: string
     avatarUrl: string
   }
+  viewerContext?: {
+    favorited: true,
+    notificationsEnabled: true,
+    notificationDetails: {
+        token: string
+        url: string
+    }
+}
 }
 
 const announceProvider = (endpoint: any) => {
   endpoint.emit({
     event: 'eip6963:announceProvider',
     info: {
-      name: 'FC App',
+      name: 'Fosscaster.xyz',
       icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEBElEQVR4nO2bzUsbQRjGH9NUJRqMYoyVUBKKRYJ4K2gv9ZBLwQR6UwQv/gEW4jkHD54MNJqzYKQ3SyEplIIHpdCABSkiUiqSHIIaUjEhfrUNsYc1X+7O7iT7NVF/IC7vvjPvO88OM7M7k6br62vcZwx6J6A3DwLonYDe3HsBjELGfYuFpuwAgCEATgBPlEupJg4ApAB8A5CUcu7PZHg2QQEkGAPgvrmeqaO8GgRv/q8D+FRLwVoEGAAwCcAMdhpepDIfN4D3AL7TFKQV4BWAN2Cv4bepzM8EYFOqAI0AjdL4SipzFRVBSoAXaLzGFynmnALwk+QkNQ1OojEbX2QGXBuIiAkwpmwuumGGSFvEBHCjsZ9+kRmUp20eJAHs6uSiKwNCRpIAL3E3nn6RGXCrVh4kAWzq5aIbTiEjSYBnKiaiF4LvK/W8C1TREQigc2qq5nInS0vIzc2J+pj9fpg9HjQ7HCXbaTiMXCiErvl5tLvdVPWIIVsANTA4nehZXkbr4CDvXufUVF2CE2PJrSDr8yE1O0u8n/R6kbBacRoOU9fZvbhY1fjCxQWSXq9onHph7oOI2e+HaXi4yna1s4N8LIbLlRUULi4UjcecAB3j4zxb4eysfH1+rmg8pgRo8XhgtFo1jcmUAK2jo5rHZEqAx319msfUbBrM+nzI+nyiPsbeXo2yqYipeUQRjDbpFXjS5VI2pqK1EbDv7ZUGt4TGg5wUTI0BhrY2zWOq3gPskQi1r8FkUjETQkzNIzKG6gIkvV7k02kqX6WXuTQw1QOUXubSwJQAeqCJAEmXCwmrVXIKzKdSVPUZR0bgSKfhSKdh9vtl5cZUD8gfH1P5PeruViwmUwL8Ozyk8jN0dSkWkykBrjY2qPyah8pfuAvZrKyYTAnwJxqlmgpbnj8vXV/WsNASgikBACC7tsazGdrby9dOZ+mT2d9EAoV4XFY85gTIhUK8hVPr0BAMTm5fo2d5uewbjcqOJ1uAjkAAtoUF4n17JFLTVFWIx3E8PV0lgsFkwtOtLTjS6dLX4rP1dVn7AaW6ZdegAvlYDEmXC6fhMG9MuNrdxcnSEn5PTCgSq0norPC+xfIOd2tzFACC/ZnM29tGJnuAljwIQLAfaZqFNhwIGUkCyJtc2UTwTYskwA7Kx0/vAkFw54l5kAQgnqtrYAQPU4sNgl9wN3pBENwhakHEBPgMIKd4OvpAPEEuNQ2uorF7QRCA6MkMKQF+AfiIxhQhCOADgG0xJ5qNkcrT1o2yPC42/quUI+3O0CaqxwNWhQiCy3MVXO+VpJatse2bv9cVNlaEqPsnM6S3QZqydnBHam3Q72DlEbhV6w9QPHGhH00JCnCfeHgb1DsBvXkQQO8E9OY/OpX1l5WuDyYAAAAASUVORK5CYII=',
-      rdns: 'dev.pages.fc-app',
+      rdns: 'xyz.fosscaster',
       uuid: '8017453f-c0ba-4134-a722-008d1d0f76a2',
     },
   })
@@ -60,7 +68,6 @@ export function Modal({
   name,
   isOpen,
   splashImageUrl = "",
-  isInstalled = false,
   iconUrl = "",
   author,
   isMinimized,
@@ -68,6 +75,7 @@ export function Modal({
   onMinimize,
   onMaximize,
   isMaxMinimizedReached = false,
+  viewerContext,
   children,
   className,
 }: ModalProps) {
@@ -76,7 +84,8 @@ export function Modal({
   const [showSplash, setShowSplash] = useState(true)
   const [showSignIn, setShowSignIn] = useState(false)
   const [showAddApp, setShowAddApp] = useState(false)
-  const [stateIsInstalled, setStateIsInstalled] = useState(isInstalled)
+  const [stateIsInstalled, setStateIsInstalled] = useState(viewerContext?.favorited ?? false)
+  const [stateNotificationsEnabled, setStateNotificationsEnabled] = useState(viewerContext?.notificationsEnabled ?? false)
 
   const [error, setError] = useState("")
   const siwfOnError = useRef<((error: string) => void) | null>(null)
@@ -127,7 +136,7 @@ export function Modal({
             type: "launcher",
           },
           client: {
-            added: isInstalled,
+            added: stateIsInstalled,
             clientFid: 1791,
             notificationDetails: {
               token: "",
@@ -228,7 +237,8 @@ export function Modal({
      }
    }
 
-  }, [isUserLoggedIn, mainUserData?.fid, mainUserData?.displayName, mainUserData?.avatar, mainUserData?.username, isInstalled])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isUserLoggedIn, mainUserData?.fid, mainUserData?.displayName, mainUserData?.avatar, mainUserData?.username])
 
   const doSIWF = async ({
     url,
@@ -257,6 +267,11 @@ export function Modal({
                if (!isConnected) {
                    setError('No address selected')
                    onError?.('No address selected')
+                   toast({
+                       title: 'No address selected',
+                       description: 'Please select an address',
+                       variant: 'destructive',
+                   })
                    return
                }
            }
@@ -266,6 +281,11 @@ export function Modal({
           if (FID < 1) {
               setError(`Address ${address} does not own a FID`)
               onError?.('Address does not own a FID')
+              toast({
+                  title: 'Address has no FID',
+                  description: 'Please select an address linked to a FID',
+                  variant: 'destructive',
+              })
               return
           }
           const appUrl = new URL(url)
@@ -325,7 +345,52 @@ export function Modal({
       duration: 3000,
     })
   }
+
+  const doDisableNotifications = async () => {
+    const req = await disableMiniAppNotifications({
+      domain: new URL(homeUrl)?.hostname
+    })
+    setStateNotificationsEnabled(false)
+    if(req?.result?.success){
+    toast({
+      title: 'Notifications disabled',
+      duration: 3000,
+    })
+   } else {
+    toast({
+      title: 'Failed to disable notifications',
+      duration: 3000,
+      variant: 'destructive',
+    })
+   }
+  }
+
+  const doEnableNotifications = async () => {
+    const req = await enableMiniAppNotifications({
+      domain: new URL(homeUrl)?.hostname
+    })
+    setStateNotificationsEnabled(true)
+    if(req?.result?.success){
+    toast({
+      title: 'Notifications enabled',
+      duration: 3000,
+    })
+   } else {
+    toast({
+      title: 'Failed to enable notifications',
+      duration: 3000,
+      variant: 'destructive',
+    })
+   }
+  }
   
+  const doCopyLink = async () => {
+    navigator?.clipboard?.writeText(`${window?.location?.protocol}//${window?.location?.hostname}${window.location?.port ? ':'+ window.location?.port : ''}/~/mini-apps/${new URL(homeUrl)?.hostname?.replaceAll('.', '-')}/`)
+    toast({
+      title: 'Link copied to clipboard',
+      duration: 3000,
+    })
+  }
 
   useEffect(() => {
     if(!isUserLoggedIn) return
@@ -352,11 +417,13 @@ export function Modal({
               }
             }
           }}
+         aria-hidden
         >
           <div
             ref={modalRef}
             className="w-full md:max-w-lg lg:max-w-xl rounded-lg bg-background shadow-lg flex flex-col"
             onClick={(e) => e.stopPropagation()}
+            aria-hidden
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between bg-neutral-900 text-white p-3 rounded-t-lg">
@@ -394,7 +461,7 @@ export function Modal({
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className='cursor-pointer' onClick={() => doCopyLink()}>
                     <ExternalLink className="mr-2 h-4 w-4" />
                     Copy link
                   </DropdownMenuItem>
@@ -402,17 +469,30 @@ export function Modal({
                     <RefreshCw className="mr-2 h-4 w-4" />
                     Reload page
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Bell className="mr-2 h-4 w-4" />
-                    Turn on notifications
-                  </DropdownMenuItem>
+
+
                   {stateIsInstalled ? (
-                    <DropdownMenuItem className="text-red-500" onClick={() => doRemoveAppFromFavorites()}>
+                    <>
+                    <DropdownMenuItem className="text-red-500 cursor-pointer" onClick={() => doRemoveAppFromFavorites()}>
                       <Trash className="mr-2 h-4 w-4" />
                       Remove Mini App
                     </DropdownMenuItem>
+
+                    { stateNotificationsEnabled ? 
+                    
+                    <DropdownMenuItem className="text-red-500 cursor-pointer" onClick={() => doDisableNotifications()}>
+                    <BellOff className="mr-2 h-4 w-" />
+                    Turn off notifications
+                    </DropdownMenuItem>
+                    :
+                    <DropdownMenuItem className='cursor-pointer' onClick={() => doEnableNotifications()}>
+                    <Bell className="mr-2 h-4 w-4" />
+                    Turn on notifications
+                  </DropdownMenuItem> }
+
+                    </>
                   ) : (
-                    <DropdownMenuItem onClick={() => setShowAddApp(true)}>
+                    <DropdownMenuItem className='cursor-pointer' onClick={() => setShowAddApp(true)}>
                       <Plus className="mr-2 h-4 w-4" />
                       Add Mini App
                     </DropdownMenuItem>

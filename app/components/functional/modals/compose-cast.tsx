@@ -4,41 +4,39 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
 import { Modal } from "~/components/functional/modals/modal"
 import { useMainStore } from "~/store/main"
-import  { sendCast, searcUsers, uploadImage, getUserFollowingChannels, searchChannels } from "~/lib/api"
+import  { sendCast, searcUsers, uploadImage, getUserFollowingChannels, searchChannels, prepareVideoUpload, getVideoUploadState } from "~/lib/api"
 import { Post } from '~/components/blocks/post'
 import { QoutedCast } from '~/components/blocks/cast/qouted-cast'
 import { DraftsContent } from '~/components/blocks/cast/drafts-content'
-import { SmileIcon, ImageIcon, Layout, X, Hash, Search, ChevronDown, Loader2,  } from "lucide-react"
-import { PopOverMenu, PopOverMenuItem } from '~/components/blocks/drop-menu'
+import { SmileIcon, ImageIcon, Layout, X, Hash, Search, ChevronDown, Loader2, VideoIcon, DeleteIcon } from "lucide-react"
 import { Input } from "~/components/ui/input"
 import { getStringByteLength, wait } from '~/lib/misc'
 import type { TWCSearchUsers } from '~/types/wc-search-users'
 import type { TWCSearchChannels } from '~/types/wc-search-channels'
 import { Img as Image } from 'react-image'
 import { useToast } from "~/hooks/use-toast"
+import { uploadFileWithTus } from '~/lib/tus-upload'
 
 
 const MAX_EMBEDS = 2
+const MAX_VIDEO_SIZE = 5 * 1024 * 1024 // 5MB
 
 type Channel = TWCSearchChannels['result']['channels'][number]
 type User = TWCSearchUsers['result']['users'][number]
-
-function PlaceHolder() {
-   return <div className="absolute top-0 left-0 text-neutral-400">Start typing here...</div>
-}
 
 export function ComposeModal() {
 
   const { mainUserData, composeModalData, isComposeModalOpen, setComposeModalOpen, isUserLoggedIn  } = useMainStore()
    
 
-
-  const [activeTab, setActiveTab] = useState("compose")
+    // MARK: State
+    const [activeTab, setActiveTab] = useState("compose")
   
     const [castEmbeds, setCastEmbeds] = useState([] as string[])
     const [imageEmbeds, setImageEmbeds] = useState([] as string[])
+    const [videoEmbeds, setVideoEmbeds] = useState([] as string[])
     const [mentionSearchUsers, setMentionSearchUsers] = useState<TWCSearchUsers>({} as TWCSearchUsers)
-    const [castText, setCastText] = useState('')
+    const [castText, setCastText] = useState("")
     const [channelSearch, setChannelSearch] = useState("")
     const [lastSearch, setLastSearch] = useState("")
     const [showMentions, setShowMentions] = useState(false)
@@ -52,21 +50,22 @@ export function ComposeModal() {
     const [isChannelListOpen, setIsChannelListOpen] = useState(false)
     const [saveDraftModalOpen, setSaveDraftModalOpen] = useState(false)
     const [isUploadingProgress, setIsUploadingProgress] = useState(false)
+    const [videoUploadProgress, setVideoUploadProgress] = useState('')
   
-    const { toast } = useToast()
-
-
-
-      const [editorRef, setEditorRef] = useState<HTMLDivElement | null>(null)
- 
-      const channelListRef = useRef<HTMLDivElement>(null)
-      const mentionListRef = useRef<HTMLDivElement>(null)
-      const channelListRefWarp = useRef<HTMLDivElement>(null)
-      const imageFileInputRef = useRef<HTMLInputElement>(null)
+    //  MARK: Refs
+    const [editorRef, setEditorRef] = useState<HTMLDivElement | null>(null)
+    const channelListRef = useRef<HTMLDivElement>(null)
+    const mentionListRef = useRef<HTMLDivElement>(null)
+    const channelListRefWarp = useRef<HTMLDivElement>(null)
+    const imageFileInputRef = useRef<HTMLInputElement>(null)
+    const videoFileInputRef = useRef<HTMLInputElement>(null)
 
 
   const characterCount = getStringByteLength(castText)
   const maxCharacters = 1024
+  const { toast } = useToast()
+
+  // MARK: Handlers
 
   const pasteHandler = useCallback((event: ClipboardEvent) => {
     event.preventDefault()
@@ -367,8 +366,14 @@ export function ComposeModal() {
     setShowMentions(false)
   }
 
-  
-  
+  useEffect(() => {
+    if(composeModalData?.castText && editorRef) {
+      setCastText(composeModalData.castText)
+      editorRef.innerHTML = composeModalData.castText
+      setCursorPosition(composeModalData.castText.length)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }}, [composeModalData?.castText, editorRef])
+ 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (showMentions && mentionSearchUsers?.result?.users.length > 0) {
         if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter" || e.key === "Escape") {
@@ -438,9 +443,140 @@ export function ComposeModal() {
     }
 
 
+    const doPicUpload = async () => {
+      imageFileInputRef.current?.click()
+    }
+
+    const doVideoUpload = async () => {
+       if(!mainUserData?.capabilities?.canUploadVideo) {
+        toast({
+          title: 'Error',
+          description: 'You do not have permission to upload videos',
+          variant: 'destructive',
+          duration: 3000,
+        })
+        return
+       }
+       videoFileInputRef.current?.click()
+    }
+ 
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      try {
+      if(isUploadingProgress) return
+      if (castEmbeds.length >= MAX_EMBEDS) {
+        toast({
+          title: 'Maximum embeds reached',
+          description: 'You have reached the maximum number of embeds allowed.',
+          variant: 'destructive',
+          duration: 3000,
+        })
+        return
+      }
+      setIsUploadingProgress(true)
+      const file = e.target.files?.[0]
+      if (file) {
+        const reader = new FileReader()
+        reader.onload = async () => {
+          // setGroupImage(event.target?.result as string)
+          // const imageUrl = event.target?.result as string
+          const uploadUrl = await uploadImage({
+            file,
+            doUploadAvatar: false,
+          })
+          if(uploadUrl) {
+            setCastEmbeds([...castEmbeds, uploadUrl])
+            setImageEmbeds([...imageEmbeds, uploadUrl])
+          }
+          setIsUploadingProgress(false)
+        }
+        reader.readAsDataURL(file)
+      }
+      if(imageFileInputRef.current) imageFileInputRef.current.value = ''
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      setIsUploadingProgress(false)
+    }
+  }
+
+  const handleVideoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      if(isUploadingProgress) return
+      if (castEmbeds.length >= MAX_EMBEDS) {
+        toast({
+          title: 'Maximum embeds reached',
+          description: 'You have reached the maximum number of embeds allowed.',
+          variant: 'destructive',
+          duration: 3000,
+        })
+        return
+      }
+      setIsUploadingProgress(true)
+      setVideoUploadProgress('')
+      const file = e.target.files?.[0]
+      if ((file?.size ?? 0) > MAX_VIDEO_SIZE) {
+        toast({
+          title: 'Video too large',
+          description: `The video you are trying to upload is too large. Please upload a video smaller than ${Math.floor(MAX_VIDEO_SIZE / 1000000)}MB.`,
+          variant: 'destructive',
+          duration: 3000,
+        })
+        return
+      }
+
+      if (file) {
+        const reader = new FileReader()
+        reader.onload = async () => {
+          const video = await prepareVideoUpload({
+            videoSizeBytes: file.size,
+          })
+
+          await new  Promise((resolve) => {
+            setTimeout(() => {
+              resolve(true)
+            }, 200)
+          })
+
+          await uploadFileWithTus({ cloudflareUploadUrl: video?.result?.uploadUrl, file, setUploadProgress:setVideoUploadProgress })
+
+          const videoStatus = await getVideoUploadState({
+            videoId: video?.result?.videoId,
+          })
+        
+          if(videoStatus?.result?.video?.embed?.sourceUrl) {
+            setCastEmbeds([...castEmbeds, videoStatus?.result.video.embed.sourceUrl])
+            const localVideoSource = URL.createObjectURL(file)
+            setVideoEmbeds([...videoEmbeds, localVideoSource])
+          }
+          setIsUploadingProgress(false)
+          setVideoUploadProgress('')
+        }
+        reader.readAsDataURL(file)
+      }
+      if(videoFileInputRef.current) videoFileInputRef.current.value = ''
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      setIsUploadingProgress(false)
+    }
+  }
+      
+
+  const handleRemoveImageEmbed = (url: string) => {
+    setImageEmbeds(imageEmbeds.filter((embed) => embed !== url))
+    setCastEmbeds(castEmbeds.filter((embed) => embed !== url))
+    if(imageFileInputRef.current) imageFileInputRef.current.value = ''
+  }
+
+  const handleRemoveVideoEmbed = (url: string) => {
+    setVideoEmbeds(videoEmbeds.filter((embed) => embed !== url))
+    setCastEmbeds(castEmbeds.filter((embed) => embed !== url))
+    if(videoFileInputRef.current) videoFileInputRef.current.value = ''
+  }
+
 
     
-  // Apply formatting when content changes or mentions change
+  // MARK: Effects
+  
   useEffect(() => {
     formatTextWithMentions()
   }, [castText, formatTextWithMentions, selectedMentions])
@@ -493,57 +629,7 @@ export function ComposeModal() {
     }
   }, [isChannelListOpen, channelListRef]);
 
-
-    const doPicUpload = async () => {
-      imageFileInputRef.current?.click()
-    }
  
-
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-      try {
-      if(isUploadingProgress) return
-      if (castEmbeds.length >= MAX_EMBEDS) {
-        toast({
-          title: 'Maximum embeds reached',
-          description: 'You have reached the maximum number of embeds allowed.',
-          variant: 'destructive',
-          duration: 3000,
-        })
-        return
-      }
-      setIsUploadingProgress(true)
-      const file = e.target.files?.[0]
-      if (file) {
-        const reader = new FileReader()
-        reader.onload = async () => {
-          // setGroupImage(event.target?.result as string)
-          // const imageUrl = event.target?.result as string
-          const uploadUrl = await uploadImage({
-            file,
-            doUploadAvatar: false,
-          })
-          if(uploadUrl) {
-            setCastEmbeds([...castEmbeds, uploadUrl])
-            setImageEmbeds([...imageEmbeds, uploadUrl])
-          }
-          setIsUploadingProgress(false)
-        }
-        reader.readAsDataURL(file)
-      }
-      if(imageFileInputRef.current) imageFileInputRef.current.value = ''
-    } catch (error) {
-      console.error('Error uploading image:', error)
-      setIsUploadingProgress(false)
-    }
-  }
-
-  const handleRemoveImageEmbed = (url: string) => {
-    setImageEmbeds(imageEmbeds.filter((embed) => embed !== url))
-    setCastEmbeds(castEmbeds.filter((embed) => embed !== url))
-    if(imageFileInputRef.current) imageFileInputRef.current.value = ''
-  }
-  
-
 return (
     <>
      <Modal isOpen={isComposeModalOpen} setIsOpen={setComposeModalOpen}>
@@ -600,6 +686,7 @@ return (
                     </div>
                   </div>
                 )}
+            {/* MARK: Editor */}
             <div
               ref={setEditorRef}
               contentEditable
@@ -611,8 +698,6 @@ return (
               role="textbox"
               data-placeholder="Start typing a new cast here..."
             >
-            {/* {castText.length === 0 && <PlaceHolder />} */}
-
             </div>
           
           </div>
@@ -621,10 +706,31 @@ return (
 
 
 
+  {isUploadingProgress ? <span><Loader2 className="h-4 w-4 animate-spin inline-block my-2" /> Uploading... {videoUploadProgress} </span>: ''}
 
-<div className="my-2">
+
+  { !!videoEmbeds.length && <div className="flex my-2 wdith-[98%]">
+                
+    {(videoEmbeds ?? []).map((url) => 
+        <>
+
+<div className="relative shrink grow basis-1/2 rounded-md">
+         <div onClick={() => handleRemoveVideoEmbed(url)} className="absolute left-0 top-0 z-10 ml-2 mt-2 flex cursor-pointer justify-center rounded-full p-1 bg-neutral-800" aria-hidden>
+            <svg aria-hidden="true" focusable="false" role="img" className="font-semibold text-white" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" style={{display: 'inline-block', userSelect: 'none', verticalAlign: 'text-bottom', overflow: 'visible'}}>
+               <path d="M5.72 5.72a.75.75 0 0 1 1.06 0L12 10.94l5.22-5.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L13.06 12l5.22 5.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L12 13.06l-5.22 5.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L10.94 12 5.72 6.78a.75.75 0 0 1 0-1.06Z"></path>
+            </svg>
+         </div>
+         <video className={`max-w-15 px-1`} controls>
+                    <track kind="captions" />
+                    <source src={url} type="video/*" />
+                  </video>      </div>
+        </>
+       )}
+ </div>}
+
+{ !!imageEmbeds.length && <div className="my-2">
    <div className="my-1 flex w-full flex-row items-start justify-start space-x-2">
-      {!!imageEmbeds.length && (imageEmbeds ?? []).map(url => 
+      {(imageEmbeds ?? []).map(url => 
         <>
         <div className="relative shrink grow basis-1/2 rounded-md">
          <div onClick={() => handleRemoveImageEmbed(url)} className="absolute left-0 top-0 z-10 ml-2 mt-2 flex cursor-pointer justify-center rounded-full p-1 bg-neutral-800" aria-hidden>
@@ -638,17 +744,24 @@ return (
        )}
    </div>
 </div>
+}
 
 
         </div>
         <div className="flex justify-between items-center mt-4">
+          {/* MARK: Actions Buttons */}
           <div className="flex space-x-2">
-
-
-            <Button variant="ghost" size="icon" className={`w-10 h-10 ${isUploadingProgress ? 'cursor-not-allowed pulse-with-blur': ''}`} onClick={() => doPicUpload()}>
+            <Button variant="ghost" size="icon" className={`w-10 h-10 ${isUploadingProgress ? 'cursor-not-allowed': ''}`} onClick={() => doPicUpload()}>
               <ImageIcon className="h-4 w-4" />
             </Button>
             <Input ref={imageFileInputRef} onChange={handleFileChange} accept="image/*"  type="file" hidden className='hidden' />
+            <Button variant="ghost" size="icon" className={`w-10 h-10 ${isUploadingProgress ? 'cursor-not-allowed': ''}`} onClick={() => doVideoUpload()}>
+              <VideoIcon className="h-4 w-4" />
+            </Button>
+            <Input ref={videoFileInputRef} onChange={handleVideoFileChange} accept="video/mp4"  type="file" hidden className='hidden' />
+            
+
+            
             {/* <Button variant="ghost" size="icon" className="w-10 h-10">
               <SmileIcon className="h-4 w-4" />
             </Button> */}

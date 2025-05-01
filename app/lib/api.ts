@@ -20,6 +20,10 @@ export const getUserByUsername = async (username: string) => {
     return await wc.userByUsername(username)
 }
 
+export const getUserAppContext = async () => {
+    return await wc.getUserAppContext()
+}
+
 export const isTokenSet = () => {
     return wc.isTokenSet()
 }
@@ -285,4 +289,12 @@ export const getFrame = async ({domain}: {domain: string}) => {
 
 export const getTopFrames = async ({limit = 50, cursor}: {limit?: number, cursor?: string}) => {
     return await wc.getTopFrames({limit, cursor})
+}
+
+export const getVideoUploadState = async ({videoId}: {videoId: string}) => {
+    return await wc.getVideoUploadState({videoId})
+}
+
+export const prepareVideoUpload = async ({videoSizeBytes}: {videoSizeBytes: number}) => {
+    return await wc.prepareVideoUpload({videoSizeBytes})
 }

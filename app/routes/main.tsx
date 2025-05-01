@@ -6,7 +6,7 @@ import { useMainStore } from "~/store/main";
 import { lazy, Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from "react-router";
 import { useNotifBadgeStore } from "~/store/notif-badge-store"
-import { getNotifsUnseen } from '~/lib/api'
+import { getNotifsUnseen, getUserAppContext } from '~/lib/api'
 import { addNotificationBadge, removeNotificationBadge, debounce } from '~/lib/misc'
 import { ComposeModal } from "~/components/functional/modals/compose-cast"
 import { type scrollPageKey, useStoreScroll } from '~/store/scroll-restore'
@@ -77,11 +77,11 @@ export default function Index() {
 
   const [page, setPage] = useState('home')
   const [feedInitial, setFeedInitial] = useState('home')
-  const [pageData , setPageData] = useState('')
+  const [pageData , setPageData] = useState('' as string | any)
   const [additionalPageData, setAdditionalPageData] = useState('')
   const [profileUser, setProfileUser] = useState('')
   const [is404, setIs404] = useState(false)
-  const { isUserLoggedIn, setIsMiniApp } = useMainStore()
+  const { isUserLoggedIn, setIsMiniApp, setUserData, mainUserData } = useMainStore()
   const [rightSidebarVisible, setRightSidebarVisible] = useState(false)
 
   const { setNewDmsCount, setNewNotificationsCount, newDmsCount } = useNotifBadgeStore()
@@ -114,6 +114,15 @@ export default function Index() {
       notificationInterval.current = setInterval(() => {
         notifCheck()
       }, 7000)
+      getUserAppContext().then((data) => {
+        setUserData({
+          ...mainUserData,
+          capabilities: {
+            ...(mainUserData?.capabilities ?? {}),
+            canUploadVideo: data?.result?.context?.canUploadVideo ?? false,
+          }
+        })
+      })
     } else {
       if (notificationInterval.current) {
         clearInterval(notificationInterval.current)
@@ -156,7 +165,7 @@ export default function Index() {
 
       let currentPage = 'home' as scrollPageKey;
       let currentFeed = '';
-      let currentPageData = '';
+      let currentPageData = '' as string | any;
       let currentAdditionalPageData = '';
       let currentProfileUser = '';
       let currentIs404 = false;
@@ -169,6 +178,18 @@ export default function Index() {
       if(location?.pathname?.includes('~')) {
         currentFeed = location?.pathname?.split('/~/')[1]
       }
+    } else if(location?.pathname.startsWith('/~/compose')) {
+      currentPage = 'home'
+      // get search params from url
+      const searchParams = new URLSearchParams(location?.search)
+      const emebedsStr = searchParams.get('embeds[]')
+      const embeds = emebedsStr?.split(',').slice(0, 2)
+      const text = searchParams.get('text')
+      currentPageData  = {
+        embeds: embeds,
+        text: decodeURIComponent(text ?? ''),
+      }
+
     } else if (!location?.pathname?.startsWith('/~')) {      
         currentPage = 'profile'
         const splits = location?.pathname?.split('/')
@@ -223,9 +244,11 @@ export default function Index() {
         const page = location?.pathname?.split('~/notifications/')?.[1]?.replace('/', '') || ''
         currentPageData = page
       }
-    } else if (location?.pathname === '/~/mini-apps') {
+    } else if (location?.pathname?.startsWith('/~/mini-apps')) {
       if(checkUserLooggedIn()) {
         currentPage = 'mini-apps' as scrollPageKey
+        const page = location?.pathname?.split('~/mini-apps/')?.[1]?.replace('/', '') || ''
+        currentPageData = page
       }
     } else if (location?.pathname.startsWith('/~/inbox')) {
       if(checkUserLooggedIn()) {
@@ -303,18 +326,18 @@ export default function Index() {
       <Suspense fallback={<HydrateFallback />}>
        <LeftSidebar key={'left-sidebar'} />
        <main>
-       <Main key={'home'} initialFeed={feedInitial} className={page === 'home' && !is404  ? 'block' :'hidden'}/>
+       <Main key={'home'} initialFeed={feedInitial} className={page === 'home' && !is404  ? 'block' :'hidden'} compose={pageData} />
        <ConversationPage key={'conversations'} hash={additionalPageData} username={pageData} className={page === 'conversations' && !is404  ? 'block' :'hidden'} />
        <ProfilePage key={'profile'} profile={profileUser} startFeed={pageData} className={page === 'profile' && !is404 ? 'block' :'hidden'} />
        <BookmarkPage key={'bookmarks'} className={page === 'bookmarks' && !is404 ? 'block' :'hidden'}  />
        <ChannelPage key={'channel'} channelId={pageData} className={page === 'channel' && !is404 ? 'block' :'hidden'}  /> 
-        {page === 'explore' && !is404 ? <ExplorePage key={'explore'} /> : null }
+         {page === 'explore' && !is404 ? <ExplorePage key={'explore'} /> : null }
          {page === 'notifications' && !is404 ? <NotificationsPage key={'notifications'} page={pageData} /> : null }
          {page === 'inbox' && !is404  ? <InboxPage key={'inbox'}/> : null }
          {page === 'search' && !is404 ? <SearchPage key={'search'} query={pageData} searchType={additionalPageData} /> : null }
          {page === 'settings' && !is404  ? <SettingsPage key={'settings'} /> : null }
          {page === 'about' && !is404 ? <AboutPage key={'about'} /> : null}
-         {page === 'mini-apps' && !is404 ? <MiniAppsPage key={'miniapps'} /> : null}
+         {page === 'mini-apps' && !is404 ? <MiniAppsPage key={'miniapps'} openDomainApp={pageData} /> : null}
          {is404 && <NotFoundPage key={'404'} />}
 
         </main>

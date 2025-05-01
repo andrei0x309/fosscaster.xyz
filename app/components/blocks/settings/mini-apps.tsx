@@ -229,7 +229,7 @@ export function DraggableMiniApps() {
       </div>
       <div className="rounded-xl p-3 bg-neutral-400/20">
          <div className="flex w-full items-center justify-between gap-2"><span className="flex grow flex-col"><span className="font-semibold text-default" id="headlessui-label-:r18e:">Notifications</span><span className="text-sm text-muted" id="headlessui-description-:r18f:"></span></span>
-         <Switch disabled={isLoading} onClick={(e) => doSwitchTogle(e, activeApp)} className="data-[state=unchecked]:bg-red-600 data-[state=checked]:bg-green-500" />
+         <Switch checked={activeApp?.viewerContext?.notificationsEnabled} disabled={isLoading} onClick={(e) => doSwitchTogle(e, activeApp)} className="data-[state=unchecked]:bg-red-600 data-[state=checked]:bg-green-500" />
          {isLoading ? <Loader2 className="h-5 w-5 text-white animate-spin" /> : null}
          </div>
       </div>

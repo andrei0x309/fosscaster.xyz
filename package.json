@@ -42,6 +42,7 @@
     "styled-components": "^6.1.13",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
+    "tus-js-client": "^4.3.1",
     "use-immer": "^0.10.0",
     "video.js": "^8.18.1",
     "zustand": "^4.5.5"

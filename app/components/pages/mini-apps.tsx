@@ -5,20 +5,12 @@ import { Img as Image } from 'react-image'
 import { Trophy, ChevronDown, Loader } from 'lucide-react'
 import type { TWCFavoriteFrames } from "~/types/wc-favorite-frames"
 import type { TWCTopFrames } from "~/types/wc-top-frames"
-import { getFavoriteFrames, getTopFrames } from '~/lib/api'
+import { getFavoriteFrames, getTopFrames, getFrame } from '~/lib/api'
 import { useMainStore } from '~/store/main'
-import type { MetaFunction } from 'react-router'
-
-export const meta: MetaFunction = ({ matches }) => {
-    const parentMeta = matches.flatMap(
-      (match) => match.meta ?? []
-    );
-    return [...parentMeta, { title: "Fosscaster.xyz - Mini apps" }];
-};
 
 type TFrame = TWCFavoriteFrames['result']['frames'][number]
 
-export default function MiniApps({ className}: { className?: string }) {
+export default function MiniApps({ className, openDomainApp = undefined} : { className?: string, openDomainApp?: string | undefined}) {
  
     const [miniApps, setMiniApps] = useState([] as TWCFavoriteFrames['result']['frames'])
     const [userHasApps, setUserHasApps] = useState(true)
@@ -26,7 +18,8 @@ export default function MiniApps({ className}: { className?: string }) {
     const [loading, setLoading] = useState(false)
     const [loadingTopFrames, setLoadingTopFrames] = useState(false)
     const [topFrames, setTopFrames] = useState({} as TWCTopFrames)
-    const { openMiniApp } = useMainStore()
+    const { openMiniApp, miniAppRefreshCount } = useMainStore()
+    
     
 
 
@@ -81,6 +74,26 @@ export default function MiniApps({ className}: { className?: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
+    useEffect(() => {
+        callbackFetchApps()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [miniAppRefreshCount])
+
+    useEffect(() => {
+      console.log('openDomainApp', openDomainApp)
+      if(!openDomainApp || !openDomainApp.includes('-')) return
+       const loadApp = async () => {
+          const domain = openDomainApp.replace('-', '.')
+          const frame = await getFrame({domain})
+          if(frame?.result?.frame) {
+            const app = frame.result.frame
+            doOpenMiniApp(app)     
+        }
+      }
+      loadApp()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [openDomainApp])
+
     const doOpenMiniApp = (app: TFrame) => {
        openMiniApp({
         name: app.name,
@@ -90,7 +103,7 @@ export default function MiniApps({ className}: { className?: string }) {
           avatarUrl: app.author?.pfp?.url || '',
           username: app.author?.username
         },
-        isInstalled: app?.viewerContext?.favorited,
+        viewerContext: app?.viewerContext,
         splashImageUrl: app?.splashImageUrl
       })
     }

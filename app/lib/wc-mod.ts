@@ -30,6 +30,7 @@ import type { TWCFavoriteFrames } from '../types/wc-favorite-frames'
 import type { TWCTopFrames } from '../types/wc-top-frames'
 import type { TWCFrame } from '../types/wc-frame'
 import type { TWCDCMessages } from '../types/wc-dc-messages'
+import type { TWCUserAppContext  } from '../types/wc-user-app-context'
 
 
 const isDevTun = typeof window !== 'undefined' && window.location.hostname === 'tun-5173.flashsoft.eu'
@@ -191,6 +192,14 @@ export class WarpCastWebAPI {
             console.error('Failed to get user by username', error)
             return null
         }
+    }
+
+    public async getUserAppContext () {
+        const response = await fetch(`${this._apiEndpointBase}/user-app-context`, {
+            method: 'GET',
+            headers: this.headers
+        });
+        return await response.json() as {result: TWCUserAppContext};
     }
 
     public async userByFid (fid: string | number) {
@@ -1370,5 +1379,63 @@ export class WarpCastWebAPI {
             headers: this.headers
         });
         return await response.json() as TWCTopFrames
+    }
+
+    public prepareVideoUpload = async ({
+        videoSizeBytes
+    }: {
+       videoSizeBytes: number
+    }) => {
+        
+        const data = {
+            supportsDynamicUpload: true,
+        } as Record<string, any>
+
+        if (videoSizeBytes) {
+            data.videoSizeBytes = videoSizeBytes
+        }
+
+       const response = await fetch(`${this._apiEndpointBase.replace('v2', 'v1')}/prepare-video-upload`, {
+            method: 'POST',
+            headers: this.headers,
+            body: JSON.stringify(data)
+        });
+        return await response.json() as {
+            "result": {
+                "videoId":  string,
+                "uploadUrl": string,
+                "headers": Record<string, any>
+                "metadata":  Record<string, any>
+            }
+        }
+    }
+
+    public getVideoUploadState = async ({
+        videoId
+    }: {
+       videoId: string
+    }) => {
+       
+        const response = await fetch(`${this._apiEndpointBase.replace('v2', 'v1')}/uploaded-video?videoId=${videoId}`, {
+            method: 'GET',
+            headers: this.headers
+        });
+
+        return await response.json() as {result: {
+            "video": {
+                "id": "0196870d-26cc-ca08-03cb-bd941f1fa06c",
+                "state": "processing",
+                "embed": {
+                    "type": "video" | "ready",
+                    "url": string,
+                    "sourceUrl": string,
+                    "width": number,
+                    "height": number,
+                    "duration": number,
+                    "thumbnailUrl": string
+                }
+            }
+        }
+      }
     }
 }

@@ -86,6 +86,7 @@ export function ModalManager() {
     if(miniAppToOpen === null) return
     openMiniApp(null)
     const isModalOpen = modals.find(modal => modal.homeUrl === miniAppToOpen.homeUrl)
+
     if (isModalOpen && !isModalOpen.isMinimized) return
     if (isModalOpen && isModalOpen.isMinimized){
       setModals(
@@ -102,7 +103,7 @@ export function ModalManager() {
         if(miniAppToOpen?.fetchFrameData) {
           const frameData = (await getFrame({domain: new URL(miniAppToOpen.homeUrl).hostname}))?.result?.frame ?? {}
           miniAppToOpenData = {
-           isInstalled: frameData?.viewerContext?.favorited,
+            viewerContext: frameData?.viewerContext,
            author: {
             avatarUrl: frameData?.author?.pfp?.url,
             username : frameData?.author?.username,
@@ -111,7 +112,6 @@ export function ModalManager() {
            iconUrl: frameData?.iconUrl,
            name: frameData?.name,
            splashImageUrl: frameData?.splashImageUrl,
-           fetchFrameData: false,
           }
         }
         const newModal = {
@@ -122,7 +122,7 @@ export function ModalManager() {
           onClose: () => handleCloseModal(miniAppToOpenData.homeUrl),
           onMinimize: () => handleMinimizeModal(miniAppToOpenData.homeUrl),
           onMaximize: () => handleMaximizeModal(miniAppToOpenData.homeUrl),
-          isInstalled: miniAppToOpenData.isInstalled,
+          viewerContext: miniAppToOpenData?.viewerContext,
           iconUrl: miniAppToOpenData.iconUrl,
           splashImageUrl: miniAppToOpenData.splashImageUrl,
           author: miniAppToOpenData.author,
@@ -156,6 +156,7 @@ export function ModalManager() {
           onMaximize={() => handleMaximizeModal(modal.homeUrl)}
           isMaxMinimizedReached={isMaxMinimizedReached}
           author={modal.author}
+          viewerContext={modal.viewerContext}
         >
         </Modal>
       ))}

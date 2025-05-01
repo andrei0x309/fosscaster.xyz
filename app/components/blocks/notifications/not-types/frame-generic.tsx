@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Img as Image } from 'react-image'
 import { timeAgo } from '~/lib/misc';
 import type { TNotificationItem } from './notification-type'
@@ -9,20 +10,20 @@ export function GenericFrameNotification({ notification }: {
 }) {
 
         const { openMiniApp } = useMainStore()
-    
+        const frame = useMemo(() => notification?.previewItems?.[0]?.content?.frame, [notification])
 
     return (
       <div className="rounded-lg p-4 border-b-[1px] border-neutral-400/50 hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer" onClick={() => {
         openMiniApp({
-            homeUrl: notification?.previewItems?.[0]?.content?.frame?.homeUrl || '',
-            iconUrl: notification?.previewItems?.[0]?.content?.frame?.iconUrl,
-            name: notification?.previewItems?.[0]?.content?.frame?.name,
-            splashImageUrl: notification?.previewItems?.[0]?.content?.frame?.splashImageUrl,
+            homeUrl: frame?.homeUrl || '',
+            iconUrl: frame?.iconUrl,
+            name: frame?.name,
+            splashImageUrl: frame?.splashImageUrl,
             author: {
-                avatarUrl: notification?.previewItems?.[0]?.content?.frame?.author?.pfp?.url || '',
-                username: notification?.previewItems?.[0]?.content?.frame?.author?.username || '',
+                avatarUrl: frame?.author?.pfp?.url || '',
+                username: frame?.author?.username || '',
             },
-            isInstalled: notification?.previewItems?.[0]?.content?.frame?.viewerContext?.favorited
+            viewerContext: frame?.viewerContext
         })
         }} aria-hidden>
         <div className="flex gap-3">
