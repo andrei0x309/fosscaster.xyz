@@ -114,6 +114,9 @@ export interface FluffyEmbeds {
 export interface URL {
     type:      URLType;
     openGraph: OpenGraph;
+    tweet: {
+        payloadV2: string
+    }
 }
 
 export interface OpenGraph {

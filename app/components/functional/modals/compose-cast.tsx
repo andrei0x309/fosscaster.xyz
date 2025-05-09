@@ -16,6 +16,14 @@ import type { TWCSearchChannels } from '~/types/wc-search-channels'
 import { Img as Image } from 'react-image'
 import { useToast } from "~/hooks/use-toast"
 import { uploadFileWithTus } from '~/lib/tus-upload'
+import {
+  EmojiPicker,
+  EmojiPickerSearch,
+  EmojiPickerContent,
+  EmojiPickerFooter,
+} from "~/components/ui/emoji-picker";
+
+
 
 
 const MAX_EMBEDS = 2
@@ -40,7 +48,10 @@ export function ComposeModal() {
     const [channelSearch, setChannelSearch] = useState("")
     const [lastSearch, setLastSearch] = useState("")
     const [showMentions, setShowMentions] = useState(false)
+    const [showEmojiSelect, setShowEmojiSelect] = useState(false);
+
     const [mentionStartIndex, setMentionStartIndex] = useState(-1)
+    const [lastCursorPosition, setLastCursorPosition] = useState(-1)
     const [selectedMentions, setSelectedMentions] = useState<{ [key: number]: User }>({})
     const [searchChannelsList, setSearchChannelsList] = useState<TWCSearchChannels>({} as TWCSearchChannels)
     const [initalChannels, setInitalChannels] = useState<TWCSearchChannels>({} as TWCSearchChannels)
@@ -56,6 +67,7 @@ export function ComposeModal() {
     const [editorRef, setEditorRef] = useState<HTMLDivElement | null>(null)
     const channelListRef = useRef<HTMLDivElement>(null)
     const mentionListRef = useRef<HTMLDivElement>(null)
+    const emojiPanelRef = useRef<HTMLDivElement>(null)
     const channelListRefWarp = useRef<HTMLDivElement>(null)
     const imageFileInputRef = useRef<HTMLInputElement>(null)
     const videoFileInputRef = useRef<HTMLInputElement>(null)
@@ -67,6 +79,7 @@ export function ComposeModal() {
 
   // MARK: Handlers
 
+ 
   const pasteHandler = useCallback((event: ClipboardEvent) => {
     event.preventDefault()
     // check if files
@@ -89,7 +102,7 @@ export function ComposeModal() {
       range.deleteContents(); 
       const textNode = document.createTextNode(pastedText);
       range.insertNode(textNode);
-        range.collapse(false);
+      range.collapse(false);
       selection.removeAllRanges();
       selection.addRange(range);
       // focus editor
@@ -346,6 +359,7 @@ export function ComposeModal() {
 
     // Check for @ symbol to trigger mentions
     const textBeforeCursor = text.substring(0, cursorPosition)
+    setLastCursorPosition(cursorPosition)
 
     const lastAtSymbol = textBeforeCursor.lastIndexOf("@")
     if (lastAtSymbol !== -1 && (lastAtSymbol === 0 || /\s/.test(textBeforeCursor.charAt(lastAtSymbol - 1)))) {
@@ -647,6 +661,11 @@ return (
             if (!channelListRefWarp?.current?.contains(e.target as Node) && isChannelListOpen) {
               setIsChannelListOpen(false)
             }
+            if(!emojiPanelRef?.current?.contains(e.target as Node) && showEmojiSelect){
+              setShowEmojiSelect(false)
+            }
+            const { cursorPosition } = getContentEditableInfo()
+            setLastCursorPosition(cursorPosition)
           }
         }>
         <div className="overflow-y-auto max-h-[calc(100vh-20rem)]">
@@ -762,11 +781,45 @@ return (
             
 
             
-            {/* <Button variant="ghost" size="icon" className="w-10 h-10">
+            {!showEmojiSelect  && <Button variant="ghost" size="icon" className="w-10 h-10" onClick={ () => setShowEmojiSelect(true)}>
               <SmileIcon className="h-4 w-4" />
-            </Button> */}
+            </Button> }
 
-              {!isChannelListOpen && !composeModalData?.reply?.cast?.hash  && <Button
+      {showEmojiSelect && (
+                  <div
+                    style={{ transform: 'translateY(-20px)'}}
+                    ref={emojiPanelRef}
+                    className="absolute z-25 mt-1 w-full max-w-[270px] dark:bg-[#1a1a1a] bg-neutral-100 border border-neutral-800 rounded-lg shadow-lg overflow-hidden"
+                  >
+                  <EmojiPicker
+            className="h-[342px]"
+            onEmojiSelect={({ emoji }: {emoji: string}) => {
+              const { text, cursorPosition } = getContentEditableInfo()
+
+              const beforeEmoji = text.substring(0, lastCursorPosition)
+              const afterEmoji = text.substring(cursorPosition)
+        
+              const newText = `${beforeEmoji}${emoji}${afterEmoji}`
+        
+              // Update the content and state
+              if (editorRef) {
+                editorRef.innerText = newText
+              }
+              setCastText(newText)
+              setShowEmojiSelect(false);
+
+            }}
+          >
+            <EmojiPickerSearch />
+            <EmojiPickerContent />
+            <EmojiPickerFooter />
+          </EmojiPicker>
+          </div>)}
+
+
+            {/*  */}
+
+              {!isChannelListOpen && !composeModalData?.reply?.cast?.hash && !showEmojiSelect  && <Button
                   onClick={() => setIsChannelListOpen(true)}
                   variant="ghost"
                   size="sm"

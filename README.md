@@ -1,51 +1,47 @@
-# templates/spa
+# fosscaster.xyz
 
-This template leverages [Remix SPA Mode](https://remix.run/docs/en/main/guides/spa-mode) to build your app as a Single-Page Application using [Client Data](https://remix.run/docs/en/main/guides/client-data) for all of your data loads and mutations.
+This is a FOSS working UI recreated after the Warpcast website, it's in development and uses the same API as warpcast.com.
 
-## Setup
+Current features:
 
-```shellscript
-npx create-remix@latest --template remix-run/remix/templates/spa
-```
+- Sign up to Farcaster network using your EOA
+- Login to Farcaster network using The EOA that owns the FID or by providing a Warpcast auth token
+- Cast, like, recast, quote, bookmark, delete cast
+- Bookmark casts page
+- Settings page
+- Multi accounts
+- Interacting with mini-apps including, doing TXs with your EOA
+- Uploading videos(if you account is allowed) and upload images
+- Update your farcaster profile
+- Add Mini apps as favorites and enable disable notifications for them
+- Notifications page
+- Custom feeds
+- Channel feeds
+- Explore page
+- Search (un unauthenticated / guest mode)
+- Website full in guest mode, connect modal will appear only when you try to do an action that requires authentification
+- Disable Waprcast trackers
+- Setting to disable trending feed ( which is basically Warpcast ads)
+- The primary unauthenticated feed is `cryptoleft`
+- YouTube embeds (watch YouTube videos without leaving the website )
+- Support for rendering multiple video formats not just .m3u8 which is the only video format supported by Warpcast
+- DMs and group chats without trackers
+- Commit attestation proving what code you are running
+- Multi-mini-app runs up to 6 Mini apps concomitantly
+- Animated avatars
+- Compose cast intent
+- Storage usage widget
+- Profile pages with the same routing system as Warpcast (/username)
+- Works as a mini app too
 
-## Development
+## Notes
 
-You can develop your SPA app just like you would a normal Remix app, via:
+- It's still in heavy development but, is pretty usable, you might find a bug here or there, PRs are welcome, will try to add other features in the future.
 
-```shellscript
-npm run dev
-```
+## Other farcaster projects I made
 
-## Production
+You can check this page [https://flashsoft.eu/projects/technology/farcaster](https://flashsoft.eu/projects/technology/farcaster) is not complete.
 
-When you are ready to build a production version of your app, `npm run build` will generate your assets and an `index.html` for the SPA.
+## Changelog
 
-```shellscript
-npm run build
-```
-
-### Preview
-
-You can preview the build locally with [vite preview](https://vitejs.dev/guide/cli#vite-preview) to serve all routes via the single `index.html` file:
-
-```shellscript
-npm run preview
-```
-
-> [!IMPORTANT]
->
-> `vite preview` is not designed for use as a production server
-
-### Deployment
-
-You can then serve your app from any HTTP server of your choosing. The server should be configured to serve multiple paths from a single root `/index.html` file (commonly called "SPA fallback"). Other steps may be required if the server doesn't directly support this functionality.
-
-For a simple example, you could use [sirv-cli](https://www.npmjs.com/package/sirv-cli):
-
-```shellscript
-npx sirv-cli build/client/ --single
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever css framework you prefer. See the [Vite docs on css](https://vitejs.dev/guide/features.html#css) for more information.
+[Changelog.md](./changelog.md)

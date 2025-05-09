@@ -26,6 +26,10 @@ import { PinIcon } from '~/components/icons/pin';
 import { AnnouncementIcon } from '~/components/icons/announcement';
 import { KeyIcon } from '~/components/icons/key';
 import { useToast } from '~/hooks/use-toast';
+import { YoutubeEmbed } from '~/components/blocks/cast/embeds/youtube';
+import { TwitterEmbed }from '~/components/blocks/cast/embeds/twitter';
+import type { TweetString } from "~/types/cast/tweet";
+
 
 type TCast = Item | Record<string, any>
 
@@ -66,6 +70,8 @@ export const Post = (
 
   const [miniApps, setMiniApps] = useState([] as Item['cast']['embeds']['urls'][number]['openGraph']['frameEmbedNext'][])
   const [qoutedCasts, setQoutedCasts] = useState([] as Item['cast']['embeds']['casts'])
+  const [youtubeEmbeds, setYoutubeEmbeds] = useState([] as Item['cast']['embeds']['urls'][number]['openGraph']['url'][])
+  const [twitterEmbeds, setTwitterEmbeds] = useState([] as TweetString[])
  
   const deleteCast = async () => {
     const deletedCast = await apiDeleteCast(cast.hash)
@@ -162,12 +168,26 @@ export const Post = (
 
   const parseEmbeds = (embeds: Item['cast']['embeds']) => {
     if (!embeds) return
+    const regexYoutube = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(.+?)( |\n|\t|$)/g
+
+
     const foundMiniApps = [] as Item['cast']['embeds']['urls'][number]['openGraph']['frameEmbedNext'][]
     const foundQoutedCasts = [] as Item['cast']['embeds']['casts']
+    const foundYoutubeEmbeds = [] as Item['cast']['embeds']['urls'][number]['openGraph']['url'][]
+    const foundTweets = [] as TweetString[]
 
       embeds?.urls?.forEach((url) => {
-        if (url.openGraph.frameEmbedNext) {
+        if (url.openGraph?.frameEmbedNext) {
           foundMiniApps.push(url.openGraph.frameEmbedNext)
+        } else if (regexYoutube.test(url.openGraph.url)) {
+          foundYoutubeEmbeds.push(url.openGraph.url)
+        } else if (url?.tweet?.payloadV2) {
+          try {
+            const tweet = JSON.parse(url.tweet.payloadV2)
+            foundTweets.push(tweet)
+          } catch (e) {
+            console.warn('Failed to parse Tweet', e)
+          }
         }
       })
 
@@ -181,6 +201,14 @@ export const Post = (
 
       if(foundQoutedCasts.length) {
         setQoutedCasts(foundQoutedCasts)
+      }
+
+      if (foundYoutubeEmbeds.length) {
+        setYoutubeEmbeds(foundYoutubeEmbeds)
+      }
+
+      if(foundTweets.length){
+        setTwitterEmbeds(foundTweets)
       }
   }
 
@@ -408,6 +436,10 @@ export const Post = (
                 {miniApps?.length ? miniApps.map((app, i) => <MiniAppInCast key={i} app={app} />) : null}
 
                 {qoutedCasts?.length ? qoutedCasts.map((cast, i) => <QoutedCast key={i} cast={cast as ItemCast} noNavigation={noNavigate} />) : null}
+
+                {youtubeEmbeds?.length ? youtubeEmbeds.map((url, i) => <YoutubeEmbed key={i} url={url} />) : null}
+
+                {twitterEmbeds?.length ? twitterEmbeds.map((tweet, i) => <TwitterEmbed key={i} tweet={tweet} />) : null} 
       
                       {!isComposeReply && <div className="mt-2 flex items-center justify-between text-neutral-500">
                         <div className="flex items-center space-x-4">

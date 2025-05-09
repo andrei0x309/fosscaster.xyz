@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
@@ -52,6 +52,30 @@ import { RegisterFname } from '~/components/blocks/settings/register-fname'
 import { DraggableMiniApps } from '~/components/blocks/settings/mini-apps'
 import { UserSettings } from '~/components/blocks/settings/local-user-settings'
 import { Img as Image } from 'react-image'
+import { useLocation } from 'react-router'
+
+
+const urlRoutes = {
+  'Edit Profile': '/~/settings',
+  'Register Fnames': '/~/settings/register-fname',
+  'Mini Apps': '/~/settings/mini-apps',
+  'User Settings': '/~/settings/user-settings',
+}
+
+const noContentYet = [
+  'Verified Addresses',
+  'Direct Casts',
+  'Actions',
+  'Muted Words'
+]
+
+const sidebarItems = [
+  'Edit Profile',
+  'Register Fnames',
+  'Mini Apps',
+  'User Settings',
+]
+
 
 export default function SettingsPage({className}: {className?: string}) {
   
@@ -61,31 +85,31 @@ export default function SettingsPage({className}: {className?: string}) {
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
   
+  const { pathname } = useLocation()
 
+  const loadTab = async (section: string) => {
+    setActiveSection(section)
+    if(urlRoutes[section as keyof typeof urlRoutes] !== pathname && urlRoutes[section as keyof typeof urlRoutes]) {
+      window.history.pushState(null, '', urlRoutes[section as keyof typeof urlRoutes])
+    }
+  }
+
+  useEffect(() => {
+    if(Object.values(urlRoutes).includes(pathname)) {
+      const section = Object.keys(urlRoutes).find((key) => urlRoutes[key as keyof typeof urlRoutes] === pathname)
+      if(section) {
+          loadTab(section)
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname])
 
 
   const closeError = () => {
     setError('')
   }
   
-
-  const noContentYet = [
-    'Verified Addresses',
-    'Direct Casts',
-    'Actions',
-    'Muted Words'
-  ]
-
-  const sidebarItems = [
-    'Edit Profile',
-    'Register Fnames',
-    'Mini Apps',
-    'User Settings',
-  ]
-
  
-
-
   return (
     <div className={`flex h-full w-full shrink-0 justify-center md:w-[850px] lg:w-[1040px] ${className}`}>
       {/* Sidebar */}
@@ -97,8 +121,9 @@ export default function SettingsPage({className}: {className?: string}) {
           <Button
             key={item}
             variant="ghost"
-            className="w-full justify-between mb-2 text-left"
-            onClick={() => setActiveSection(item)}
+            
+            className={`w-full justify-between mb-2 text-left ${activeSection === item ? 'bg-accent text-accent-foreground' : ''} `}
+            onClick={() => loadTab(item)}
           >
             {item}
             <ChevronRight className="h-4 w-4" />
@@ -109,8 +134,8 @@ export default function SettingsPage({className}: {className?: string}) {
           <Button
             key={item}
             variant="ghost"
-            className="w-full justify-between mb-2 text-left"
-            onClick={() => setActiveSection(item)}
+            className={`w-full justify-between mb-2 text-left ${activeSection === item ? 'bg-accent text-accent-foreground' : ''} `}
+            onClick={() => loadTab(item)}
           >
             {item}
             <ChevronRight className="h-4 w-4" />

@@ -1,5 +1,19 @@
 # Changelog
 
+
+## - 2025-05-09
+
+- added emoji picker to compose cast
+- added Twitter embed
+- added route to mini-apps from mini apps widget
+- initial change of readme.me to provide more details
+
+## - 2025-05-02
+
+- made inner qoute cast more friendly for mobile
+- added subroutes for settings
+- added youtube embed so you can play youtube videos from feed
+
 ## - 2025-05-01
 
 - improved mini apps actions add/remove notification

@@ -7,7 +7,7 @@ export interface TweetString {
     lang:               string;
     favorite_count:     number;
     possibly_sensitive: boolean;
-    created_at:         Date;
+    created_at:         string;
     display_text_range: number[];
     entities:           Entities;
     id_str:             string;

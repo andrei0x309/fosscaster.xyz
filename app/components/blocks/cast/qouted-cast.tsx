@@ -40,7 +40,7 @@ export const QoutedCast = ({cast, noNavigation = false} : { cast: ItemCast, noNa
         <div className="flex justify-between">
           <div className="flex items-center gap-2">
             <Link to={`/${cast.author.username}`} className="flex items-center gap-2">
-            <Avatar className="h-10 w-10 border border-neutral-700 hover:scale-105 transition-transform">
+            <Avatar className="h-6 w-6 lg:h-10 lg:w-10 border border-neutral-700 hover:scale-105 transition-transform">
               <AvatarImage src={cast.author?.pfp?.url} alt={cast.author?.displayName} />
               <AvatarFallback>{cast.author?.displayName.charAt(0)}</AvatarFallback>
             </Avatar>
@@ -50,8 +50,9 @@ export const QoutedCast = ({cast, noNavigation = false} : { cast: ItemCast, noNa
               <Link to={`/${cast.author.username}`} className="font-semibold hover:underline">
               <span className="font-semibold">{cast?.author?.username}</span>
               </Link>
-                <span className="text-neutral-400 text-sm">in</span>
                 {cast?.tags?.[0] && (
+                  <>
+                  <span className="text-neutral-400 text-sm">in</span>
                   <div className="flex items-center gap-1 dark:bg-neutral-600 bg-neutral-300 rounded-full px-2 py-0.5 text-sm">
                     {cast?.tags?.[0].imageUrl && (
                       <span className="h-4 w-4 rounded-full bg-red-500 flex items-center justify-center text-xs">
@@ -60,6 +61,7 @@ export const QoutedCast = ({cast, noNavigation = false} : { cast: ItemCast, noNa
                     )}
                     <span>{cast?.tags?.[0].name}</span>
                   </div>
+                  </>
                 )}
                 <span className="text-neutral-400 text-sm">{timeAgo(cast?.timestamp)}</span>
               </div>

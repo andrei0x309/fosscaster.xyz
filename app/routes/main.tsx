@@ -84,7 +84,7 @@ export default function Index() {
   const { isUserLoggedIn, setIsMiniApp, setUserData, mainUserData } = useMainStore()
   const [rightSidebarVisible, setRightSidebarVisible] = useState(false)
 
-  const { setNewDmsCount, setNewNotificationsCount, newDmsCount } = useNotifBadgeStore()
+  const { setNewDmsCount, setNewNotificationsCount } = useNotifBadgeStore()
 
   const { setMeta, description, title } = useMetaStore()
 
@@ -96,9 +96,7 @@ export default function Index() {
   const notifCheck = useCallback(async () => {
     getNotifsUnseen().then((data) => {
       setNewNotificationsCount(data.result.notificationsCount)
-      if(data?.result?.inboxCount !== newDmsCount) {
-        setNewDmsCount(data.result.inboxCount)
-      }
+      setNewDmsCount(data.result.inboxCount)
       if(data.result.notificationsCount > 0) {
         addNotificationBadge()
       } else {

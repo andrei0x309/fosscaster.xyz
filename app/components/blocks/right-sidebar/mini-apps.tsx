@@ -49,7 +49,7 @@ export const MiniAppsSidebar = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold">Mini Apps</h2>
             <div className="flex space-x-2">
-              <Settings className="h-5 w-5" />
+              <Settings className="h-5 w-5 cursor-pointer" onClick={() => navigate('/~/settings/mini-apps')} />
               <Grid2x2 className="h-5 w-5 cursor-pointer" onClick={() => navigate('/~/mini-apps')} />
             </div>
           </div>
