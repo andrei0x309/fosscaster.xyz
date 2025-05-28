@@ -161,7 +161,7 @@ export default function ChatInterface() {
                 (currentConversation?.viewerContext?.counterParty?.pfp?.url ?
                 <Avatar className="hover:border-2">
                       <AvatarImage src={currentConversation.viewerContext.counterParty.pfp.url} alt={`User ${currentConversation?.viewerContext?.counterParty?.username}`} />
-                      <AvatarFallback>{currentConversation.viewerContext.counterParty.username.slice(0,2)}</AvatarFallback>
+                      <AvatarFallback>{currentConversation.viewerContext.counterParty.username?.slice(0,2)}</AvatarFallback>
                 </Avatar>   
                 : <UserIcon className="w-8 h-8 ml-1" />)
                 :

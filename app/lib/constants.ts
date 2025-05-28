@@ -9,6 +9,6 @@ export const FC_KEYS_CONTRACT = '0x00000000fc56947c7e7183f8ca4b62398caadf0b'
 export const FC_SERVERLESS_WORKER = 'https://fc-app-wk.t-worker.workers.dev'
 
 // Warpcast API
-export const WARPCAST_API_BASE = GIT_COMMIT_SHA ? '/api/v2' : 'https://api.warpcast.com/v2'
+export const WARPCAST_API_BASE = GIT_COMMIT_SHA ? '/api/v2' : 'https://api.farcaster.xyz/v2'
 // Warpcast API dev tunner proxy
 export const WARPCAST_API_DEV_TUNNEL = 'https://wc-proxy-34-b2teh3p3fr4v.deno.dev/v2'

@@ -37,33 +37,13 @@ export interface Actor {
     followingCount:    number;
     viewerContext?:    ActorViewerContext;
 }
-
-export interface Pfp {
-    url:      string;
-    verified: boolean;
-}
-
-export interface Profile {
-    bio:      Bio;
-    location: Location;
-}
-
-export interface Bio {
-    text:            string;
-    mentions:        Mention[];
-    channelMentions: string[];
-}
-
+ 
 export enum Mention {
     DegentipbotEth = "degentipbot.eth",
     Frames = "frames",
     Yup = "yup",
 }
-
-export interface Location {
-    placeId:     string;
-    description: string;
-}
+ 
 
 export interface ActorViewerContext {
     following:   boolean;
@@ -73,7 +53,7 @@ export interface ActorViewerContext {
 export interface Content {
     cast:      Cast;
     reaction?: Reaction;
-    frame?:     Frame;
+    miniapp?:     MiniApp;
     targetUrl?: string;
     title?: string;
     notificationId?: string;
@@ -99,6 +79,65 @@ export interface Content {
     platform: string;
     ticker: string;
 }
+
+
+export interface MiniApp {
+    domain:                string;
+    name:                  string;
+    iconUrl:               string;
+    homeUrl:               string;
+    author:                Author;
+    supportsNotifications: boolean;
+    id:                    string;
+    shortId:               string;
+    imageUrl:              string;
+    buttonTitle:           string;
+    splashImageUrl:        string;
+    splashBackgroundColor: string;
+    viewerContext:         MiniappViewerContext;
+}
+
+export interface Author {
+    fid:            number;
+    displayName:    string;
+    profile:        Profile;
+    followerCount:  number;
+    followingCount: number;
+    username:       string;
+    pfp:            Pfp;
+    viewerContext:  AuthorViewerContext;
+}
+
+export interface Pfp {
+    url:      string;
+    verified: boolean;
+}
+
+export interface Profile {
+    bio:                Bio;
+    location:           Location;
+    earlyWalletAdopter: boolean;
+}
+
+export interface Bio {
+    text:     string;
+    mentions: any[];
+}
+
+export interface Location {
+    placeId:     string;
+    description: string;
+}
+
+export interface AuthorViewerContext {
+    following:  boolean;
+    followedBy: boolean;
+}
+
+export interface MiniappViewerContext {
+    favorited: boolean;
+}
+
  export interface TokenClass {
     name:           string;
     imageUrl:       string;
@@ -297,20 +336,6 @@ export interface UserViewerContext {
 }
 
 
-export interface Frame {
-    domain:                string;
-    name:                  string;
-    iconUrl:               string;
-    homeUrl:               string;
-    imageUrl:              string;
-    buttonTitle:           string;
-    splashImageUrl:        string;
-    splashBackgroundColor: string;
-    author:                Author;
-    supportsNotifications: boolean;
-    viewerContext:         FrameViewerContext;
-}
-
 export interface FrameViewerContext {
     favorited:            boolean;
     notificationsEnabled: boolean;
@@ -322,21 +347,6 @@ export interface NotificationDetails {
     url:   string;
 }
  
-export interface Author {
-    fid:               number;
-    username:          string;
-    displayName:       string;
-    pfp:               Pfp;
-    profile:           Profile;
-    followerCount:     number;
-    followingCount:    number;
-    viewerContext?:    AuthorViewerContext;
-}
-
-export interface AuthorViewerContext {
-    following: boolean;
-}
-
 export interface Channel {
     key:           string;
     name:          string;
@@ -395,5 +405,6 @@ export enum PreviewItemType {
     TrendingToken = "trending-token",
     Generic = "generic",
     ConnectAccount = "connect-account",
-    TipReceived= "tip-received",
+    TipReceived = "tip-received",
+    MiniApp = "mini-app",
 }

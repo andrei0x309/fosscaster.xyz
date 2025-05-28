@@ -4,7 +4,7 @@
 // import { timeAgo } from '~/lib/misc';
 import type { TNotificationItem } from './not-types/notification-type'
 import { ReactionNotification } from './not-types/reaction'
-import { GenericFrameNotification } from "./not-types/frame-generic";
+import { MiniAppNotification } from "./not-types/mini-app";
 import { FollowNotification } from "./not-types/follow";
 import { TrendingToken } from './not-types/trending-token'
 import { WalletActivityNotification } from './not-types/wallet-activity';
@@ -25,8 +25,8 @@ export const NotificationItem = ({ notification, onInviteResolved }: { notificat
         <ReactionNotification notification={notification} />
         : ''}
 
-      {notification.type === 'frame-generic' ?
-      <GenericFrameNotification notification={notification} />
+      {notification.type === 'mini-app' ?
+      <MiniAppNotification notification={notification} />
       : ''}
 
       {notification.type === 'channel-role-invite' ?

@@ -242,12 +242,12 @@ export function AddAccountModal ({ isModalOpen, setModalOpen }: { isModalOpen: b
                         {error && <div className="bg-red-700 text-white p-2 rounded flex justify-between"><span className='mt-2' >{error}</span><Button onClick={closeError} className="ml-2 lr-auto">x</Button></div>}
 
                         <div className="flex items-start space-x-4 pt-4 flex-col">
-                            <h2 className="flex text-[0.9rem] opacity-80 uppercase items-center justify-center mb-2 -mt-2 mx-auto" >Input Your warpcast token</h2>
+                            <h2 className="flex text-[0.9rem] opacity-80 uppercase items-center justify-center mb-2 -mt-2 mx-auto" >Input Your Farcaster.xyz token</h2>
                             <ul className="mb-4 ml-4">
-                                <li className='mb-2 flex'><CheckMark disabled={true} isChecked={true} className='mt-1 mr-3' id="cm-1" />Token can be extracted from warpcast.com, it is in indexdb that`s available in browser Application from the developer tools.</li>
-                                <li className='mb-2 flex'><CheckMark disabled={true} isChecked={true} className='mt-1 mr-3' id="cm-1" /><div>There`s also a hidden link<a href="https://warpcast.com/~/debug/admin-token"
+                                <li className='mb-2 flex'><CheckMark disabled={true} isChecked={true} className='mt-1 mr-3' id="cm-1" />Token can be extracted from farcaster.xyz, it is in indexdb that`s available in browser Application from the developer tools.</li>
+                                <li className='mb-2 flex'><CheckMark disabled={true} isChecked={true} className='mt-1 mr-3' id="cm-1" /><div>There`s also a hidden link<a href="https://farcaster.xyz/~/debug/admin-token"
                                     className="text-blue-500 mx-2" target="_blank" rel="noreferrer"
-                                >https://warpcast.com/~/debug/admin-token</a> that you can use to get the token.(Might not be available in the future)</div></li>
+                                >https://farcaster.xyz/~/debug/admin-token</a> that you can use to get the token.(Might not be available in the future)</div></li>
                             </ul>
                             <SimpleInput
                                 inputData={inutText}

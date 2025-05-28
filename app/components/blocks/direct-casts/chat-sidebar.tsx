@@ -389,7 +389,7 @@ export default function ChatSidebar() {
           >                { newConversation?.viewerContext?.counterParty?.pfp?.url ?
             <Avatar className="hover:border-2">
                   <AvatarImage src={newConversation.viewerContext.counterParty.pfp.url} alt={`User ${newConversation?.viewerContext?.counterParty?.username}`} />
-                  <AvatarFallback>{newConversation.viewerContext.counterParty.username.slice(0,2)}</AvatarFallback>
+                  <AvatarFallback>{newConversation.viewerContext.counterParty.username?.slice(0,2)}</AvatarFallback>
             </Avatar>   
             : <UserIcon className="w-8 h-8 ml-1" />}
                              <div className="ml-3 flex-1 min-w-0">
@@ -429,7 +429,7 @@ export default function ChatSidebar() {
                 (chat?.viewerContext?.counterParty?.pfp?.url ?
                 <Avatar className="hover:border-2">
                       <AvatarImage src={chat.viewerContext.counterParty.pfp.url} alt={`User ${chat?.viewerContext?.counterParty?.username}`} />
-                      <AvatarFallback>{chat.viewerContext.counterParty.username.slice(0,2)}</AvatarFallback>
+                      <AvatarFallback>{chat.viewerContext.counterParty.username?.slice(0,2)}</AvatarFallback>
                 </Avatar>   
                 : <UserIcon className="w-8 h-8 ml-1" />)
                 :
@@ -575,7 +575,7 @@ export default function ChatSidebar() {
               >
                 <Avatar className="hover:border-2">
                       <AvatarImage src={chat?.viewerContext?.counterParty?.pfp?.url} alt={`User ${chat?.viewerContext?.counterParty?.username}`} />
-                      <AvatarFallback>{chat?.viewerContext?.counterParty?.username.slice(0,2)}</AvatarFallback>
+                      <AvatarFallback>{chat?.viewerContext?.counterParty?.username?.slice(0,2)}</AvatarFallback>
                 </Avatar>
                 <div className="ml-3 flex-1 min-w-0">
                   <div className="flex justify-between">

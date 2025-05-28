@@ -91,8 +91,8 @@ export const Post = (
     }
   }
 
-  const goToWarpcast = () => {
-    window.open(`https://warpcast.com/${cast.author.username}/${cast.hash.slice(0,10)}`, '_blank')
+  const goToFCXYZ = () => {
+    window.open(`https://farcaster.xyz/${cast.author.username}/${cast.hash?.slice(0,10)}`, '_blank')
   }
 
   useEffect(() => {
@@ -120,10 +120,10 @@ export const Post = (
       mentions.forEach((mention) => {
         parseKeyCounter++
         const index = remaingText.indexOf(mention)
-        const before = remaingText.slice(0, index)
-        const after = remaingText.slice(index + mention.length)
+        const before = remaingText?.slice(0, index)
+        const after = remaingText?.slice(index + mention.length)
         renderElements.push(<span key={`s${parseKeyCounter}-${mention}`}>{before}</span>)
-        renderElements.push(<Link key={`l${parseKeyCounter}-${mention}`} to={`/${mention.slice(1)}`} className="text-red-600 hover:text-red-700">{mention}</Link>)
+        renderElements.push(<Link key={`l${parseKeyCounter}-${mention}`} to={`/${mention?.slice(1)}`} className="text-red-600 hover:text-red-700">{mention}</Link>)
         remaingText = after
       })
     } else {
@@ -150,8 +150,8 @@ export const Post = (
         links.forEach((link) => {
           parseKeyCounter++
           const index = text.indexOf(link)
-          const before = text.slice(0, index)
-          const after = text.slice(index + link.length)
+          const before = text?.slice(0, index)
+          const after = text?.slice(index + link.length)
           newRenderElements.push(<span key={`s${parseKeyCounter}`}>{before}</span>)
           newRenderElements.push(<a key={`l${parseKeyCounter}`} href={link} target="_blank" rel="noreferrer" className="text-red-600 hover:text-red-700">{link}</a>)
           parseKeyCounter++
@@ -231,7 +231,7 @@ export const Post = (
     const hasActionParent = parents.find((parent) => acctionClasses.some((className) => parent.classList.contains(className)))
     if (hasActionParent) return
 
-    navigate(`/${cast.author.username}/${cast.hash.slice(0,10)}`)
+    navigate(`/${cast.author.username}/${cast.hash?.slice(0,10)}`)
   }
 
   const onLike = async () => {
@@ -370,7 +370,7 @@ export const Post = (
                     <Avatar className={`hover:border-2 -left-[0.1rem] top-[0.2rem] absolute lg:relative w-6 h-6 lg:w-10 lg:h-10 ${isComposeReply? '!m-0': ''}`}>
                       <Link to={`/${cast.author.username}`}>
                       <AvatarImage src={cast.author.pfp.url} alt={`User ${cast.author.displayName}`} />
-                      <AvatarFallback>{cast.author.displayName.slice(0,2)}</AvatarFallback>
+                      <AvatarFallback>{cast.author.displayName?.slice(0,2)}</AvatarFallback>
                       </Link>
                     </Avatar>
                     <div className="flex-1 text-[0.9rem] lg:text-base">
@@ -404,9 +404,9 @@ export const Post = (
                             {isOwnCast && <PopOverMenuItem className="cursor-pointer action" onClick={deleteCast}>
                               <Delete className="h-4 w-4 mr-1" />
                               Delete</PopOverMenuItem>}
-                              <PopOverMenuItem className="cursor-pointer action" onClick={goToWarpcast}>
+                              <PopOverMenuItem className="cursor-pointer action" onClick={goToFCXYZ}>
                               <ExternalLink className="h-4 w-4 mr-1" />
-                              View on Warpcast</PopOverMenuItem>
+                              View on Farcaster.xyz</PopOverMenuItem>
                             
                             </>
                           } /> }

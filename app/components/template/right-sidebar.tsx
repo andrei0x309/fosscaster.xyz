@@ -40,7 +40,7 @@ export const RightSidebar = memo(function RightSidebar({ className = '' }: { cla
               <a href="https://github.com/andrei0x309/fosscaster.xyz" className="flex content-end items-end text-neutral-600 dark:text-neutral-400 -mt-2 text-[0.77rem] text-right">View the source code on GitHub<GithubIcon className="h-4 w-4 ml-1 mr-1 inline" /></a>
               {process.env.GIT_HASH_COMMIT
               && <a href={`${process.env.GIT_HASH_COMMIT?.includes('development') ? '#' : `https://github.com/andrei0x309/fosscaster.xyz/commit/${process.env.GIT_HASH_COMMIT}`}`} className="flex content-end items-end text-neutral-600 dark:text-neutral-400 mt-1 text-[0.77rem] text-right">
-                Commit attestation {process.env.GIT_HASH_COMMIT.slice(0, 8)} <VerifiedIcon className="h-4 w-4 ml-1 mr-1 inline" />
+                Commit attestation {process.env.GIT_HASH_COMMIT?.slice(0, 8)} <VerifiedIcon className="h-4 w-4 ml-1 mr-1 inline" />
                 </a>
               }
             </aside>)

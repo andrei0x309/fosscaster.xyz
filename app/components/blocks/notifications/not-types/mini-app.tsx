@@ -5,25 +5,25 @@ import type { TNotificationItem } from './notification-type'
 import { useMainStore } from '~/store/main';
 
 
-export function GenericFrameNotification({ notification }: {
+export function MiniAppNotification({ notification }: {
     notification: TNotificationItem
 }) {
 
         const { openMiniApp } = useMainStore()
-        const frame = useMemo(() => notification?.previewItems?.[0]?.content?.frame, [notification])
+        const miniapp = useMemo(() => notification?.previewItems?.[0]?.content?.miniapp, [notification])
 
     return (
       <div className="rounded-lg p-4 border-b-[1px] border-neutral-400/50 hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer" onClick={() => {
         openMiniApp({
-            homeUrl: frame?.homeUrl || '',
-            iconUrl: frame?.iconUrl,
-            name: frame?.name,
-            splashImageUrl: frame?.splashImageUrl,
+            homeUrl: miniapp?.homeUrl || '',
+            iconUrl: miniapp?.iconUrl,
+            name: miniapp?.name,
+            splashImageUrl: miniapp?.splashImageUrl,
             author: {
-                avatarUrl: frame?.author?.pfp?.url || '',
-                username: frame?.author?.username || '',
+                avatarUrl: miniapp?.author?.pfp?.url || '',
+                username: miniapp?.author?.username || '',
             },
-            viewerContext: frame?.viewerContext
+            viewerContext: miniapp?.viewerContext
         })
         }} aria-hidden>
         <div className="flex gap-3">
@@ -31,7 +31,7 @@ export function GenericFrameNotification({ notification }: {
             className={`h-10 w-10 rounded-md dark:bg-neutral-800 bg-neutral-300 flex items-center justify-center overflow-hidden flex-shrink-0`}
           >
             <Image
-              src={notification?.previewItems?.[0]?.content?.frame?.iconUrl || "/placeholder.svg"}
+              src={miniapp?.iconUrl || "/placeholder.svg"}
               alt=""
               width={40}
               height={40}

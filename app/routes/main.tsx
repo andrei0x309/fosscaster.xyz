@@ -181,7 +181,7 @@ export default function Index() {
       // get search params from url
       const searchParams = new URLSearchParams(location?.search)
       const emebedsStr = searchParams.get('embeds[]')
-      const embeds = emebedsStr?.split(',').slice(0, 2)
+      const embeds = emebedsStr?.split(',')?.slice(0, 2)
       const text = searchParams.get('text')
       currentPageData  = {
         embeds: embeds,

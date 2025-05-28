@@ -6,8 +6,12 @@ export const MiniAppInCast = ({app} : { app: FrameEmbedNext}) => {
   const { openMiniApp } = useMainStore()
 
   const doOpenMiniApp = () => {
+    
+    
+    if (!app?.frameEmbed?.button?.action?.url && !app?.frameUrl) return
+
     openMiniApp({
-      homeUrl: app?.frameUrl,
+      homeUrl: app?.frameEmbed?.button?.action?.url || app?.frameUrl,
       fetchFrameData: true
     })
   }

@@ -23,7 +23,7 @@ export const TwitterEmbed = ({tweet, noNavigation = false} : { tweet: TweetStrin
     if (noNavigation) return
     // if (e.target instanceof HTMLAnchorElement) return
     // if (e.target instanceof HTMLImageElement) return
-    // if (location?.pathname?.includes(`/${cast.author.username}/${cast.hash.slice(0,10)}`)) return
+    // if (location?.pathname?.includes(`/${cast.author.username}/${cast.hash?.slice(0,10)}`)) return
     // // check if target has a parent anchor
     // const target = e.target as HTMLElement
     // const parents = [] as HTMLElement[]
@@ -36,7 +36,7 @@ export const TwitterEmbed = ({tweet, noNavigation = false} : { tweet: TweetStrin
     // }
     // if (parents.find((parent) => acctionClasses.some((className) => parent.classList.contains(className)))) return
 
-    // navigate(`/${cast.author.username}/${cast.hash.slice(0,10)}`)
+    // navigate(`/${cast.author.username}/${cast.hash?.slice(0,10)}`)
   }
 
   return (

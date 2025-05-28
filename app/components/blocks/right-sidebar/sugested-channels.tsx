@@ -19,7 +19,7 @@ export const SuggestedChannels = () => {
                 return
             }
             if ( channels.result.channels.length > 3) {
-                channels.result.channels = channels.result.channels.sort(() => Math.random() - 0.5).slice(0, 3)
+                channels.result.channels = channels.result.channels.sort(() => Math.random() - 0.5)?.slice(0, 3)
             }
             setChannels(channels.result.channels)
             setLoading(false)

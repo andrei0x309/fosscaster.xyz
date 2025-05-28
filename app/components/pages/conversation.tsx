@@ -38,7 +38,7 @@ export function ConversationPage({ hash, username, className = '' }: { hash: str
     }
     
     setMainCast({ cast: feed.result.casts[sliceFrom] })
-    setCastReplies(feed.result.casts.slice(sliceFrom+1).map((cast) => ({ cast })))
+    setCastReplies(feed.result.casts?.slice(sliceFrom+1).map((cast) => ({ cast })))
  
   }, [setFeedLoading, setIsInitialLoad, isInitialLoad])
 

@@ -64,3 +64,6 @@ export interface Action {
     splashImageUrl:        string;
     splashBackgroundColor: string;
 }
+
+
+

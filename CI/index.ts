@@ -1,6 +1,6 @@
 import { SnapChainClient } from 'farcaster-snapchain-utils'
 
-const args = Bun.argv.slice(2);
+const args = Bun.argv?.slice(2);
 
 const secrets = args[0]
 const event = args[1]
@@ -62,7 +62,8 @@ const main = async () => {
     })
 
  if (action === 'push') {
-        if (ENABLED && !GithubEvent.forced && GithubEvent?.head_commit?.message.includes('chore:') && !GithubEvent?.head_commit?.message.includes('!')) {
+        const isAnnounceMessage = (GithubEvent.head_commit.message.includes('chore:') || GithubEvent.head_commit.message.includes('Merge pull')) && !GithubEvent?.head_commit?.message.includes('!')
+        if (ENABLED && !GithubEvent.forced && isAnnounceMessage) {
             const commiter = GithubEvent?.head_commit?.author.username || GithubEvent?.head_commit?.committer?.username || ''
             const message = `Github farcaster client https://fosscaster.xyz new repo commit!\n
 - Commit: ${GithubEvent.head_commit.url} \n

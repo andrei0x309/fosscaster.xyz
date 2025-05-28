@@ -1,5 +1,10 @@
 # Changelog
 
+## - 2025-05-28
+
+- replaced warpcast.com with fosscaster.xyz in most places
+- small fix to open mini-apps from feed
+- replaced frame with miniapp in notifications as underlying data has changed
 
 ## - 2025-05-09
 

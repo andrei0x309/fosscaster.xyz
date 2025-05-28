@@ -41,7 +41,7 @@ export const timeAgo = (date: string | number, shortFormat = false) => {
        const year = new Date().getFullYear()
        const day = new Date(dateInMs).getDate() + 1
        const month = new Date(dateInMs).getMonth() + 1
-       return `${day}/${month}/${year.toString().slice(2)}`
+       return `${day}/${month}/${year.toString()?.slice(2)}`
     }
     return interval.toFixed(0) + ' ' + intervalType + ' ago';
 }

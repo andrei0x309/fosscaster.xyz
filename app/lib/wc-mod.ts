@@ -329,7 +329,7 @@ export class WarpCastWebAPI {
             data['olderThan'] = olderThan
         }
         if (excludeItemIdPrefixes.length > 0) {
-            data['excludeItemIdPrefixes'] = excludeItemIdPrefixes.map((hash) => hash.slice(2,).slice(0, 8))
+            data['excludeItemIdPrefixes'] = excludeItemIdPrefixes.map((hash) => hash?.slice(2,)?.slice(0, 8))
         }
 
 
@@ -1052,7 +1052,7 @@ export class WarpCastWebAPI {
 
     public async removeAvatar () {
         const now = Date.now()
-        const defaultWCAvatar =  'https://warpcast.com/avatar.png?t=' + now
+        const defaultWCAvatar =  'https://farcaster.xyz/avatar.png?t=' + now
         const response = await fetch(`${this._apiEndpointBase}/me`, {
             method: 'PATCH',
             headers: this.headers,

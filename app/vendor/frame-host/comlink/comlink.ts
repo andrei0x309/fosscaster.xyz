@@ -515,7 +515,7 @@ function createProxy<T>(
       }
       // We just pretend that `bind()` didn’t happen.
       if (last === 'bind') {
-        return createProxy(ep, pendingListeners, path.slice(0, -1))
+        return createProxy(ep, pendingListeners, path?.slice(0, -1))
       }
       const [argumentList, transferables] = processArguments(rawArgumentList)
       return requestResponseMessage(

@@ -185,7 +185,7 @@ const ChatMessages = forwardRef<HTMLDivElement, ChatMessagesProps>(({ loadMoreMe
                 <Link to={`/${message?.senderContext?.username}`} className="flex items-center">
                 <Avatar className="hover:border-2 h-8 w-8">
                       <AvatarImage src={message?.senderContext?.pfp?.url} alt={`User ${message?.senderContext?.username}`} />
-                      <AvatarFallback>{message?.senderContext?.username.slice(0,2)}</AvatarFallback>
+                      <AvatarFallback>{message?.senderContext?.username?.slice(0,2)}</AvatarFallback>
                 </Avatar>
                 </Link>
               <div className="ml-2 flex flex-col">
@@ -213,7 +213,7 @@ const ChatMessages = forwardRef<HTMLDivElement, ChatMessagesProps>(({ loadMoreMe
                     
                     <Avatar className="hover:border-2 h-5 w-5 aspect-square shrink-0 rounded-full object-cover">
                       <AvatarImage src={message?.inReplyTo?.senderContext?.pfp?.url} alt={`User ${message?.senderContext?.username}`} />
-                      <AvatarFallback>{message?.senderContext?.username.slice(0,2)}</AvatarFallback>
+                      <AvatarFallback>{message?.senderContext?.username?.slice(0,2)}</AvatarFallback>
                 </Avatar>
 
                     </div></Link><div className="opacity-75">{message?.inReplyTo?.senderContext?.username}</div>
